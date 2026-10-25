@@ -158,6 +158,30 @@ export interface ComposerValues {
 
 export type ComposerField = 'title' | 'body' | 'scope' | 'target' | 'expires';
 
+/** The error for a title, or undefined when it is fine. Shared by the composer and the editor. */
+export function titleError(title: string): string | undefined {
+  const length = charCount(title);
+  if (length < TITLE_MIN) return `The title needs at least ${TITLE_MIN} characters.`;
+  if (length > TITLE_MAX) return `The title can be at most ${TITLE_MAX} characters.`;
+  return undefined;
+}
+
+export function bodyError(body: string): string | undefined {
+  const length = charCount(body);
+  if (length < BODY_MIN) return 'Write the announcement.';
+  if (length > BODY_MAX) return `The text can be at most ${BODY_MAX} characters.`;
+  return undefined;
+}
+
+/** A blank expiry is fine (no expiry). Otherwise it must be a real time in the future. */
+export function expiryError(local: string, now: number): string | undefined {
+  if (!local) return undefined;
+  const iso = expiryToIso(local);
+  if (!iso) return 'Enter a valid date and time.';
+  if (Date.parse(iso) <= now) return 'The expiry must be in the future.';
+  return undefined;
+}
+
 export function validateAnnouncement(
   values: ComposerValues,
   role: UserRole,
@@ -165,13 +189,11 @@ export function validateAnnouncement(
 ): FieldErrors<ComposerField> {
   const errors: FieldErrors<ComposerField> = {};
 
-  const titleLength = charCount(values.title);
-  if (titleLength < TITLE_MIN) errors.title = `The title needs at least ${TITLE_MIN} characters.`;
-  else if (titleLength > TITLE_MAX) errors.title = `The title can be at most ${TITLE_MAX} characters.`;
+  const title = titleError(values.title);
+  if (title) errors.title = title;
 
-  const bodyLength = charCount(values.body);
-  if (bodyLength < BODY_MIN) errors.body = 'Write the announcement.';
-  else if (bodyLength > BODY_MAX) errors.body = `The text can be at most ${BODY_MAX} characters.`;
+  const body = bodyError(values.body);
+  if (body) errors.body = body;
 
   if (!scopesForRole(role).includes(values.scope)) {
     errors.scope = 'Your role cannot publish for this scope.';
@@ -182,11 +204,8 @@ export function validateAnnouncement(
     errors.target = `Choose a ${values.scope}.`;
   }
 
-  if (values.expires) {
-    const iso = expiryToIso(values.expires);
-    if (!iso) errors.expires = 'Enter a valid date and time.';
-    else if (Date.parse(iso) <= now) errors.expires = 'The expiry must be in the future.';
-  }
+  const expires = expiryError(values.expires, now);
+  if (expires) errors.expires = expires;
 
   return errors;
 }

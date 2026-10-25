@@ -7,8 +7,8 @@ import {
   lecturers,
   timetableEntries,
 } from '../mocks/fixtures';
-import type { Query } from './client';
-import type { AnnouncementCreate, UserRole } from './types';
+import { ApiError, type Query } from './client';
+import type { Announcement, AnnouncementCreate, AnnouncementUpdate, UserRole } from './types';
 
 // A sample account for mock mode only. It is a student unless VITE_MOCK_ROLE says otherwise,
 // so the admin screens can be tried without a backend. Scoped roles get the first sample
@@ -24,6 +24,11 @@ const mockUser = {
   faculty_id: MOCK_ROLE === 'faculty_admin' ? faculties[0].id : null,
   level: null,
 };
+
+// Announcements live here in mock mode, so publish, edit and delete show up in the next list
+// read. They reset on reload. The fixtures themselves are never changed.
+const mockAnnouncements: Announcement[] = [...announcements];
+const ANNOUNCEMENT_ID = /^\/announcements\/([^/]+)$/;
 
 // Rows per /sync page in mock mode. 0 (the default) returns everything in one page.
 // Set VITE_MOCK_SYNC_PAGE_SIZE to a small number to test paging without the backend.
@@ -49,13 +54,18 @@ export async function mockRequest(
   await new Promise((r) => setTimeout(r, 150)); // feel like a real network
   const key = `${method} ${path}`;
 
+  const byId = ANNOUNCEMENT_ID.exec(path);
+  if (byId && (method === 'PATCH' || method === 'DELETE')) {
+    return mockChangeAnnouncement(method, byId[1], body as AnnouncementUpdate);
+  }
+
   switch (key) {
     case 'GET /faculties':
       return faculties;
     case 'GET /campus/buildings':
       return buildings;
     case 'GET /announcements':
-      return announcements;
+      return mockAnnouncements.filter(isLive).slice(0, Number(query?.limit ?? 50));
     case 'POST /announcements':
       return mockPublish(body as AnnouncementCreate);
     case 'POST /auth/login':
@@ -75,7 +85,7 @@ export async function mockRequest(
 // Echoes the new announcement back, shaped like the API's 201. Nothing is stored.
 function mockPublish(input: AnnouncementCreate) {
   const now = new Date().toISOString();
-  return {
+  const created: Announcement = {
     id: crypto.randomUUID(),
     title: input.title,
     body: input.body,
@@ -88,6 +98,31 @@ function mockPublish(input: AnnouncementCreate) {
     verification: { status: 'unverified' as const, source: 'sample data' },
     updated_at: now,
   };
+  mockAnnouncements.unshift(created);
+  return created;
+}
+
+// The public list hides expired rows, as the API does.
+function isLive(row: Announcement) {
+  return !row.expires_at || Date.parse(row.expires_at) > Date.now();
+}
+
+// PATCH changes only the fields sent (null expires_at clears it). DELETE returns nothing, like
+// a 204. An unknown id is a 404. Role and scope are not checked in mock mode.
+function mockChangeAnnouncement(method: string, id: string, changes: AnnouncementUpdate) {
+  const index = mockAnnouncements.findIndex((row) => row.id === id);
+  if (index === -1) throw new ApiError(404, 'Announcement not found');
+  if (method === 'DELETE') {
+    mockAnnouncements.splice(index, 1);
+    return undefined;
+  }
+  const updated: Announcement = {
+    ...mockAnnouncements[index],
+    ...changes,
+    updated_at: new Date().toISOString(),
+  };
+  mockAnnouncements[index] = updated;
+  return updated;
 }
 
 // Same rules as the API: rows in collection order, then in list order, cut into pages.
@@ -101,7 +136,7 @@ function mockSync(query: Query | undefined) {
     class_reps: [],
     buildings,
     timetable_entries: timetableEntries,
-    announcements,
+    announcements: mockAnnouncements,
   };
   const items = SYNC_COLLECTIONS.flatMap((name) => data[name].map((row) => [name, row] as const));
   const start = query?.cursor ? Number(String(query.cursor).replace('mock:', '')) : 0;

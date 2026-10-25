@@ -1,5 +1,6 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
+import ManageAnnouncements from '../components/ManageAnnouncements';
 import { apiPost } from '../api/client';
 import type { Announcement, AnnouncementScope, User } from '../api/types';
 import { useAuth } from '../lib/auth';
@@ -18,6 +19,7 @@ import {
   type ComposerValues,
 } from '../lib/composerView';
 import type { FieldErrors } from '../lib/authView';
+import { NO_OVERLAY, withUpsert, type Overlay } from '../lib/manageView';
 import { readComposerChoices } from '../lib/offline';
 import { useCachedRows } from '../lib/useCachedRows';
 
@@ -57,10 +59,33 @@ export default function Admin() {
       </>
     );
   }
-  return <Composer user={user} />;
+  return <AdminTools user={user} />;
 }
 
-function Composer({ user }: { user: User }) {
+function AdminTools({ user }: { user: User }) {
+  // Changes made here, laid over the server's list, which can be up to ~30 s behind.
+  const [overlay, setOverlay] = useState<Overlay>(NO_OVERLAY);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  function published(created: Announcement) {
+    setOverlay((o) => withUpsert(o, created));
+    setRefreshKey((n) => n + 1);
+  }
+
+  return (
+    <>
+      <Composer user={user} onPublished={published} />
+      <ManageAnnouncements
+        user={user}
+        overlay={overlay}
+        onOverlay={setOverlay}
+        refreshKey={refreshKey}
+      />
+    </>
+  );
+}
+
+function Composer({ user, onPublished }: { user: User; onPublished: (created: Announcement) => void }) {
   const scopes = scopesForRole(user.role);
   const choices = useCachedRows(readComposerChoices);
 
@@ -110,6 +135,7 @@ function Composer({ user }: { user: User }) {
       const sent = buildAnnouncement(values);
       const created = await apiPost<Announcement>('/announcements', sent, { auth: true });
       setPublished(created.title);
+      onPublished(created);
       setTitle('');
       setBody('');
       setScope(scopes[0]);

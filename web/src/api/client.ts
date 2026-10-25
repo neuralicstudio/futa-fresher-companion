@@ -126,3 +126,11 @@ export const apiGet = <T>(path: string, query?: Query, signal?: AbortSignal) =>
 
 export const apiPost = <T>(path: string, body?: unknown, opts: { auth?: boolean } = {}) =>
   request<T>('POST', path, { body, auth: opts.auth });
+
+// Writes are never repeated by the client (see request): a PATCH or DELETE that did get through
+// would be applied twice.
+export const apiPatch = <T>(path: string, body: unknown, opts: { auth?: boolean } = {}) =>
+  request<T>('PATCH', path, { body, auth: opts.auth });
+
+export const apiDelete = (path: string, opts: { auth?: boolean } = {}) =>
+  request<void>('DELETE', path, { auth: opts.auth });

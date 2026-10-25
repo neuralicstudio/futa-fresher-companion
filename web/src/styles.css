@@ -52,3 +52,10 @@ main h1 { overflow-wrap: anywhere; }
 .form button { min-height: 44px; padding: 8px 16px; font: inherit; justify-self: start; cursor: pointer; }
 .form button:disabled { cursor: wait; opacity: 0.7; }
 nav .nav-button { color: #fff; background: none; border: 0; padding: 0; font: inherit; font-size: 14px; cursor: pointer; white-space: nowrap; }
+
+/* Manage announcements (Admin) */
+.item-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+.item-actions button, .field > button, .confirm button { min-height: 44px; padding: 8px 16px; font: inherit; cursor: pointer; }
+.item-actions button:disabled, .field > button:disabled { cursor: wait; opacity: 0.7; }
+.field > button { justify-self: start; }
+.confirm { margin: 8px 0; }
