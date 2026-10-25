@@ -1,3 +1,4 @@
+import { APP_NAME } from '../appName';
 import type { SyncProgress } from '../lib/sync';
 
 // Shown only while the first full sync runs. The user can continue without waiting.
@@ -12,7 +13,7 @@ export default function FirstSyncScreen({
     <section className="first-sync" aria-labelledby="first-sync-title">
       <h1 id="first-sync-title">Saving campus data for offline use</h1>
       <p className="muted">
-        This happens once. You can keep using the app while it finishes in the background.
+        This happens once. You can keep using {APP_NAME} while it finishes in the background.
       </p>
       {/* No value: the server does not say how many pages a full sync has, so the bar is
           indeterminate. The count below is the real progress. */}
