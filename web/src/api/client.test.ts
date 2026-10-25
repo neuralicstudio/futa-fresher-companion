@@ -287,6 +287,34 @@ describe('the 503 retry', () => {
     expect(sent).toHaveLength(1);
   });
 
+  it('never retries a PATCH by itself', async () => {
+    vi.useFakeTimers();
+    const { client, session } = await load();
+    session.tokenStore.set('t');
+    stubSequence([busy('1'), json(200, { id: 'a1' })]);
+
+    const result = client
+      .apiPatch('/announcements/a1', { title: 'New title' }, { auth: true })
+      .catch((caught: unknown) => caught);
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    expect(await result).toMatchObject({ status: 503, retryAfter: 1 });
+    expect(sent).toHaveLength(1);
+  });
+
+  it('never retries a DELETE by itself', async () => {
+    vi.useFakeTimers();
+    const { client, session } = await load();
+    session.tokenStore.set('t');
+    stubSequence([busy('1'), new Response(null, { status: 204 })]);
+
+    const result = client.apiDelete('/announcements/a1', { auth: true }).catch((caught: unknown) => caught);
+    await vi.advanceTimersByTimeAsync(10_000);
+
+    expect(await result).toMatchObject({ status: 503, retryAfter: 1 });
+    expect(sent).toHaveLength(1);
+  });
+
   it('stops waiting when the request is aborted', async () => {
     vi.useFakeTimers();
     const { client } = await load();
@@ -300,5 +328,45 @@ describe('the 503 retry', () => {
 
     expect(await result).toMatchObject({ name: 'AbortError' });
     expect(sent).toHaveLength(1);
+  });
+});
+
+describe('PATCH and DELETE', () => {
+  it('send the token, the method and a JSON body only when there is one', async () => {
+    const { client, session } = await load();
+    session.tokenStore.set('stored-token');
+    const calls: { method: string; body: unknown }[] = [];
+    vi.stubGlobal('fetch', async (url: string, init: RequestInit) => {
+      sent.push({ url, headers: { ...((init.headers as Record<string, string>) ?? {}) } });
+      calls.push({ method: init.method as string, body: init.body });
+      return init.method === 'DELETE' ? new Response(null, { status: 204 }) : json(200, { id: 'a1' });
+    });
+    sent = [];
+
+    const patched = await client.apiPatch('/announcements/a1', { expires_at: null }, { auth: true });
+    const deleted = await client.apiDelete('/announcements/a1', { auth: true });
+
+    expect(patched).toEqual({ id: 'a1' });
+    expect(deleted).toBeUndefined();
+    expect(calls).toEqual([
+      { method: 'PATCH', body: '{"expires_at":null}' },
+      { method: 'DELETE', body: undefined },
+    ]);
+    expect(sent.map((r) => r.headers.Authorization)).toEqual(['Bearer stored-token', 'Bearer stored-token']);
+    expect(sent[0].headers['Content-Type']).toBe('application/json');
+    expect(sent[1].headers['Content-Type']).toBeUndefined();
+  });
+
+  it('sign the user out on a 401 like other authenticated calls', async () => {
+    const { client, session } = await load();
+    session.tokenStore.set('expired-token');
+    stubFetch(() => json(401, { detail: 'Invalid or expired token' }));
+    const listener = vi.fn();
+    client.onUnauthorized(listener);
+
+    await expect(client.apiDelete('/announcements/a1', { auth: true })).rejects.toMatchObject({ status: 401 });
+
+    expect(session.tokenStore.get()).toBeNull();
+    expect(listener).toHaveBeenCalledTimes(1);
   });
 });

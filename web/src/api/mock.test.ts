@@ -93,3 +93,37 @@ describe('mock /sync', () => {
     expect(writes.at(-1)?.lastSync).toBeDefined();
   });
 });
+
+describe('mock announcements', () => {
+  it('edits only the sent fields, clears an expiry with null, and deletes', async () => {
+    const { mockRequest } = await loadMock('');
+    const id = announcements[2].id; // the sample with an expiry
+
+    const edited = (await mockRequest('PATCH', `/announcements/${id}`, undefined, {
+      title: 'Edited sample',
+    })) as { title: string; body: string; expires_at: string | null };
+    expect(edited.title).toBe('Edited sample');
+    expect(edited.body).toBe(announcements[2].body);
+    // Not sent, so kept. (The module is reloaded per test, so compare to "not cleared".)
+    expect(edited.expires_at).not.toBeNull();
+
+    const cleared = (await mockRequest('PATCH', `/announcements/${id}`, undefined, {
+      expires_at: null,
+    })) as { title: string; expires_at: string | null };
+    expect(cleared.expires_at).toBeNull();
+    expect(cleared.title).toBe('Edited sample');
+
+    expect(await mockRequest('DELETE', `/announcements/${id}`)).toBeUndefined();
+    const listed = (await mockRequest('GET', '/announcements', { limit: 50 })) as { id: string }[];
+    expect(listed.some((row) => row.id === id)).toBe(false);
+  });
+
+  it('answers 404 for an id that is not there, and does not change the fixtures', async () => {
+    const { mockRequest } = await loadMock('');
+
+    await expect(
+      mockRequest('DELETE', '/announcements/00000000-0000-4000-8000-0000000000aa'),
+    ).rejects.toMatchObject({ status: 404 });
+    expect(announcements.map((row) => row.title)).not.toContain('Edited sample');
+  });
+});

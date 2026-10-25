@@ -13,6 +13,7 @@ export type Building = S['Building'];
 export type TimetableEntry = S['TimetableEntry'];
 export type Announcement = S['Announcement'];
 export type AnnouncementCreate = S['AnnouncementCreate'];
+export type AnnouncementUpdate = S['AnnouncementUpdate'];
 export type AnnouncementScope = S['AnnouncementScope'];
 export type User = S['User'];
 export type UserRole = S['UserRole'];

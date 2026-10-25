@@ -98,6 +98,19 @@ describe('the composer for admins', () => {
     expect(html).toContain('>Biology</option>');
   });
 
+  it('shows the "Your announcements" list under the composer, to admins only', () => {
+    signedInAs('super_admin');
+    const html = page();
+    expect(html).toContain('Your announcements');
+    expect(html.indexOf('<form')).toBeLessThan(html.indexOf('Your announcements'));
+
+    signedInAs('student');
+    expect(page()).not.toContain('Your announcements');
+    auth.status = 'signed-out';
+    auth.user = null;
+    expect(page()).not.toContain('Your announcements');
+  });
+
   it('shows a live character count for title and body', () => {
     signedInAs('super_admin');
     const html = page();
