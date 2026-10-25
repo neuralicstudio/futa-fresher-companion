@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Design prototype screen. Sample data only.">
+<title>Prototype</title>
+<script>
+  /* Pick light or dark before the first paint, so the page never flashes the wrong mode. */
+  (function () { var q = new URLSearchParams(location.search).get('theme'), m = q; try { m = q || localStorage.getItem('sabi-proto-mode'); } catch (e) {} if (m === 'light' || m === 'dark') document.documentElement.setAttribute('data-mode', m); })();
+</script>
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body data-screen="index">
+<div id="app"><noscript><p>Turn on JavaScript to view this prototype. Its text comes from assets/strings.js.</p></noscript></div>
+<script src="assets/strings.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
