@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from psycopg import Connection, errors
 from pydantic import BaseModel, BeforeValidator, Field, model_validator
 
+from app.admin_scope import may_publish
 from app.auth_deps import AdminUser
 from app.caching import fresh_public_cache
 from app.db import get_conn
@@ -147,7 +148,6 @@ class AnnouncementUpdate(BaseModel):
         return self
 
 
-DEPARTMENT_FACULTY = "SELECT faculty_id FROM departments WHERE id = %(id)s AND deleted_at IS NULL"
 INSERT_ANNOUNCEMENT = """
     INSERT INTO announcements
         (title, body, scope, faculty_id, department_id, author_id, published_at, expires_at)
@@ -160,7 +160,7 @@ INSERT_ANNOUNCEMENT = """
 
 @router.post("", status_code=201)
 def create_announcement(body: AnnouncementCreate, admin: AdminUser, conn: DbConn):
-    if not _may_publish(conn, admin, body.scope, body.faculty_id, body.department_id):
+    if not may_publish(conn, admin, body.scope, body.faculty_id, body.department_id):
         raise HTTPException(status_code=403, detail="You cannot publish for this scope")
     try:
         row = conn.execute(
@@ -239,35 +239,8 @@ def _require_may_manage(conn: Connection, admin: dict[str, Any], announcement_id
     stored = conn.execute(STORED_SCOPE, {"id": announcement_id}).fetchone()
     if stored is None:
         raise HTTPException(status_code=404, detail="Announcement not found")
-    if not _may_publish(
-        conn, admin, stored["scope"], stored["faculty_id"], stored["department_id"]
-    ):
+    if not may_publish(conn, admin, stored["scope"], stored["faculty_id"], stored["department_id"]):
         raise HTTPException(status_code=403, detail="You cannot change this announcement")
-
-
-def _may_publish(
-    conn: Connection,
-    admin: dict[str, Any],
-    scope: str,
-    faculty_id: uuid.UUID | None,
-    department_id: uuid.UUID | None,
-) -> bool:
-    """Each admin role publishes only inside its own scope. The database role is the source."""
-    role = admin["role"]
-    if role == "super_admin":
-        return True
-    if role == "sug":
-        return scope == "sug"
-    if role == "faculty_admin":
-        if scope == "faculty":
-            return faculty_id == admin["faculty_id"]
-        if scope == "department":
-            row = conn.execute(DEPARTMENT_FACULTY, {"id": department_id}).fetchone()
-            return row is not None and row["faculty_id"] == admin["faculty_id"]
-        return False
-    if role == "department_admin":
-        return scope == "department" and department_id == admin["department_id"]
-    return False
 
 
 def _now() -> datetime:
