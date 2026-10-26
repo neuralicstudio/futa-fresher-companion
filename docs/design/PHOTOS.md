@@ -1,58 +1,80 @@
-# Campus photos: slots, budget and a guide for taking them
+# Campus photos: the visual pack, its slots and budget, and a guide for taking more
 
-The design has room for real FUTA photos, but none are in this repo and none were generated or downloaded. Teammates take them. Until a slot has a photo, it shows the drawn contour ground (the band) or the place icon (a building row), so it never looks empty.
+Round 3 makes photos the main ingredient, without making the app heavy. They live in the **visual pack**, which is never part of the first load. Where each photo came from is in [CREDITS.md](CREDITS.md).
 
-## Where photos go
+## How the pack works (hand-off)
 
-| Slot (`data-slot`) | Screen | Shape | Shown at | How it is treated |
-|---|---|---|---|---|
-| `department-cover` (one per department) | Department detail, behind the band | 3:2 landscape | Full width, about 240px tall on a phone | Greyscale, 50% opacity, under a maroon scrim, so the title keeps its contrast |
-| `school-cover` (one per school; optional) | School page, behind the band | 3:2 landscape | Same as department | Same |
-| `building-<id>` | Map, each building row | 1:1 square | 72 × 72px | Natural colour, rounded corners |
-| `home-hero` (optional, later) | Home, behind the band | 3:2 landscape | Full width | Same as department |
+- **First load: zero photos.** Every photo slot first draws a scene in SVG (`art.js`) on top of the photo's own placeholder colours, so no slot is ever an empty grey box.
+- **When it downloads:** quietly in the background, after the first sync finishes, only on a good connection. That means never when `navigator.connection.saveData` is on or `effectiveType` is `slow-2g`, `2g` or `3g`. "Only on Wi-Fi" is on by default; when the browser cannot tell the connection type, the app waits for the person to tap "Download now".
+- **Where it is kept:** the service worker caches the files under their own cache name (for example `sabi-pack-v1`) and keeps them for offline use. They are the first thing dropped when storage runs short.
+- **How a photo appears:** once the pack is on the phone, each slot adds an `<img>` that fades in over the drawing. If a file is missing, the drawing stays.
+- **Lite mode:** never downloads or shows the pack. The drawings carry the look, and the Settings card says "Off in Lite mode".
+- **States to design for, all in the prototype:**
+  - **Not downloaded:** drawings, plus "Download now".
+  - **Downloading:** a ring with a percentage, the number of photos done, and Stop.
+  - **Waiting for Wi-Fi.**
+  - **On this phone:** the size, the date, and Remove photos.
+  - **Off in Lite mode.**
+- **Where the controls live:** Settings, under Data. Home links to it from "Saved on this phone". First sync's "You're set" screen offers the pack once ("Add campus photos?").
 
-Never more than one photo per screen above the fold. People's photos are never used: lecturers and class reps get initials on a disc.
+## Slots
 
-## Size budget (per file, as delivered)
+| Slot | Screen | Size used | Fallback drawing |
+|---|---|---|---|
+| Home hero | Home | `-l`, full width, behind the title | A generic gate with two students |
+| Around campus | Home, a row of cards | `-s`, 4:3 | A building type per card |
+| Screen heroes | Academics, Department, Notices, Log in | `-l` | A building type, sometimes with students |
+| Building cards | Map | `-s`, square on phones, 16:10 from 768px | The building's type (library, hall, hostel, block) |
+| Pack preview and credits | Settings | `-s` | A building type, or plain sky |
 
-| Slot | Files to deliver | Budget |
-|---|---|---|
-| Covers (`department-cover`, `school-cover`, `home-hero`) | AVIF and WebP, 720 × 480 and 1080 × 720 | 720w: **25 KB** or less. 1080w: **45 KB** or less |
-| Building thumbnails | AVIF and WebP, 144 × 144 (2× of 72px) | **6 KB** or less |
+Welcome, First sync, Timetable, Register, Admin and Settings are always drawn, because first run happens before any photo can be on the phone.
 
-Rules the app follows (hand-off):
+## Size budget (checked by `tools/budget.mjs`)
 
-- **No photo on first load.** Photos load after the page has settled, lazily, with `width`, `height` and `decoding="async"`, and only when the slot is near the screen.
-- **Never in Lite mode.** When Lite is on (the phone asked to save data, or the person turned it on), no photo request is made at all. The contour or icon fallback shows instead.
-- **Not part of the offline save.** First sync saves text data only. Photos are cached by the service worker only after they have been seen once, and are the first thing dropped when storage is short.
-- A department screen with its cover costs at most 25 KB extra on a phone. Four building thumbnails on the Map list cost at most 24 KB extra.
+| What | Rule |
+|---|---|
+| Each file | WebP (AVIF also fine), **at most 60 KB** |
+| Sizes | `<id>-l.webp` at 768 px wide for heroes (shown 360 to 768 px), `<id>-s.webp` at 384 px for cards and thumbnails |
+| Metadata | None: no EXIF, GPS or XMP. The tool fails on any of them |
+| Placeholder | Three colours measured from the photo (top, middle, bottom), kept with the photo's entry in `assets/pack.js` |
+| The whole pack | **At most 1.5 MB.** Today: 872.6 KB (677.3 KB open-licensed, in the repo; 195.3 KB local only) |
 
-## Taking the photos
+Today's files came out between 7.5 KB and 58.4 KB. The busiest photos (trees, HDR skies) needed WebP quality down to 0.5 to fit 60 KB at 768 px.
+
+## Text over photos
+
+Hero text never sits on a raw photo. Under every line of hero text there is a scrim:
+- **Colour:** night, tinted by the time of day.
+- **Strength:** 84%.
+- **Measured:** `tools/tokens.mjs` measures the text against that scrim over a pure white pixel, the worst case. The lowest result is 6.04:1, for secondary text over the morning scrim.
+
+Credits sit on a dark glass chip, and labels on cards sit on the same scrim.
+
+## The git rule
+
+- **Committed:** photos with an open licence (or that David took himself) go in `prototype/pack/photos/` and are committed.
+- **Local only:** anything else goes in `prototype/photos-local/`. `.git/info/exclude` keeps that folder out of git, and the prototype uses it only when the files are there.
+- **Screenshots:** the committed screenshots are taken with `?local=0`. Screenshots that show local photos go to `screenshots-private/`, which is also excluded.
+
+## Taking more photos
+
+These are wanted most, because there is no open photo of them yet:
+- hostels
+- the main walkway
+- lecture theatres from the inside, empty
+- the gate in portrait (the Home hero crops a landscape photo hard)
 
 **What to shoot**
-
-- The building's entrance or the side people walk up to, with its sign in view if it has one. The goal is "I recognise this when I get there".
-- One building per photo, straight on or at a slight angle. Fill the frame with the building; avoid wide empty sky or car parks.
-- For covers: shoot in **landscape**, and leave calm space (sky, a plain wall) in the **top third**, because the title sits over it.
-- For thumbnails: a tight crop of the entrance or the sign works best; a whole building at 72px is too small to read.
-
-**When and how**
-
-- Morning (before 10 am) or late afternoon (after 4 pm). Noon sun makes hard shadows and washed-out walls.
-- Hold the phone level (turn on the camera grid) and keep the walls upright.
-- No zoom; walk closer instead. No filters, no stickers, no text added.
-- Take three or four of each, so there is a choice.
+- The entrance people walk up to, with its sign readable: the app names a building only when a sign in the photo shows its name.
+- One building per photo. Leave calm space (sky or a plain wall) in the top third of hero photos, and for the Home hero, shoot in portrait.
+- Morning before 10 am or after 4 pm. Hold the phone level. No zoom, no filters, no added text.
 
 **People and privacy (NDPR)**
+- No recognisable faces. Wait for people to pass. No number plates, ID cards, screens, or notice boards with personal details.
+- Turn off location tagging. The pipeline strips metadata anyway, but do not rely on it.
+- Public outdoor areas only. Ask the department before shooting indoors.
 
-- No faces that can be recognised. Wait for people to pass, or shoot when the area is quiet. If someone is clearly in the photo, do not use it.
-- No car number plates, no notice boards with personal details, no ID cards, no screens.
-- Turn off location tagging, or strip the location data before sharing (most phone gallery apps can remove it when sharing; check the file's details).
-- Only photograph public outdoor areas. Ask the department before photographing inside a building.
-
-**Naming and handing over**
-
-- Name files `department-<code>-cover.jpg` or `building-<name-in-short>.jpg`, for example `department-smc-cover.jpg`.
-- Put the original photos in the team's shared folder (not in git). Say who took each one and that you agree it can be used in the app.
-- Whoever adds them to `web/` exports AVIF and WebP at the sizes above (any image tool that can export AVIF and WebP; nothing new is added to the repo) and checks each file against the budget.
-- After adding a cover, check the department title on top of it on a phone, in daylight. If the photo has a bright patch behind the title, crop differently or pick another.
+**Handing over**
+- Put originals in the team's shared folder, not in git.
+- Say who took each one, and that they agree to share it under CC BY-SA 4.0 (or another open licence).
+- Add each photo to CREDITS.md, export at 768 px and 384 px as WebP of at most 60 KB each, and run `node docs/design/tools/budget.mjs`.

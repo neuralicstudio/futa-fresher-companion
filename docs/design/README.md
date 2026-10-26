@@ -2,7 +2,10 @@
 
 The design for the FUTA campus guide (working name **Sabi**). Design only: nothing in `web/src`, `api`, `db` or `docs/openapi.yaml` was changed. All sample data is fake and says "(sample)".
 
-This is **round 2**. Round 1 (PR #38) was clean but quiet. Round 2 gives the app an identity, depth, motion and a few moments of delight, and keeps it cheap: Home's design layer is **13.3 KB gzipped, no fonts, no images on first load**, and a **Lite mode** turns the heavy parts off.
+This is **round 3, the premium pass**. Round 2 (PR #39) was clean but dry: mostly colour and text. Round 3 makes Sabi image-rich, layered and alive, and keeps it cheap:
+- **First load:** 45.0 KB gzipped, both fonts included, zero photos.
+- **Photos:** a separate visual pack of 872.6 KB, downloaded later on a good connection.
+- **Lite mode:** never loads the pack, and keeps the look with drawings.
 
 ## What is here
 
@@ -10,134 +13,162 @@ This is **round 2**. Round 1 (PR #38) was clean but quiet. Round 2 gives the app
 |---|---|
 | [BRIEF.md](BRIEF.md) | The design brief: audience, job, concept, states, constraints, open decisions |
 | [PRODUCT.md](PRODUCT.md) | Product truth (Impeccable `init`), with inferred facts marked |
-| [DESIGN.md](DESIGN.md) | The design system in words (Impeccable `document` format, tokens in its frontmatter) |
-| [PHOTOS.md](PHOTOS.md) | Photo slots, their size budget, and a guide for teammates taking campus photos |
-| [tokens.css](tokens.css), [tokens.json](tokens.json) | Colours (light, dark, the band), type, spacing, radii, shadows, motion, z-index, and every contrast ratio, computed |
-| [brand/](brand/) | The mark, the app icon and a maskable app icon, as SVG (under 0.5 KB each) |
-| [prototype/](prototype/) | Static HTML prototypes of every screen and state, plus the component sheet |
-| [screenshots/](screenshots/) | 95 WebP screenshots: every screen at 360, 390 and 768px, every state at 390, plus dark, Lite, other times of day and 200% text |
+| [DESIGN.md](DESIGN.md) | The design system in words, with tokens in its frontmatter |
+| [CREDITS.md](CREDITS.md) | Every image and font: where it came from, its licence, its credit, what was changed |
+| [PHOTOS.md](PHOTOS.md) | The visual pack: how it downloads, its slots and budget, text over photos, and a guide for taking more |
+| [tokens.css](tokens.css), [tokens.json](tokens.json) | Colours (light, dark, night, the time-of-day tints, the drawing palette), the two fonts, type, spacing, radii, glass, shadows, motion, and every contrast ratio, computed. Text over photos is measured against the worst pixel |
+| [fonts/](fonts/) | Bricolage Grotesque (display) and Atkinson Hyperlegible Next (body), subset woff2, with their OFL licences |
+| [brand/](brand/) | The mark, the app icon and a maskable app icon, as SVG |
+| [prototype/](prototype/) | Static HTML prototypes of every screen and state, the component sheet and an index |
+| [prototype/pack/photos/](prototype/pack/photos/) | The open-licensed campus photos (the visual pack), 22 WebP files |
+| [screenshots/](screenshots/) | WebP screenshots: every screen at 390 and 768px, every state at 390, plus dark, Lite, no photos, other times of day and 200% text |
 | [tools/tokens.mjs](tools/tokens.mjs) | Writes both token files and checks contrast. Change a value there, never in the outputs |
-| [tools/budget.mjs](tools/budget.mjs) | Measures Home's data cost against the budget below; exits 1 if over |
+| [tools/budget.mjs](tools/budget.mjs) | Measures the core layer and the visual pack against the budget below, checks every photo for size and metadata, and exits 1 if anything is over |
 | [tools/screenshots.mjs](tools/screenshots.mjs) | Re-takes the screenshots (headless Chrome, no dependencies) and fails on any script error |
-| [SKILLS.md](SKILLS.md) | Every design skill, command, mode and rule group, and where it was used (both rounds) |
-| [LOG.md](LOG.md) | What ran, what it found, what changed, waivers, and every disagreement (both rounds) |
+| [SKILLS.md](SKILLS.md) | Every design skill, command, mode and rule group, and where it was used (all rounds) |
+| [LOG.md](LOG.md) | What ran, what it found, what changed, waivers and disagreements (all rounds) |
+
+Not in the repo, on David's machine only: `inspiration/` (the reference mockups), `photos-source/` (his photos), `prototype/photos-local/` (the processed copies of photos with no open licence) and `screenshots-private/`. All four are listed in `.git/info/exclude`.
 
 ## How to view it
 
-- Double-click `prototype/index.html`. It works from the file system: no server, no network, no build, no fonts.
-- Every screen has a **Prototype** button in the corner: switch the state, the theme, **Lite mode** and the **time of day** (the band's colour). Links work too: `?state=error`, `?theme=dark`, `?lite=1`, `?daypart=evening`, `?text=200` (200% text), `?proto=0` (hide the button).
-- Page transitions (View Transitions) need the pages served over http in Chrome, Edge or Safari 18.2+, for example `python -m http.server` in `docs/design`. From the file system the pages simply change.
-- All words, including the app's name, come from `prototype/assets/strings.js`. Rename the app with `app.name`.
-- Refresh: `node docs/design/tools/tokens.mjs`, `node docs/design/tools/budget.mjs`, `node docs/design/tools/screenshots.mjs` (Node 22+, Chrome installed).
+- **Open it:** double-click `prototype/index.html`. It works from the file system, with no server, no network and no build. Fonts and photos load from the repo.
+- **Prototype button:** every screen has one at the left edge. It switches the state, the theme, **Lite mode**, **campus photos** (downloaded, not downloaded, downloading, waiting for Wi-Fi) and the **time of day** (the hero's tint and the drawn sky).
+- **Links:**
+  - `?state=error`, `?theme=dark` or `?lite=1`
+  - `?pack=none` (the drawings a phone without the pack sees)
+  - `?daypart=night`
+  - `?text=200` (200% text)
+  - `?local=0` (hide David's local-only photos, as a fresh clone does)
+  - `?proto=0` (hide the button)
+- **Page transitions:** View Transitions need http in Chrome, Edge or Safari 18.2+, for example `python -m http.server` in `docs/design`.
+- **Words:** all of them, including the app's name, come from `prototype/assets/strings.js`.
+- **Refresh:** `node docs/design/tools/tokens.mjs`, `node docs/design/tools/budget.mjs` and `node docs/design/tools/screenshots.mjs` (Node 22+, Chrome installed). Add `--private` to that last one for the local-photo set.
 
-## The concept: the gold line
+## The concept: the flyer
 
-Sabi draws a gold line from "I am lost" to "I found it". The line is the route you walk across campus, it is the gold trim on an academic gown, and it is the thread that ties each fact to who said so. It runs through the whole app, so the identity is something you use, not decoration:
+Students at FUTA read flyers every day: freshers' nights, fellowship programmes, SUG campaigns, departmental week. The good ones lead with a picture, set one line huge, and put the one number that matters (the date, the time, the price) in a round sticker. **Sabi is the best flyer on the notice board, and it's true.** Every screen is built like one:
 
-- **The mark** is an S drawn as a route: it starts at a filled station (you are here), turns twice, and ends at an open one (where you are going).
-- **The top bar** sits on the line. When the phone goes offline, **the line breaks into dashes**.
-- **Home** is a line with four stations (Map, Academics, Timetable, Notices). It draws itself in once per session.
-- **The ticket** on Home shows your next class like a transit ticket: the time large, "in 25 min", and the venue on the stub.
-- **First sync** draws the mark, then fills a line of five stations as each kind of data is saved, and ends with "You're set".
-- **The timetable** has a gold **Now** line across today, and the next class says how long until it starts.
-- **Empty, error, offline and no-match states** each show a short stretch of the line that says what happened: still to come (dashes), a break, a detour, a station with no name.
-- **The band**: every screen's title sits on a night-maroon "sky" with faint contour lines (a walker's map). Its lower edge follows the time of day: warm in the morning, maroon in the afternoon, deeper in the evening, near black at night.
+- **The hero.** A real FUTA photo from the visual pack, or a drawn scene when the pack is not on the phone. A scrim sits under the text, and the title is set big in Bricolage Grotesque ExtraBold.
+- **The sticker.** A round ring that holds the number that matters on that screen:
+  - Home and Timetable: minutes to your next class
+  - First sync: how much is saved
+  - Department: classes today
+  - Settings: how much of the photo pack has downloaded
+- **The light follows your day.** The hero's scrim and the drawn sky change from morning (warm), to afternoon (maroon), to evening (coral), to night (blue-black, with stars and a moon). The colours change like aso-ebi for the hour.
+- **Four students.** They are original drawn characters: a student with braids and a phone, one in glasses with a backpack, one in a hijab with books, and one with a folder. They walk you through the first run, wait with you while data saves, cheer when you're set, and stand in for photos that don't exist yet.
+- **Layered glass.** The next-class card, forms and notes float in frosted glass over the picture. The tab bar is a floating pill of night glass, with the current tab in gold.
 
-Why this over round 1's signpost: a signpost is one picture on one screen. A line can run through every screen, move, and carry real state (online or offline, progress, now), so the brand works harder and costs almost nothing (lines are CSS borders and tiny SVG paths).
+**The logo** keeps round 2's idea, an S drawn as a route, and improves it: the route now ends in a rising sun. You start at a station and arrive at sunrise: "I found it".
 
-## What changed from round 1
+**Why it replaced the gold line.** The line gave Sabi a system, but it was all strokes on maroon. It could carry state, not pictures, people or place. The flyer can hold a photo of the actual library, a student who looks like the reader, and the hour of the day, and it still carries the state: the sticker counts down, the sky darkens, the drawings stand in offline and in Lite. Two pieces of the line survive: the route in the logo, and the ring strokes.
 
-| Area | Round 1 | Round 2 | Why |
+## What changed from round 2
+
+| Area | Round 2 | Round 3 | Why |
 |---|---|---|---|
-| Identity | System font wordmark with a small signpost icon | The route mark; app icon and maskable icon in `brand/` | A logo students can recognise on their home screen |
-| Shell | Maroon top bar, gold 4px trim | Night-maroon bar on the gold line; the line breaks when offline | The trim now carries meaning |
-| Screen titles | Plain heading on paper | The band: maroon sky, contour lines, time-of-day edge | Depth and atmosphere without images |
-| Home | Signpost boards on a pole | The ticket (next class) and the line of stations; a Lite switch | Home answers "what next?" before "where to?" |
-| Icons | One stroke set | Same grid, plus one gold "you are here" detail that lights when current | An icon language, still one set |
-| Lists | Rows with a "this way" tip | Same, plus school and department codes as line bullets, initials discs for people, photo slots for buildings | Easier scanning, no faces |
-| Timetable | Days in a list, Today in gold | A week strip, today on a gold panel, the Now line, "Next, in 25 min" | The timetable knows what time it is |
-| Notices | Scope in words | Scope chips (University, SUG, School, Department), New tag | Faster triage |
-| Department | Facts and a gold sign | A band with a photo slot, a Timetable card | Room for real photos |
-| States | Icon and text | Line pieces (pending, break, detour, arrived, no match) | One picture language |
-| First sync | A breathing bar and a count | The mark draws; five stations with real counts; a Finished state | The one long wait becomes the welcome |
-| Motion | Press and disclosure only | Page transitions, one entrance per screen, the stamp, counted numbers | Feels alive; all of it optional |
-| Radii | 6px everywhere | Controls 10px, plates 14px, cards 18px | Softer, more like the best phone apps |
-| Weights | 400, 500, 650, 800 | Plus 900 for band titles, the ticket time and the wordmark | A heavier display voice with zero font bytes |
-| Screenshots | 155 PNGs, 9.1 MB | 95 WebPs, 5.4 MB | Smaller repo; every round 1 PNG deleted |
+| Concept | The gold line: a route with stations | The flyer: a picture, one big line, a sticker | Room for photos, people and place; still carries state |
+| Fonts | System fonts only, 0 bytes | Bricolage Grotesque 800 for display, Atkinson Hyperlegible Next 400 to 700 for body: 23 KB, subset, served from the repo | A voice with personality, and a body face made for readers with low vision |
+| Screen tops | The band: maroon sky with contour lines | A full-bleed photo or drawn scene, a scrim tinted by the hour, the title at 2.5 to 3rem | Image-rich and layered, as David asked |
+| Photos | None (slots only) | 11 open-licensed FUTA photos in the visual pack, plus David's photos locally; every slot falls back to a drawing | Real places, without first-load cost |
+| People | None; initials for lecturers | Four original drawn students in scenes and states; lecturers keep initials | Warmth without anyone's likeness |
+| Navigation | Top bar, bottom tabs with a capsule | Glass top bar over the hero; a floating pill tab bar, the current tab in gold; floating actions on Map and Admin | The pill navigation and floating actions from the references |
+| Home | Ticket and the line of stations | The hero with a greeting, a glass next-class card with a countdown sticker, four coloured doors, an "Around campus" photo row, saved data as a stacked bar | Home answers "what next" and shows the campus |
+| First run | First sync only | A new **Welcome** screen, then first sync over a night scene, with a glowing ring, mini rings per collection, and sunrise and a burst when you're set, plus the offer to download the photos | A gorgeous first run that still works with no photos |
+| Map | A grey slot with contour lines | An alive drawn campus map: a flowing route, a pulsing "you are here", numbered pins that match the building cards; photo cards; filter chips; a "Find a building" action | The map header feels alive, and stays honest (it says it's a drawing) |
+| Data views | None | A countdown ring, a stacked bar of saved data, units by level, hours this week, a status donut on Admin | Charts and rings, always on real (sample) figures with text values |
+| States | Line pieces | Small scenes: a student waiting, offline with a phone, on a detour, cheering, searching | The same meanings, with people |
+| Settings | None | A new **Settings** screen: the visual pack (download now, only on Wi-Fi, remove), Lite, theme, photo credits | The controls the pack needs |
+| Dark | Maroon-tinted dark | Night campus: near-black maroon, the gold carries selection and figures | Dark with a bright accent, as in the references |
+| Radii | 10, 14, 18px | Fields 14px, cards 24px, sheets 32px, controls and chips as pills | Softer, as in the references |
+| Screenshots | 95 WebP, 5.4 MB | 103 WebP, 6.0 MB; all round 2 shots deleted | More screens and looks, WebP at quality 72 |
+
+The screen set and states are the same as round 2, plus **Welcome** and **Settings** (new screens) and Settings' states (Lite on, offline). Round 2's "No department yet" and "Finished" states are kept.
 
 ## Data budget (measured by `tools/budget.mjs`)
 
-| What Home adds | Measured (gzip) | Budget |
-|---|---|---|
-| Art: mark, icons, contours, line pieces | 2.4 KB | 4 KB |
-| Motion and Lite code (plus the inline head script) | 1.8 KB | 2.5 KB |
-| Stylesheet | 7.7 KB | 10 KB |
-| Tokens | 1.4 KB | 4 KB |
-| **Round 2 design layer, total** | **13.3 KB** | **20 KB** |
-| Fonts | 0 | 0 |
-| Images on first load | 0 | 0 (photos come later, never in Lite: see PHOTOS.md) |
-| Whole prototype Home page, every file, comments included | 38.0 KB | 40 KB |
-| Added since round 1 (whole prototype Home) | 13.1 KB | 15 KB |
+The binding limits are David's: the core layer at most **60 KB** gzipped (fonts and the SVG art included, zero photos), fonts at most **40 KB**, the visual pack at most **1.5 MB**, and each photo at most **60 KB**. I set the per-file lines inside the core while building. They are working limits, not targets I set before measuring.
 
-The app's first-load limit is 150 KB gzipped (`npm run check:bundle`). The design layer is about a tenth of that.
+| Core layer: first load | Measured | Budget |
+|---|---|---|
+| Tokens | 2.0 KB | 4 KB |
+| Stylesheet | 10.6 KB | 16 KB |
+| Art: logo, icons, rings, scenes, four students, the map | 5.7 KB | 9 KB |
+| Motion and Lite, plus the inline head script | 1.7 KB | 2.5 KB |
+| Photo slots and the pack switch | 2.0 KB | 2.5 KB |
+| Fonts (two woff2) | 23.0 KB | 40 KB |
+| **Core, total** | **45.0 KB** | **60 KB** |
+| Photos on first load | 0 | 0 |
+
+| Visual pack | Measured | Budget |
+|---|---|---|
+| Open-licensed photos in the repo (11 photos, 22 files) | 677.3 KB | |
+| David's local-only photos (5 photos, 10 files, not in the repo) | 195.3 KB | |
+| **Pack, total** | **872.6 KB** | **1.5 MB** |
+| Largest single file | 58.4 KB | 60 KB |
+| Files with EXIF or XMP metadata | 0 | 0 |
+
+For reference, the prototype's own renderers and sample text add 24.8 KB. The app has its own React code for that. The app's whole first-load limit is 150 KB gzipped (`npm run check:bundle`).
 
 ## Lite mode
 
-- **On by itself** when the phone asks to save data: `navigator.connection.saveData`, a 2G connection (`effectiveType` `slow-2g` or `2g`), or `prefers-reduced-data: reduce`. Decided before the first paint by a short inline script.
-- **A switch on Home** ("Lite mode", under "Saved on this phone") overrides it, remembered on the phone. The hint says why it is on. A small "Lite" chip shows in the top bar while it is on.
-- **What turns off:** contour lines, photos (no request is made), the ticket's shadow, the band's gradient, page transitions, entrances, the stamp, counted numbers, loops and transitions. The Map does not load its tiles by itself ("Load the map" button).
-- **What stays:** every screen, colour, type, the line and its stations, the seal. It still looks like Sabi.
+- **On by itself** when the phone asks to save data (`saveData`, a 2G connection, `prefers-reduced-data`). The switch on Home and in Settings overrides it. A "Lite" chip shows in the top bar.
+- **Off:** the visual pack is never downloaded or shown, and glass becomes solid. Drifting clouds, twinkling stars, the map's route, the ring sheen, entrances, transitions and the stamp all stop.
+- **Stays:** every screen, the drawn scenes and students, the fonts, the colours, the stickers and rings (static), and the seal.
 
 ## Motion rules
 
-- Every animation stops under `prefers-reduced-motion: reduce` (state changes stay, movement goes).
-- Loops (the loading skeleton, the first-sync bar) run only while on screen (IntersectionObserver) and pause when the page is hidden. There are no other loops.
-- The one entrance per screen (the line drawing in, the mark drawing on first sync, the top bar's line) plays once per session, only when on screen.
-- Page transitions: the station you tap on Home slides into the next screen's title; the tab capsule glides to the new tab. 420ms, ease-out. Same-page changes (open a notice, flip Lite, stamp a seal) morph with `startViewTransition` where supported.
-- Haptics: a 12ms buzz on Android in two places only: a record marked verified, and first sync finished.
+- **Reduced motion:** under `prefers-reduced-motion: reduce` everything stops, and state still changes.
+- **Ambient loops** (clouds, stars, the map's route and "you are here" pulse, the first-sync ring's sheen, skeletons) run only while their element is on screen (IntersectionObserver), and pause when the page is hidden. None runs in Lite.
+- **One entrance per screen** (Home's doors rising in) plays once per session, on screen. Rings fill and bars grow when they appear.
+- **Parallax-lite:** the hero's picture drifts slower than the page as you scroll. It's CSS scroll-driven animation, with no JS, and only where supported.
+- **Page transitions** (View Transitions): the door you tap on Home slides into the next screen's title, and the tab bar stays put.
+- **Delight moments:**
+  - "You're set": sunrise, a gold burst, and a 12 ms buzz on Android.
+  - "Mark verified": the seal stamps on with one small overshoot.
 
 ## Hand-off for frontend developers
 
-Nothing below has been applied to `web/src`. These are the mappings for whoever does. Round 1's mappings still hold except where this table changes them.
+Nothing below has been applied to `web/src`. These are the mappings for whoever does it.
 
 ### New files to bring across
 
 | Prototype | Into `web/` | Notes |
 |---|---|---|
-| `prototype/assets/art.js` | `web/src/components/art/` as small React components (`Mark`, `Icon`, `Contours`, `LinePiece`) | Same SVG strings; `Icon` takes `name` and `current` |
-| `prototype/assets/motion.js` | `web/src/lib/motion.ts` | `init` becomes a hook; `setLite` writes `sabi-lite` to localStorage |
-| The inline `<head>` script in each page | `web/index.html` | Sets `data-lite` before first paint. The theme part is the prototype's |
-| `brand/app-icon*.svg` | `web/public/icons/` and the manifest in `web/brand.ts` | Export PNGs at 192 and 512 from the SVGs; the maskable one keeps the mark in the safe zone |
-| `tokens.css` | Replace the `:root` blocks in `web/src/styles.css` | New: band colours, `maroon-wash`, `gold-wash`, `accent`, radii, `dur-long`, `dur-focal`, `ease-in`, `text-4xl`, `weight-black`, `station`, `shadow-lift` |
+| `fonts/*.woff2` and their OFL files | `web/public/fonts/` | Load with the `@font-face` rules at the top of `tokens.css`, `font-display: swap`. Preload the display face only |
+| `tokens.css` | Replace the `:root` blocks in `web/src/styles.css` | New: night, the time-of-day tints, jade, sky, coral and their washes, the scene palette, glass, `scrim-alpha`, radii, `ease-pop`, `dur-ambient`, `text-5xl` |
+| `prototype/assets/art.js` | `web/src/components/art/` | As small components: `Mark`, `Icon`, `Ring`, `Scene` (kind, daypart, people), `CampusMap`, `StateScene` |
+| `prototype/assets/pack.js` | `web/src/lib/visualPack.ts` + the service worker | Photo entries (alt, credit, sign name, placeholder colours), `PhotoSlot`, and the download policy in PHOTOS.md |
+| `prototype/assets/motion.js` | `web/src/lib/motion.ts` | As in round 2, plus scenes observed for their loops |
+| `prototype/pack/photos/` | Served as static files, cached by the service worker under a versioned cache | Never precached with the app shell |
+| `brand/*.svg` | `web/public/icons/` and the manifest | Export PNGs at 192 and 512 from the SVGs |
 
-### Components: what changed since round 1
+### Components
 
-| Prototype (in `app.css`) | Existing | What changes |
+| Prototype (in `app.css`) | Existing in `web/src` | What changes |
 |---|---|---|
-| `.topbar` + `.wordmark` + `.topbar::after` | `nav` in `App.tsx` | Background `--color-band-top`; the gold line is `::after`; `html[data-net="offline"]` makes it dashed (set from the same signal as `OfflineBanner`); the wordmark is `<Mark/>` + `APP_NAME` at weight 900 |
-| `.tabs`, `.tabs__cap` | bottom nav (round 1) | The current tab's icon sits in a `maroon-wash` capsule with `view-transition-name: tab-cap` |
-| `.band`, `.band__inner`, `.band__hello`, `.contours`, `.slot` | the `<h1>` + intro on every page | New wrapper for each page's title. `data-daypart` from the phone's clock (morning before 12, afternoon to 17, evening to 21, night). Detail screens use `.band--detail` with the back link inside |
-| `.line`, `.stop`, `.stop__link`, `.stop__ring` | `Home.tsx` (signpost in round 1) | Home's four places as stations. Give each `--i` (0 to 3) and a `data-once` key |
-| `.ticket-wrap`, `.ticket`, `.ticket__main`, `.ticket__stub` | `Home.tsx` (new) | Next class from the saved timetable for the student's department and level; minutes counted from the phone's clock (update every minute while visible). No department: "Choose your department" state |
-| `.week`, `.day--today`, `li.now`, `.now__tag` | `Timetable.tsx` | Week strip of anchors; today on a gold-wash panel; the Now line inserted before the first entry that starts after now; "Next, in N min" chip |
-| `.chip--maroon/gold/wash/outline` | `Announcements.tsx` scope text | Scope as a chip: University maroon, SUG gold, School wash, Department outline. "New" for unseen items (needs a "last opened" time saved on the phone) |
-| `.code-chip` | `Academics.tsx`, `DepartmentDetail.tsx` | School and department codes as line bullets |
-| `.person`, `.monogram` | lecturer rows | Initials disc (`initials()` in art.js) |
-| `.place`, `.thumb` | MapPage building rows (Maps owner) | 72px photo slot with the pin icon fallback |
-| `.go-card` | the Timetable link in `DepartmentDetail.tsx` | Replaces round 1's gold sign |
-| `.state` + `.piece` | empty and error blocks | The line piece replaces the icon: `pending` (empty), `detour` (error), `nomatch` (search), `arrived` (all done), `break` (offline) |
-| `.sync`, `.mark--xl`, `.count`, `.progress`, `.line` in the band | `FirstSyncScreen.tsx` | Full-height band. Needs per-collection counts from `runSync` (today it only counts total rows): a small change in `web/src/lib/sync.ts` for the frontend owner. A "Finished" state replaces the screen when the last page lands |
-| `.seal.is-stamped` | `VerificationNote.tsx`, the verify screen | Add the class only right after the admin marks it verified |
-| `.switch`, `.switch-row`, `.lite-chip` | `Home.tsx`, `App.tsx` (new) | The Lite switch (`role="switch"`) and the top bar chip |
-| `.sheet-card` | `Login.tsx`, `Register.tsx` | The form sits on a raised card that overlaps the band |
-| `.page-tabs` | `Admin.tsx` | Now sticky under the top bar |
+| `.hero`, `.hero__media`, `.hero__inner`, `.pic` | the `<h1>` and intro of every page | Wraps each page title. `data-daypart` on `<html>` from the phone's clock (morning until 12, afternoon until 17, evening until 21, then night). The scrim is `.hero__inner::before` |
+| `.topbar--over`, `.wordmark`, `.round`, `.lite-chip` | `nav` in `App.tsx` | Glass controls over the hero; a Settings button (new route) |
+| `.tabbar` | bottom nav | Floating pill; the current tab in gold. From 1024px the tabs move into the top bar |
+| `.fab` | new | Map ("Find a building", focuses the search) and Admin ("New announcement") |
+| `.next`, `.sticker` | `Home.tsx` | Next class from the saved timetable; the sticker shows minutes to start, and the ring fills as the hour runs down. Without a department, the "Choose your department" state |
+| `.doors`, `.door--*` | `Home.tsx` | Four coloured doors with `view-transition-name: vt-<key>` on the title |
+| `.rail`, `.place-card` | `Home.tsx` (new) | "Around campus": photo cards, named only from signs |
+| `.stack`, `.legend`, `.bars`, `.donut` | Home, Department, Timetable, Admin | Charts drawn from the data on the phone. Every value is also written as text |
+| `.places`, `.place`, `.pin-code` | MapPage building rows (Maps owner) | Photo or drawn card; the code matches the pin on the map |
+| `.campus-map` | MapPage (Maps owner) | Only until the live map loads; it says it is a drawing |
+| `.schools`, `.school` | `Academics.tsx` | A card per school with a drawn header |
+| `.go-card` | `DepartmentDetail.tsx` | Night card with "classes today" sticker |
+| `.week`, `.day--today`, `.tt`, `.now` | `Timetable.tsx` | Cards per class; the next one outlined in gold |
+| `.notices`, `.notice--lead`, `.filter` | `Announcements.tsx` | Scope chips: University maroon, SUG coral, School jade, Department sky. The first notice leads with a drawn scene |
+| `.sync`, `.sync__ring`, `.sync-row`, `.offer` | `FirstSyncScreen.tsx` | Needs per-collection counts from `runSync`: a small change in `web/src/lib/sync.ts` for the frontend owner |
+| `.welcome` | new, before first sync | Shown once, before the first sync |
+| `.pack`, `.mosaic`, `.credits` | new Settings route | The visual pack card and credits |
+| `.state` + `.piece` | empty and error blocks | Small scenes: `pending`, `detour`, `nomatch`, `arrived`, `break` |
+| `.seal.is-stamped` | `VerificationNote.tsx` | Add the class only right after the admin marks it verified |
 
-### Copy to keep or change
+### Copy
 
-- Kept word for word from `web/src`: loading, error, empty, "not saved", form errors, `friendlyError`, first-sync, offline and admin gate texts.
-- New, for David to approve: the greetings ("Good morning", "Good afternoon", "Good evening", "Up late"), the ticket copy, "You're set", the Lite mode copy, "Load the map", "Now 08:35", "Next, in 25 min", "New". Round 1's open labels ("Notices", "Where to today?") still stand.
-- Rules: no em or en dashes, no middle-dot joins, sentence case, no tracked capitals.
-
-### Not designed here
-
-The school (faculty departments) page uses the same band, list and seal as Academics. Class reps have an API but no screen yet. The map itself belongs to the Maps/GIS owner.
+- **Kept word for word from `web/src`:** loading, error, empty, "not saved", form errors, first-sync, offline and admin gate texts.
+- **New, for David to approve:** "Find your way around FUTA" and the Welcome lead; "Around campus"; "Add campus photos?" and the visual pack copy; "Only on Wi-Fi"; "Find a building"; "Your department at a glance"; "Hours of lectures this week"; "Units by level"; "No photo yet". Round 2's open copy still stands.
+- **Rules:** no em or en dashes, no middle-dot joins, sentence case, no tracked capitals.

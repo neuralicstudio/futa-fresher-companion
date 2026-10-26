@@ -1,11 +1,17 @@
-// Takes full-page screenshots of every prototype screen: each screen's normal state at 360, 390 and
-// 768 px wide, every other state at 390, and a few screens in dark, in Lite, at other times of day
-// and at 200% text. WebP at quality 80 (about a fifth of the PNG size), with reduced motion on, so
-// each shot shows the resting state. Any script error on a page stops the run.
+// Takes full-page screenshots of every prototype screen: each screen's normal state at 390 and 768 px
+// wide, every other state at 390, and a few screens in dark, in Lite, without the campus photos, at
+// other times of day and at 200% text. WebP at quality 72, with reduced motion on, so each shot shows
+// the resting state. Any script error on a page stops the run.
+//
+// The committed screenshots never show David's local-only photos (prototype/photos-local/, not in the
+// repo): they are taken with ?local=0, so those slots show their drawn scenes, as a fresh clone does.
+// --private takes a small set with those photos into docs/design/screenshots-private/, which
+// .git/info/exclude keeps out of git.
 // No dependencies: Node 22+ (global WebSocket) and an installed Chrome or Edge.
 //
 //   node docs/design/tools/screenshots.mjs                 every screen, light mode
 //   node docs/design/tools/screenshots.mjs --only home     only file names containing "home"
+//   node docs/design/tools/screenshots.mjs --private       the local-photo set (not committed)
 //   CHROME_PATH="C:/path/to/chrome.exe" node ...           a Chrome that is not in the usual place
 //
 // Files land in docs/design/screenshots/<screen>[-<state>][-dark|-lite|-<daypart>][-text200]-<width>.webp.
@@ -19,13 +25,15 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PROTO = join(HERE, '..', 'prototype');
-const OUT = join(HERE, '..', 'screenshots');
-const WIDTHS = [360, 390, 768];
+const PRIVATE = process.argv.includes('--private');
+const OUT = join(HERE, '..', PRIVATE ? 'screenshots-private' : 'screenshots');
+const WIDTHS = [390, 768];
 
 // [file, states] in the same order as the prototype index. 'default' is the normal state.
-const SCREENS = [
-  ['home', ['default', 'offline', 'syncFailed', 'noDept']],
+const SCREENS = PRIVATE ? [['home', ['default']], ['announcements', ['default']], ['settings', ['default']]] : [
+  ['welcome', ['default']],
   ['first-sync', ['default', 'done']],
+  ['home', ['default', 'offline', 'syncFailed', 'noDept']],
   ['map', ['default', 'offline', 'searchEmpty']],
   ['academics', ['default', 'loading', 'empty', 'error', 'offline']],
   ['department', ['default', 'loading', 'empty', 'error', 'notFound']],
@@ -34,14 +42,19 @@ const SCREENS = [
   ['login', ['default', 'registered', 'invalid', 'sending', 'wrong', 'busy', 'offline']],
   ['register', ['default', 'invalid', 'busy']],
   ['admin', ['default', 'signedOut', 'notAdmin', 'session', 'loading', 'empty', 'error', 'confirm', 'published', 'invalid']],
+  ['settings', ['default', 'lite', 'offline']],
   ['components', ['default']],
+  ['index', ['default']],
 ];
 // The extra looks, at phone width only: [screen, state, look]. Looks: dark, lite, a daypart, text200 (WCAG 1.4.4).
-const EXTRA = [
-  ...['home', 'first-sync', 'academics', 'department', 'timetable', 'announcements', 'admin', 'components'].map((s) => [s, 'default', 'dark']),
+// Looks: dark, lite, nopack (the photos not downloaded: drawn scenes everywhere), a daypart, text200.
+const EXTRA = PRIVATE ? [] : [
+  ...['welcome', 'first-sync', 'home', 'map', 'academics', 'department', 'timetable', 'announcements', 'admin', 'settings', 'components'].map((s) => [s, 'default', 'dark']),
   ...['home', 'first-sync', 'map', 'department', 'components'].map((s) => [s, 'default', 'lite']),
+  ...['home', 'academics', 'department', 'login'].map((s) => [s, 'default', 'nopack']),
   ['home', 'default', 'afternoon'], ['home', 'default', 'evening'], ['home', 'default', 'night'], ['home', 'default', 'night-dark'],
-  ...[['home', 'default'], ['department', 'default'], ['timetable', 'default'], ['admin', 'default'], ['login', 'invalid'], ['first-sync', 'default']].map(([s, st]) => [s, st, 'text200']),
+  ['welcome', 'default', 'night'], ['welcome', 'default', 'evening'], ['timetable', 'default', 'evening'],
+  ...[['home', 'default'], ['welcome', 'default'], ['department', 'default'], ['timetable', 'default'], ['admin', 'default'], ['login', 'invalid'], ['first-sync', 'default']].map(([s, st]) => [s, st, 'text200']),
 ];
 
 const only = process.argv.includes('--only') ? process.argv[process.argv.indexOf('--only') + 1] : null;
@@ -98,7 +111,8 @@ async function shoot(screen, state, width, look) {
   if (only && !name.includes(only)) return null;
   await send('Emulation.setDeviceMetricsOverride', { width, height: 800, deviceScaleFactor: 1, mobile: width < 600 });
   const dark = look && look.includes('dark');
-  const q = new URLSearchParams({ proto: '0', state, theme: dark ? 'dark' : 'light', lite: look === 'lite' ? '1' : '0' });
+  const q = new URLSearchParams({ proto: '0', state, theme: dark ? 'dark' : 'light', lite: look === 'lite' ? '1' : '0', pack: look === 'nopack' ? 'none' : 'ready' });
+  if (!PRIVATE) q.set('local', '0');
   if (look === 'text200') q.set('text', '200');
   if (['afternoon', 'evening', 'night', 'night-dark'].includes(look)) q.set('daypart', look.replace('-dark', ''));
   const url = pathToFileURL(join(PROTO, `${screen}.html`)).href + '?' + q;
@@ -110,8 +124,10 @@ async function shoot(screen, state, width, look) {
   const { result } = await send('Page.getLayoutMetrics');
   const h = Math.max(800, Math.ceil(result.cssContentSize.height));
   await send('Emulation.setDeviceMetricsOverride', { width, height: h, deviceScaleFactor: 1, mobile: width < 600 });
-  await sleep(120);
-  const shot = await send('Page.captureScreenshot', { format: 'webp', quality: 80, clip: { x: 0, y: 0, width, height: h, scale: 1 } });
+  // The page is now one tall viewport, so lazy photos load: wait for every one to settle.
+  await send('Runtime.evaluate', { expression: 'new Promise((r) => { const t0 = Date.now(); (function poll() { if ([...document.images].every((i) => i.complete) || Date.now() - t0 > 5000) r(); else setTimeout(poll, 100); })(); })', awaitPromise: true });
+  await sleep(300);
+  const shot = await send('Page.captureScreenshot', { format: 'webp', quality: 72, clip: { x: 0, y: 0, width, height: h, scale: 1 } });
   const data = Buffer.from(shot.result.data, 'base64');
   writeFileSync(join(OUT, name), data);
   return [name, data.length];
@@ -135,6 +151,6 @@ try {
   await sleep(300);
   try { rmSync(profile, { recursive: true, force: true }); } catch { /* Windows may hold the profile a moment */ }
 }
-console.log(`${count} screenshots in docs/design/screenshots, ${Math.round(bytes / 1024)} KB`);
+console.log(`${count} screenshots in ${OUT}, ${Math.round(bytes / 1024)} KB`);
 console.log(readdirSync(OUT).length + ' files in the folder');
 if (errors.length) { console.error(['Script errors:', ...new Set(errors)].join('\n')); process.exit(1); }

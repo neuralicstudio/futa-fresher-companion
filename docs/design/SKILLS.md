@@ -1,6 +1,41 @@
 # Skills used
 
-Every installed design skill, each of its commands, modes and rule groups: what it does and where it was used in this project, or why it cannot apply. Run order and results are in [LOG.md](LOG.md) (round 1 in sections 0 to 6, round 2 in R1 to R7). Rows marked **R2** changed in round 2.
+Every installed design skill, each of its commands, modes and rule groups: what it does and where it was used in this project, or why it cannot apply. Run order and results are in [LOG.md](LOG.md) (round 1 in sections 0 to 6, round 2 in R1 to R7, round 3 in T1 to T8). Rows marked **R2** changed in round 2. The table below them is round 1 and 2; round 3 is summarised here.
+
+## Round 3 at a glance
+
+**Impeccable**
+- `context`: loaded PRODUCT.md and DESIGN.md. The launcher works on this machine.
+- `concept-seed --scope direction --mode operate`: dealt candidate 4 of my seven grounded directions, event-flyer culture, which became "the flyer", plus six challengers, each weighed and given a verdict (LOG.md T1). Seed reference `seed:54b3a976ae3c37ca`.
+- `surface-brief write`: the direction contract, kept local in `.impeccable/`. It is never copied into the prototype.
+- **Commands used:** `overdrive`, `bolder`, `animate`, `delight`, `colorize`, `typeset`, `layout`, `onboard`, `harden`, `adapt`, `clarify`, `optimize`, `polish`, `document`, `extract`. `critique` and `audit` ran in this thread (not as separate reviewer agents), as before.
+- `detect`: four rounds on the rendered pages at 390 and 1280 (light, dark, Lite, the new states, 200% text). The first round found 19 at 390 and 9 at 1280; the last found **0** (LOG.md T4).
+- **Not used:**
+  - `generate-image` (it would bill David's OpenAI key and send prompts out; every drawing is hand-coded SVG)
+  - `live` (it needs a dev server)
+  - the decision page and finish-reviewer agents (see LOG.md T8)
+
+**Hallmark** (`redesign`, app screens, custom theme)
+- `sloplint --render --before`: recorded round 2.
+- **Static pass:** 4 FAIL and 3 REFLEX, then 0.
+- **Rendered pass with `--kept`:** 28 FAIL and 12 REFLEX, then 0 FAIL and 0 REFLEX. Every link (63/63), field (28/28) and script hook (50/50) is kept.
+- **Waivers on record:** 72, 39b, 49b, 71 and 80.
+- **Answered:** F4, F5, F7 and F19.
+- **Gate 48:** my attempt to waive it was rejected (Floor gates can't be waived), so I removed the waiver.
+
+**UI UX Pro Max**
+- **Searches:**
+  - `style` "glassmorphism photo hero overlay": blur 10 to 20px, contrast 4.5:1 checked
+  - `typography` "bold display font personality readable body": its pairings were Calistoga + Inter and Lexend Mega + Public Sans; neither used, reasons in LOG.md T2
+  - `chart` "progress ring donut small data": at most 5 parts, labels as text
+  - `ux` "text over image contrast overlay", "glass card backdrop blur performance mobile" and "bottom navigation floating pill": the nav must not cover content; labels stay whole
+- **Sister skills:** `design-system` (three-layer tokens, kept) and `brand` (the voice line, kept).
+- **Not used:** `design`'s logo generation (it needs image APIs).
+
+**Session skills**
+- Not used: artifact-design, dataviz and the rest. The charts follow UI UX Pro Max's chart rules and the dataviz rule of text values, without the skill's palette.
+
+No skills were installed or updated this round.
 
 ## Round 2 at a glance
 
