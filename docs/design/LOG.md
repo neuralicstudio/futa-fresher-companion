@@ -1,6 +1,6 @@
 # Design log
 
-What ran, in order, what it found, and what changed. Dates are 25 Oct 2026. Tool runs that could write files ran on a scratch copy outside the repo; only `docs/design/` changed in the repo.
+Round 1 first (sections 0 to 6), then round 2 (R1 to R7). What ran, in order, what it found, and what changed. Dates are 25 Oct 2026. Tool runs that could write files ran on a scratch copy outside the repo; only `docs/design/` changed in the repo.
 
 ## 0. Setup and install
 
@@ -91,3 +91,95 @@ Order of precedence (from the task): accessibility and low-data, then the brand 
 | The live app says "Announcements"; four bottom tabs at 360px do not fit it | "Notices" proposed, open for David | Hallmark gate 49a bans wrapping nav labels; terminology is the owner's call. |
 | Hallmark gate 49a vs the live app's title-as-toggle pattern | Title as heading, separate toggle | Floor gate, and a long title inside a button is hard to read. |
 | UI UX Pro Max pro-rules targets 48dp for Android | 44px minimum hit, 48px controls | The web rule (WCAG 2.5.8 and the project's own 44px rule); controls are 48px anyway. |
+
+---
+
+# Round 2 (26 Oct 2026)
+
+David's note on round 1: clean but too safe. He wanted craft, identity, richness, motion and delight, while staying cheap on weak networks and cheap phones.
+
+- **Branch:** `feat/design-sabi-round2`, from `main` after PR #38 merged.
+- **Rules, same as round 1:** only `docs/design/` changes, no new repo dependencies, no network in the prototypes, no secrets, no database.
+- **Installs:** none this round. I used the round 1 installs (same versions, same official sources).
+
+## R1. Concept
+
+| Step | Found | Changed |
+|---|---|---|
+| Re-read round 1 against the note | The signpost lived on Home only and never moved. The content screens had no identity of their own. The brand was a colour, not a thing. | Looked for one idea that could run through every screen and carry state. |
+| Candidates | (a) Push the signpost further (boards that swing on tap). (b) Academic regalia as the lead (gown, hood, seal, crest). (c) **The gold line**: a route with stations, which is also the gown's trim and the thread from a fact to its source. | Chose (c). (a) stays a one-screen trick. (b) drifts into crests and ceremony, and a crest would imitate the university's own marks. |
+| Hallmark custom branch | The axes and hue are unchanged from round 1, whose `theme.mjs check` found them clear of the catalog. | Kept the custom branch; updated the stamp to round 2 (P5 H5 E4 S5 R4 V5). |
+| UI UX Pro Max `--domain style "transit metro map line diagram bold"` | No database match (the skill says to report this). | Logged. The line language is our own. |
+| UI UX Pro Max `--domain ux` × 3 (micro-interaction feedback, transit wayfinding, data saver) | Haptics for confirmations only; skeletons for loading; no autoplay; stop off-screen; honour reduced motion. | Haptics in two places; loops only on screen; Lite mode. |
+| UI UX Pro Max `--domain gsap "spring press stagger view transition"` | Small offsets (8 to 16px), transform and opacity only; reduced motion renders the final state. | Applied without GSAP, using CSS and View Transitions. |
+| UI UX Pro Max `--domain color "maroon gold"` | Only fintech and legal palettes with gold; nothing for maroon. | Kept our palette; added the band ramp and `accent`. |
+
+## R2. Impeccable commands this round
+
+| Command | Found | Changed |
+|---|---|---|
+| `overdrive` | Its rule is to propose two or three directions and ask before building. You asked me to make the bold choices myself, so I chose and recorded the options here. That waives its process, not its standards. The options were: (1) a WebGL terrain shader in the band, striking but costly in GPU and battery on cheap phones, with a canvas per screen; (2) scroll-driven parallax bands, with no Firefox support and motion on every scroll; (3) **View Transitions plus one line choreography**: the tapped station slides into the next screen's title, the tab capsule glides, and the line draws once. | Built (3). It adds no library bytes and is progressive (pages just change where it's unsupported); Lite and reduced motion skip it. Checked in Chrome over http: the transition runs and finishes, and `?lite=1` skips it. |
+| `bolder` | The content screens opted out of the system's strongest moves: each heading sat on bare paper. | The band on every screen; weight 900 for band titles; codes as line bullets. No new hue. |
+| `delight` | Thesis: "Sabi knows where you need to be next." Moments: first sync (the mark draws, stations fill, "You're set"), the ticket ("in 25 min"), the Now line, the stamp on verify, the greeting by time of day, and the line breaking when offline. | All built. None blocks a task. Lite and reduced motion skip all of them; the greeting and the ticket are words, so they survive both. |
+| `animate` | Motion thesis written in README "Motion rules". | One entrance per screen, once per session, on screen; loops only on screen; exits at 65%. |
+| `colorize` | Gold on light paper fails as a line (1.6:1). | New `accent` (#9d6300; 4.64:1 on paper, 4.21:1 on wells) for the line and icon details on paper; gold on the band. Band ramp with four time-of-day edges; every text pair on every edge passes 4.5:1. |
+| `typeset` | The system face needed a heavier voice. | Weight 900 for band titles, the ticket time and the wordmark. `text-4xl` (2.488rem) for the ticket time and the first-sync count only. |
+| `layout` | Home needed "what next" before "where to". | Ticket over the band, then the stations; two columns from 768px. |
+| `onboard` | First sync was a bar and a number. | The mark draws; five stations with counts; a Finished state. Home's ticket asks for a department when none is chosen (round 1's open question, now designed). |
+| `harden` | At 200% text, Home's arrows ran past the screen edge (the page grid's implicit column grew to its widest child). Long scope chips ("Department: Department of Sample Computing (sample)") ran 35px past 375px. | `.page` gets `grid-template-columns: minmax(0, 1fr)`; chips in meta rows wrap. Re-shot at 200%: clean. |
+| `adapt` | 360, 390 and 768px; dark; Lite; four times of day. | All shot. Landscape is still not checked. |
+| `clarify` | New copy: greetings, ticket, Lite, "Load the map". | Short, sentence case, no dashes. Listed for David in README. |
+| `optimize` | I set the data budget **before** measuring: design layer 20 KB, art 4, motion 2.5, CSS 10, tokens 4, whole prototype Home 40, added since round 1 15. First measurement, with comments included: **four lines over** (motion 2.7, CSS 10.3, Home 40.0, added 15.1). | I did not raise the budgets. I moved the component sheet and index renderers out of `app.js` into `sheet.js` (only those two pages load it). I also measured the shipped layer with comments stripped, as the app's build does. Result: design layer 13.3 KB, whole prototype Home 38.0 KB, added 13.1 KB. Screenshots moved from PNG to WebP (q80): 95 files and 5.4 MB, down from 155 files and 9.1 MB. |
+| `polish` | The back link lost its style in the rewrite (icon above the text); today's timetable had a doubled gold rule; the empty Lite reason line left a gap. | Fixed all three. |
+| `quieter`, `distill` | Not needed: content areas stayed rows on paper; the richness is in the band and the line. | |
+| `critique` | ⚠️ DEGRADED (single context, no subagents). **Strengths:** one idea carries the brand, state and delight; Home answers "what next"; every state has a picture in the same language; Lite keeps the identity. **Issues:** P2 Home is long on phones (ticket, four stations, saved box, notice: about two screens). P2 The ticket needs the student's department and level saved on the phone, but Register keeps them optional. P2 "New" on notices needs a last-opened time. P3 The band takes about 250px on detail screens. P3 "Up late" may read as cheeky. | All five are open decisions in BRIEF.md. |
+| `audit` | **18/20:** Accessibility 3 (AA computed for every pair, including the band edges; 44px; focus visible on paper and on the band; 200% text; no screen-reader run). Performance 4 (budget measured; no fonts; no images on first load; Lite). Theming 4. Responsive 3 (landscape not checked). Integrity 4 (detectors clean; no script errors in 95 renders). | |
+| `document`, `extract` | | DESIGN.md rewritten for round 2. Tokens and components are in `tokens.*`, the component sheet and the README hand-off. |
+| `live`, `generate` | Not used: they need a running dev server and edits to `web/`. | |
+
+## R3. Hallmark this round
+
+| Item | Found | Changed |
+|---|---|---|
+| `texture.md` | One print-artifact family per page, on one element class. | The ticket's notches and tear line (the deckle family) on `.ticket` only. |
+| `microinteractions.md` | Press is a 1px drop or a small move; number ticks for real figures only; no bounce; at most three primitives per page. | Station press, the stamp (ease-out, no overshoot), the counted totals on first sync (the final value is announced). Per page: one entrance, one press signal, at most one loop. |
+| `imagery.md` § 3 and § 7 | Slots must never show only their background wash; no drawn illustration past icon size (gate 80). | Slots fall back to the contour ground or the place icon. Gate 80 is **waived** for `svg.contours` and `svg.piece`: they are the brand's diagram language (height lines, a route with stations), not a pictured object, and no building or real place is drawn. |
+| `sloplint --scope app --render`, run 1 | **5 FAIL:** gate 34 (a notices chip ran past 375px), gate 48 × 4 (`#000` in the ticket's masks). **5 WARN:** gate 41 × 3 (dark surfaces with no text colour set), F6 (the ticket time without tabular figures), F7 (pill radius on non-controls). | Chips wrap; the masks use `var(--color-ink)`; text colours set; tabular figures added; F7 **answered** (pills only on circles and chips). |
+| `sloplint`, run 2 | **0 FAIL, 0 WARN, 24 WAIVED, 8 ANSWERED** across 14 files. The waivers are gate 72 (the prototype bar) and gate 80 (above). | |
+
+## R4. Impeccable detector this round
+
+| Run | Found | Changed |
+|---|---|---|
+| Rendered: 11 screens plus dark, Lite and Finished views, at 390×844 and 1280×800 | `low-contrast` 1.6:1: "Start exploring" (a gold button) inherited the band's light link colour. `gray-on-color`: muted text on today's gold panel in dark. `cramped-padding`: wrapped chips. | Gold buttons on the band take `on-gold`; today's panel uses ink for its small text; chip padding is 6px. |
+| Re-run, same set | **0 findings** at both widths. | |
+| Static (`prototype`, `tokens.css`) | 0 anti-patterns. One advisory: a radius outside DESIGN.md's scale (DESIGN.md was still round 1's). | DESIGN.md updated. |
+| Advisory | "(sample)" alone on the last line of a department name. | Kept: it's sample data. |
+
+## R5. Other skills this round
+
+| Skill | Use |
+|---|---|
+| UI UX Pro Max `design` (logo and icon generation) | Not used: it calls image APIs. The mark and icons are drawn by hand in `art.js` and exported to `brand/`. |
+| UI UX Pro Max `brand` | The voice line in DESIGN.md: "a senior student who knows every shortcut". |
+| UI UX Pro Max `design-system` | Band, wash and accent added as semantic roles in `tokens.json`. |
+| `banner-design`, `slides`, `ui-styling` | Not applicable: no banners, decks, shadcn or Tailwind. |
+| artifact-design, artifact-diagramming, dataviz (session skills) | Not used: the deliverables are repo files and there are no charts. |
+
+## R6. Waivers, disagreements and choices
+
+| Rule or advice | Choice | Why |
+|---|---|---|
+| Impeccable `overdrive`: ask the user to pick a direction before building | I chose; the options are recorded in R2 | You asked me to own the bold choices. |
+| Hallmark gate 80 (no drawn illustration) | Waived for the contours and line pieces | They are small diagrams of the brand's own system, and they replace what would otherwise be empty space or stock art. |
+| Round 1 Don't: "no gradients" | One gradient: the band's sky (two stops in the same hue family) | Depth at zero bytes. Not purple, not on text, not a glow; flat in Lite. |
+| Round 1: 6px radius everywhere | 10, 14 and 18px | Closer to the best apps on students' phones, still one value per level. |
+| Hallmark imagery: "no visible placeholder labels" | The Map slot keeps its note ("The Maps team loads campus tiles here") | The slot belongs to another team, and the note is part of the hand-off. |
+| Impeccable `delight` vs Operate mode | Moments only (first sync, next class, now, verify, offline) | Delight at meaningful moments, never on routine taps. |
+| Haptics (UI UX Pro Max) vs battery and annoyance | Two places, 12ms, none in Lite | Confirmations only, as the rule says. |
+
+## R7. Degraded and not done
+
+- **Reviews:** critique and the finish review ran in this thread (no subagents), as in round 1.
+- **Not tested:** no screen-reader run, no landscape check, no real low-end device. Motion was checked in desktop Chrome with phone emulation only.
+- **Local servers:** the View Transitions check used 127.0.0.1:8796 and the detector sweep used 127.0.0.1:8795. Both were mine and both were stopped afterwards. Port 8765 was not touched.

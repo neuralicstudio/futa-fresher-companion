@@ -1,20 +1,21 @@
-// Takes full-page screenshots of every prototype screen and state at 360, 390 and 768 px wide,
-// with headless Chrome over the DevTools protocol, and re-compresses each PNG losslessly.
+// Takes full-page screenshots of every prototype screen: each screen's normal state at 360, 390 and
+// 768 px wide, every other state at 390, and a few screens in dark, in Lite, at other times of day
+// and at 200% text. WebP at quality 80 (about a fifth of the PNG size), with reduced motion on, so
+// each shot shows the resting state. Any script error on a page stops the run.
 // No dependencies: Node 22+ (global WebSocket) and an installed Chrome or Edge.
 //
 //   node docs/design/tools/screenshots.mjs                 every screen, light mode
 //   node docs/design/tools/screenshots.mjs --only home     only file names containing "home"
 //   CHROME_PATH="C:/path/to/chrome.exe" node ...           a Chrome that is not in the usual place
 //
-// Files land in docs/design/screenshots/<screen>[-<state>][-dark]-<width>.png.
+// Files land in docs/design/screenshots/<screen>[-<state>][-dark|-lite|-<daypart>][-text200]-<width>.webp.
 // The browser is started with a throwaway profile and closed at the end. Only file:// pages load.
 
 import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { deflateSync, inflateSync } from 'node:zlib';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const PROTO = join(HERE, '..', 'prototype');
@@ -23,8 +24,8 @@ const WIDTHS = [360, 390, 768];
 
 // [file, states] in the same order as the prototype index. 'default' is the normal state.
 const SCREENS = [
-  ['home', ['default', 'offline', 'syncFailed']],
-  ['first-sync', ['default']],
+  ['home', ['default', 'offline', 'syncFailed', 'noDept']],
+  ['first-sync', ['default', 'done']],
   ['map', ['default', 'offline', 'searchEmpty']],
   ['academics', ['default', 'loading', 'empty', 'error', 'offline']],
   ['department', ['default', 'loading', 'empty', 'error', 'notFound']],
@@ -35,10 +36,13 @@ const SCREENS = [
   ['admin', ['default', 'signedOut', 'notAdmin', 'session', 'loading', 'empty', 'error', 'confirm', 'published', 'invalid']],
   ['components', ['default']],
 ];
-// Text at 200% (WCAG 1.4.4), at phone width only.
-const ZOOM = [['home', 'default'], ['department', 'default'], ['timetable', 'default'], ['admin', 'default'], ['login', 'invalid']];
-// A few screens again in dark mode, at phone width only.
-const DARK = [['home', 'default'], ['academics', 'default'], ['timetable', 'default'], ['announcements', 'default'], ['admin', 'default'], ['components', 'default']];
+// The extra looks, at phone width only: [screen, state, look]. Looks: dark, lite, a daypart, text200 (WCAG 1.4.4).
+const EXTRA = [
+  ...['home', 'first-sync', 'academics', 'department', 'timetable', 'announcements', 'admin', 'components'].map((s) => [s, 'default', 'dark']),
+  ...['home', 'first-sync', 'map', 'department', 'components'].map((s) => [s, 'default', 'lite']),
+  ['home', 'default', 'afternoon'], ['home', 'default', 'evening'], ['home', 'default', 'night'], ['home', 'default', 'night-dark'],
+  ...[['home', 'default'], ['department', 'default'], ['timetable', 'default'], ['admin', 'default'], ['login', 'invalid'], ['first-sync', 'default']].map(([s, st]) => [s, st, 'text200']),
+];
 
 const only = process.argv.includes('--only') ? process.argv[process.argv.indexOf('--only') + 1] : null;
 const CHROMES = [
@@ -57,83 +61,6 @@ const profile = mkdtempSync(join(tmpdir(), 'sabi-shots-'));
 const port = 9400 + Math.floor(Math.random() * 400);
 const chrome = spawn(chromePath, ['--headless=new', `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`,
   '--no-first-run', '--no-default-browser-check', '--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files', 'about:blank'], { stdio: 'ignore' });
-
-// Lossless PNG re-compression: join the IDAT chunks, inflate, deflate at level 9, write one IDAT.
-function crc32(buf) {
-  let c, crc = 0xffffffff;
-  for (let n = 0; n < buf.length; n++) {
-    c = (crc ^ buf[n]) & 0xff;
-    for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-    crc = (crc >>> 8) ^ c;
-  }
-  return (crc ^ 0xffffffff) >>> 0;
-}
-function chunk(type, data) {
-  const len = Buffer.alloc(4); len.writeUInt32BE(data.length);
-  const td = Buffer.concat([Buffer.from(type, 'ascii'), data]);
-  const crc = Buffer.alloc(4); crc.writeUInt32BE(crc32(td));
-  return Buffer.concat([len, td, crc]);
-}
-function paeth(a, b, c) {
-  const p = a + b - c, pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
-  return pa <= pb && pa <= pc ? a : pb <= pc ? b : c;
-}
-// Lossless: un-filter the rows, drop the alpha channel when every pixel is opaque (screenshots
-// always are), re-filter each row with whichever PNG filter gives the smallest sum, deflate at 9.
-function recompress(png) {
-  const sig = png.subarray(0, 8);
-  let ihdr, idat = [];
-  for (let i = 8; i < png.length;) {
-    const len = png.readUInt32BE(i);
-    const type = png.toString('ascii', i + 4, i + 8);
-    const data = png.subarray(i + 8, i + 8 + len);
-    if (type === 'IHDR') ihdr = Buffer.from(data);
-    if (type === 'IDAT') idat.push(data);
-    i += 12 + len;
-  }
-  const w = ihdr.readUInt32BE(0), h = ihdr.readUInt32BE(4), depth = ihdr[8], ctype = ihdr[9], interlace = ihdr[12];
-  if (depth !== 8 || interlace !== 0 || (ctype !== 6 && ctype !== 2)) return png; // not the shape Chrome writes
-  const bpp = ctype === 6 ? 4 : 3;
-  const raw = inflateSync(Buffer.concat(idat));
-  const stride = w * bpp;
-  const px = Buffer.alloc(h * stride);
-  for (let y = 0; y < h; y++) {
-    const f = raw[y * (stride + 1)];
-    const src = raw.subarray(y * (stride + 1) + 1, (y + 1) * (stride + 1));
-    const row = px.subarray(y * stride, (y + 1) * stride);
-    const up = y ? px.subarray((y - 1) * stride, y * stride) : null;
-    for (let x = 0; x < stride; x++) {
-      const a = x >= bpp ? row[x - bpp] : 0, b = up ? up[x] : 0, c = up && x >= bpp ? up[x - bpp] : 0;
-      row[x] = (src[x] + [0, a, b, (a + b) >> 1, paeth(a, b, c)][f]) & 255;
-    }
-  }
-  let opaque = bpp === 4;
-  if (opaque) for (let i = 3; i < px.length; i += 4) if (px[i] !== 255) { opaque = false; break; }
-  const ob = opaque ? 3 : bpp;
-  const os = w * ob;
-  const out = Buffer.alloc(h * (os + 1));
-  let cur = Buffer.alloc(os), prev = Buffer.alloc(os);
-  const cand = [0, 1, 2, 3, 4].map(() => Buffer.alloc(os));
-  for (let y = 0; y < h; y++) {
-    for (let x = 0, k = 0; x < w; x++) for (let c = 0; c < ob; c++) cur[k++] = px[y * stride + x * bpp + c];
-    let best = 0, bestSum = Infinity;
-    for (let f = 0; f < 5; f++) {
-      const o = cand[f];
-      let sum = 0;
-      for (let x = 0; x < os; x++) {
-        const a = x >= ob ? cur[x - ob] : 0, b = y ? prev[x] : 0, c = y && x >= ob ? prev[x - ob] : 0;
-        const v = (cur[x] - [0, a, b, (a + b) >> 1, paeth(a, b, c)][f]) & 255;
-        o[x] = v; sum += v < 128 ? v : 256 - v;
-      }
-      if (sum < bestSum) { bestSum = sum; best = f; }
-    }
-    out[y * (os + 1)] = best;
-    cand[best].copy(out, y * (os + 1) + 1);
-    [cur, prev] = [prev, cur];
-  }
-  const head = Buffer.from(ihdr); head[9] = opaque ? 2 : ctype;
-  return Buffer.concat([sig, chunk('IHDR', head), chunk('IDAT', deflateSync(out, { level: 9, memLevel: 9 })), chunk('IEND', Buffer.alloc(0))]);
-}
 
 let targets;
 for (let i = 0; i < 60; i++) {
@@ -155,15 +82,25 @@ const send = (method, params = {}) => new Promise((resolve) => { const mid = ++i
 const once = (method) => new Promise((resolve) => { const w = { method, resolve: (m) => { waiters.splice(waiters.indexOf(w), 1); resolve(m); } }; waiters.push(w); });
 
 mkdirSync(OUT, { recursive: true });
+// A fresh full run replaces every earlier screenshot, so nothing stale stays in the repo.
+if (!only) for (const f of readdirSync(OUT)) if (/\.(png|webp)$/.test(f)) unlinkSync(join(OUT, f));
 await send('Page.enable');
+await send('Runtime.enable');
+const errors = [];
+ws.addEventListener('message', (m) => {
+  const msg = JSON.parse(m.data);
+  if (msg.method === 'Runtime.exceptionThrown') errors.push(msg.params.exceptionDetails.exception?.description || msg.params.exceptionDetails.text);
+});
 await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
 
-async function shoot(screen, state, width, dark, zoom) {
-  const name = `${screen}${state === 'default' ? '' : '-' + state}${dark ? '-dark' : ''}${zoom ? '-text200' : ''}-${width}.png`;
+async function shoot(screen, state, width, look) {
+  const name = `${screen}${state === 'default' ? '' : '-' + state}${look ? '-' + look : ''}-${width}.webp`;
   if (only && !name.includes(only)) return null;
   await send('Emulation.setDeviceMetricsOverride', { width, height: 800, deviceScaleFactor: 1, mobile: width < 600 });
-  const q = new URLSearchParams({ proto: '0', state, theme: dark ? 'dark' : 'light' });
-  if (zoom) q.set('text', '200');
+  const dark = look && look.includes('dark');
+  const q = new URLSearchParams({ proto: '0', state, theme: dark ? 'dark' : 'light', lite: look === 'lite' ? '1' : '0' });
+  if (look === 'text200') q.set('text', '200');
+  if (['afternoon', 'evening', 'night', 'night-dark'].includes(look)) q.set('daypart', look.replace('-dark', ''));
   const url = pathToFileURL(join(PROTO, `${screen}.html`)).href + '?' + q;
   const loaded = once('Page.loadEventFired');
   await send('Page.navigate', { url });
@@ -174,28 +111,23 @@ async function shoot(screen, state, width, dark, zoom) {
   const h = Math.max(800, Math.ceil(result.cssContentSize.height));
   await send('Emulation.setDeviceMetricsOverride', { width, height: h, deviceScaleFactor: 1, mobile: width < 600 });
   await sleep(120);
-  const shot = await send('Page.captureScreenshot', { format: 'png', clip: { x: 0, y: 0, width, height: h, scale: 1 } });
-  const raw = Buffer.from(shot.result.data, 'base64');
-  const small = recompress(raw);
-  writeFileSync(join(OUT, name), small.length < raw.length ? small : raw);
-  return [name, raw.length, Math.min(small.length, raw.length)];
+  const shot = await send('Page.captureScreenshot', { format: 'webp', quality: 80, clip: { x: 0, y: 0, width, height: h, scale: 1 } });
+  const data = Buffer.from(shot.result.data, 'base64');
+  writeFileSync(join(OUT, name), data);
+  return [name, data.length];
 }
 
-let count = 0, before = 0, after = 0;
+let count = 0, bytes = 0;
 try {
   for (const [screen, states] of SCREENS)
     for (const state of states)
-      for (const w of WIDTHS) {
-        const r = await shoot(screen, state, w, false);
-        if (r) { count++; before += r[1]; after += r[2]; }
+      for (const w of state === 'default' ? WIDTHS : [390]) {
+        const r = await shoot(screen, state, w, '');
+        if (r) { count++; bytes += r[1]; }
       }
-  for (const [screen, state] of DARK) {
-    const r = await shoot(screen, state, 390, true);
-    if (r) { count++; before += r[1]; after += r[2]; }
-  }
-  for (const [screen, state] of ZOOM) {
-    const r = await shoot(screen, state, 390, false, true);
-    if (r) { count++; before += r[1]; after += r[2]; }
+  for (const [screen, state, look] of EXTRA) {
+    const r = await shoot(screen, state, 390, look);
+    if (r) { count++; bytes += r[1]; }
   }
 } finally {
   ws.close();
@@ -203,5 +135,6 @@ try {
   await sleep(300);
   try { rmSync(profile, { recursive: true, force: true }); } catch { /* Windows may hold the profile a moment */ }
 }
-console.log(`${count} screenshots in docs/design/screenshots (${Math.round(before / 1024)} KB raw, ${Math.round(after / 1024)} KB after lossless re-compression)`);
+console.log(`${count} screenshots in docs/design/screenshots, ${Math.round(bytes / 1024)} KB`);
 console.log(readdirSync(OUT).length + ' files in the folder');
+if (errors.length) { console.error(['Script errors:', ...new Set(errors)].join('\n')); process.exit(1); }

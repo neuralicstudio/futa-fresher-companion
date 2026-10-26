@@ -1,6 +1,15 @@
 # Skills used
 
-Every installed design skill, each of its commands, modes and rule groups: what it does and where it was used in this project, or why it cannot apply. Run order and results are in [LOG.md](LOG.md).
+Every installed design skill, each of its commands, modes and rule groups: what it does and where it was used in this project, or why it cannot apply. Run order and results are in [LOG.md](LOG.md) (round 1 in sections 0 to 6, round 2 in R1 to R7). Rows marked **R2** changed in round 2.
+
+## Round 2 at a glance
+
+- **Impeccable, newly used:** `overdrive` (View Transitions and the line choreography), `bolder` (the band on every screen). The degraded `critique` ran again.
+- **Impeccable, run again with new work:** `delight`, `animate`, `colorize`, `typeset`, `layout`, `onboard`, `harden`, `adapt`, `clarify`, `optimize`, `polish`, `audit` (18/20), `document`, `extract`.
+- **Hallmark:** two `sloplint --render` runs. Final: 0 FAIL, 0 WARN, 24 WAIVED, 8 ANSWERED. Gate 80 waived for the contours and line pieces; F7 answered.
+  - Newly used references: `texture.md` (the ticket's notches), `microinteractions.md` and `imagery.md` (photo slots).
+- **Impeccable detector:** 0 findings on the rendered pages at 390 and 1280, including dark, Lite and Finished views, after one fix round.
+- **UI UX Pro Max:** searches in the `ux`, `gsap`, `color` and `style` domains (the `style` search found no match, and that is logged). Sister skills `brand` and `design-system` used. `design` (logo generation) not used, because it needs image APIs; the mark is hand drawn.
 
 Installed at user level (`~/.claude/skills/`), nothing in the repo:
 
@@ -25,23 +34,23 @@ What I read: every SKILL.md in full; for Impeccable the core flow (new-work, sha
 | `init` (`teach`) | Captures product truth | Wrote PRODUCT.md (inferred facts marked) |
 | `document` | Writes DESIGN.md from the built world | Wrote DESIGN.md in its format, tokens in the frontmatter |
 | `extract` | Pulls reusable tokens and components into a system | Tokens into `tokens.css/json`; components into the sheet and the README hand-off |
-| `critique` | UX review with scoring | Ran degraded (single context); findings in LOG.md § 4 |
-| `audit` | Technical checks (a11y, perf, theming, responsive, integrity) | Scored 18/20; LOG.md § 4 |
+| `critique` | UX review with scoring | Ran degraded (single context) in both rounds; findings in LOG.md § 4 and R2 |
+| `audit` | Technical checks (a11y, perf, theming, responsive, integrity) | 18/20 in both rounds; LOG.md § 4 and R2 |
 | `polish` | Final consistency pass | Spacing, radius, one primary per form |
-| `bolder` | Amplify a bland design | Not needed: the signpost and the maroon shell already commit; Operate mode keeps expression to one signature |
+| `bolder` | Amplify a bland design | **R2:** the band (maroon sky, contours, time-of-day edge) on every screen; weight 900 titles; codes as line bullets. R1: not needed |
 | `quieter` | Tone down a loud design | Not needed: nothing loud to reduce; content areas are already restrained |
 | `distill` | Strip to essence | Applied in effect: one family, no cards, rows only. Not run as a separate pass |
-| `harden` | Long text, errors, i18n, network edge cases | 200% text fixes, long names, missing venue, course and email, offline, 503, 401 |
-| `onboard` | First-run and empty states | First-sync screen and every empty state |
-| `animate` | Purposeful motion | Motion limited to state (press, disclosure, skeleton, progress); reduced-motion fallbacks |
-| `colorize` | Strategic colour | Colour roles, link token, gold rules |
+| `harden` | Long text, errors, i18n, network edge cases | **R2:** 200% text overflow on Home fixed; long scope chips wrap; Lite and offline Map. R1: 200% text fixes, long names, missing venue, course and email, offline, 503, 401 |
+| `onboard` | First-run and empty states | **R2:** first sync with stations and a Finished state; the ticket's "Choose your department" state; line pieces for empty states. R1: first-sync screen and every empty state |
+| `animate` | Purposeful motion | **R2:** page transitions, one entrance per screen (once per session, on screen), the stamp, counted numbers; loops only on screen; all off in Lite and reduced motion. R1: state only |
+| `colorize` | Strategic colour | **R2:** band ramp with four time-of-day edges, `accent` for the line on paper, washes. R1: colour roles, link token, gold rules |
 | `typeset` | Type hierarchy | Scale, weights, tabular numerals, wrapping |
 | `layout` | Spacing, rhythm, hierarchy | Fixed doubled rules and overflow; tablet two-column |
-| `delight` | Earned personality | Signpost, gold Today; nothing else |
-| `overdrive` | Push past convention | Not used: Operate mode and cheap phones; spectacle would cost data and clarity |
+| `delight` | Earned personality | **R2:** first sync (mark draws, stations fill, "You're set"), the next-class ticket, the Now line, the stamp on verify, the greeting by time of day, the line breaking offline. R1: signpost, gold Today |
+| `overdrive` | Push past convention | **R2:** used. Three directions weighed (WebGL terrain, scroll parallax, View Transitions with the line); built View Transitions with the line choreography: no library, skipped in Lite and reduced motion. Its "ask before building" step waived: you asked me to own the bold choices. R1: not used |
 | `clarify` | UX copy | Tab and filter labels, notice toggle; real copy kept |
 | `adapt` | Devices and sizes | 360, 390, 768, 200% text |
-| `optimize` | Performance | Zero font bytes, no images, PNG optimisation |
+| `optimize` | Performance | **R2:** a data budget set before measuring and checked by `tools/budget.mjs` (design layer 13.3 KB of 20 KB); Lite mode; sheet code split out of Home; screenshots to WebP (5.4 MB). R1: zero font bytes, PNG optimisation |
 | `live` | Variant mode in a running dev server | Not used: needs a dev server and edits to `web/`, which is out of scope |
 | `generate` | Variants of one element in the live browser | Not used: same reason as `live` |
 
@@ -72,7 +81,7 @@ Ran on the rendered pages at 390 and 1280, in dark mode, with `--scope type,layo
 | Quality (27) | organic-clip-path, buried-raster, hard-offset-shadow, broken-image, script-error, content-hidden-at-rest, edge-flush-cards, text-occlusion, first-viewport-column-overflow, gray-on-color, low-contrast, line-length, cramped-padding, body-text-viewport-edge, tight-leading, skipped-heading, heading-rhythm, justified-text, straggler, unbalanced-heading, tiny-text, undersized-ui-text, all-caps-body, wide-tracking, text-overflow, repeated-container-text, clipped-overflow-container |
 | Design-system drift (4) | design-system-font, -color, -radius, -font-size (active once a project DESIGN.md is found; the scans ran with docs/design/DESIGN.md beside them in the copy) |
 
-Caught and fixed: `marquee` (the first-sync bar). Everything else was clean at every pass.
+Caught and fixed in round 1: `marquee` (the first-sync bar). In round 2: `low-contrast` (the gold button on the band), `gray-on-color` (today's panel in dark), `cramped-padding` (wrapped chips). Final in both rounds: 0 findings.
 
 ## Hallmark
 
@@ -92,11 +101,14 @@ Caught and fixed: `marquee` (the first-sync bar). Everything else was clean at e
 | Fast mode, signal 8 (Inspo), signal 9 (comp, Together AI) | Branches | Not applicable: not a quick build; no Inspo server; no Together key and no network images |
 | Edit-time hook (`install-hook.mjs`) | Lints on every edit | Not installed (it would apply to every session); the sweep ran instead |
 | `capture.mjs`, `picture.mjs`, `imagegen.mjs` | Product capture, picture tools, image generation | Not used: no running product to capture for a prototype; no images in this design |
-| `sloplint.mjs` static + `--render` | The gates | Ran six times; final 0 FAIL, 0 WARN |
+| `sloplint.mjs` static + `--render` | The gates | R1: six runs. **R2:** two runs (5 FAIL and 5 WARN, then 0 and 0). Final 0 FAIL, 0 WARN |
 | Gate groups (90 numbered gates: 39 Floor, 50 Reflex, 1 Ledger) | Colour and surface; Type; Structure and layout; Chrome and copy; Motion and interaction; Assets and access | All applied; app scope skips the marketing-only gates by design |
-| Finish checks F1 to F26 | Craft details | Answered: F4, F19 |
-| Pre-emit critique (P H E S R V) | Scores the plan | In the CSS stamp: P4 H5 E4 S4 R4 V4 |
-| Macrostructures (21), genres (4), layout.md, anatomy.md, imagery.md, scroll-choreography.md, texture.md | Page shapes and marketing craft | Not applicable to app screens (flow.md); read by index only |
+| Finish checks F1 to F26 | Craft details | Answered: F4, F19; **R2:** F7 |
+| Pre-emit critique (P H E S R V) | Scores the plan | In the CSS stamp. R1: P4 H5 E4 S4 R4 V4. **R2:** P5 H5 E4 S5 R4 V5 |
+| Macrostructures (21), genres (4), layout.md, anatomy.md, scroll-choreography.md | Page shapes and marketing craft | Not applicable to app screens (flow.md); read by index only |
+| imagery.md | Slots, photos, illustration | **R2:** photo slots with fallbacks (§ 3); gate 80 waived for the contours and line pieces (§ 7); PHOTOS.md |
+| texture.md | One print artifact per page | **R2:** the ticket's notches and tear line, on one element |
+| microinteractions.md | Press, number tick, toast, tabs | **R2:** station press, the stamp, counted totals; three primitives at most per page |
 | interaction-and-states.md, dark-mode.md, patterns.md, craft.md § 9 | States, fields, overlays, dual mode | Used for every control, the fields, the inline confirm and dark mode |
 | design-md.md ("lock the system") | Portable system file | DESIGN.md serves both skills |
 | fonts.md, brand-truth.md, comp.md, data-viz.md, export-formats.md, review-*.md | Fonts, real brands, comps, charts, exports, reviewer prompts | Not needed: system fonts; no real brand assets supplied; no comps or charts; reviews ran in-thread without reading the reviewer prompts, as the skill asks |
@@ -107,17 +119,18 @@ Caught and fixed: `marquee` (the first-sync bar). Everything else was clean at e
 |---|---|
 | `--design-system` (with dials `--variance 4 --motion 2 --density 6`) | Ran twice; rejected palette, fonts, style and pattern (LOG.md § 6); kept spacing and the checklist |
 | `--persist`, `--page` | Not used: they write `design-system/` folders; our system lives in `docs/design/` |
-| Domain `ux` | Eight searches (LOG.md § 1) |
-| Domain `color` | Gold calibration |
+| Domain `ux` | Eight searches in R1 (LOG.md § 1), three in R2 (micro-interactions, wayfinding, data saver) |
+| Domain `color` | Gold calibration (R1); "maroon gold" (R2: no maroon palette in its data) |
 | Domain `typography` | Confirmed no system-font pairing suits; system stack kept |
-| Domains `product`, `style`, `landing`, `google-fonts`, `chart`, `icons`, `gsap`, `react`, `web` | Not needed: product type known; no landing page; no web fonts; no charts; icons are drawn in-house (one stroke family, the skill's own rule); no GSAP; React performance is the app's concern, not the design's; `web` targets native |
+| Domains `style`, `gsap` | **R2:** `style` "transit metro map line" returned no match (logged); `gsap` presets used as timing guidance, without GSAP |
+| Domains `product`, `landing`, `google-fonts`, `chart`, `icons`, `react`, `web` | Not needed: product type known; no landing page; no web fonts; no charts; icons are drawn in-house (one stroke family, the skill's own rule); React performance is the app's concern, not the design's; `web` targets native |
 | `--stack` (22 stacks) | Not used: design only, no implementation in `web/` |
 | references/quick-reference.md (119 rules by priority) | Priorities 1 to 9 applied: contrast, touch, performance, style, layout, type and colour, animation, forms, navigation |
 | references/pro-rules.md pre-delivery checklist | Applied: no emoji icons, one icon family, stable press states, semantic tokens, 375px and reduced motion checked, dark contrast checked separately |
 | Sister: `design-system` | Three-layer tokens in `tokens.json` |
 | Sister: `ui-styling` | Not used: shadcn and Tailwind are not in this project |
 | Sister: `brand` | Voice and messaging: the voice lines in BRIEF.md and DESIGN.md |
-| Sister: `design` (logo, CIP, icons, social) | Logo and icon generation need image APIs; not used. The wordmark is type plus the drawn signpost icon |
+| Sister: `design` (logo, CIP, icons, social) | Logo and icon generation need image APIs; not used. **R2:** the route mark and the app icons are drawn by hand (`art.js`, `brand/`) |
 | Sister: `banner-design`, `slides` | Not applicable: no banners or decks in scope |
 
 ## Other design skills in this environment

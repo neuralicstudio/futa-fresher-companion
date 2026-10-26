@@ -14,13 +14,13 @@ Visitor mode (Impeccable): **Operate**. The student is doing a task, not being p
 - Success: the answer is on screen, with its status (verified, unverified, may be outdated), its source and the date it was updated.
 - Product truth no neighbour can claim: every fact says how sure we are and who said so.
 
-## 3. Selected direction
+## 3. Selected direction (round 2)
 
-- **Idea:** the campus signpost in your pocket. Every screen points the way and says who said so, and when.
-- **Material** (Impeccable's assigned world: academic regalia): a maroon "cloth" shell with a gold trim edge, the way a hood's trim marks rank. Gold marks what is current or confirmed: the current tab, today in the timetable, the verified seal.
-- **Signature** (brief-pinned wayfinding): Home is a signpost at a junction: four maroon direction boards on a pole. The department page's timetable link is one more sign, in gold.
-- **Second signature:** the source seal on every fact (status, updated date, a Source disclosure).
-- **Structure:** a standard app shell. Top bar (wordmark, account), four bottom tabs on phones (Home, Map, Academics, Notices), the tabs inline in the top bar from 768px.
+- **Concept: the gold line.** Sabi draws the line from "I am lost" to "I found it". The line is the route across campus, the gold trim of the gown (round 1's regalia material, kept), and the thread from each fact to its source.
+- **Why it replaced the signpost:** the signpost lived on one screen and stood still. The line runs through every screen and carries real state: offline (it breaks), progress (first sync), now (the timetable). It costs almost nothing to draw.
+- **Signatures:** the route mark; the band (a night-maroon sky with contour lines and a time-of-day edge); Home's ticket (next class) and line of stations; the Now line; the source seal, which stamps on when verified.
+- **Structure:** unchanged app shell. Top bar, four bottom tabs on phones (Home, Map, Academics, Notices), inline from 768px.
+- Round 1's direction (signpost, regalia) is recorded in LOG.md section 1.
 
 ## 4. Scope and boundaries
 
@@ -36,10 +36,12 @@ Real states, taken from `web/src`: loading, empty (including "still saving"), er
 - Mobile first at 360px. One column; the content column caps at 720px; Home goes two-column at 768px.
 - Lists are rows separated by hairlines, each row a full-width target with a small "this way" tip.
 - Disclosure for sources and long notices; an inline confirm for delete; native selects.
-- Motion is state only: colour and press feedback (120ms), disclosure (200ms), a breathing skeleton. Reduced motion removes movement and keeps the state.
+- Motion: feedback 120ms, state 220ms, page transitions 420ms, one entrance per screen 760ms (once per session, on screen). Loops only while on screen. Reduced motion and Lite remove movement and keep the state.
 
 ## 7. Constraints and open decisions
 
-- System fonts only (zero font bytes). Inline SVG icons from one hand-drawn set. No images in content.
+- System fonts only (zero font bytes). Inline SVG for the mark, icons, contours and line pieces. Photos only in designed slots, from teammates, never on first load or in Lite (PHOTOS.md).
+- Data budget for Home's design layer: 20 KB gzipped (measured 13.3 KB by `tools/budget.mjs`).
 - WCAG AA in light and dark (ratios computed in `tokens.css`), 44px targets, visible focus, 200% text checked.
-- Open for David: the "Notices" tab label (the app says "Announcements"; it does not fit four tabs at 360px), the exact maroon and gold (he will refine; change `tools/tokens.mjs`), the Timetable sign's destination before a student has picked a department.
+- Open for David (round 2): the greetings and "Up late"; whether "New" on notices is wanted (it needs a last-opened time on the phone); the band's height on detail screens; per-collection counts on first sync (a small change in `web/src/lib/sync.ts`).
+- Still open from round 1: the "Notices" tab label (the app says "Announcements"; it does not fit four tabs at 360px), the exact maroon and gold (he will refine; change `tools/tokens.mjs`), the Timetable sign's destination before a student has picked a department.
