@@ -183,3 +183,131 @@ David's note on round 1: clean but too safe. He wanted craft, identity, richness
 - **Reviews:** critique and the finish review ran in this thread (no subagents), as in round 1.
 - **Not tested:** no screen-reader run, no landscape check, no real low-end device. Motion was checked in desktop Chrome with phone emulation only.
 - **Local servers:** the View Transitions check used 127.0.0.1:8796 and the detector sweep used 127.0.0.1:8795. Both were mine and both were stopped afterwards. Port 8765 was not touched.
+
+---
+
+# Round 3 (26 Oct 2026): the premium pass
+
+David on round 2: clean but still dry, mostly colour and text. He asked for what his six reference mockups show:
+- premium, image-rich, layered and alive
+- photo and illustrated heroes, glass, big display type
+- pill navigation and floating actions
+- rings and charts
+- illustrated scenes with characters
+- dark mode with a bright accent
+
+He also gave a photo policy, two-font and data budgets, and the same hard limits as before.
+
+- **Branch:** `feat/design-sabi-round3`, from `main` after PR #39 merged. Its upstream was unset, so nothing can push to `main` by accident.
+- **Local only, added to `.git/info/exclude`:**
+  - `docs/design/prototype/photos-local/`
+  - `docs/design/screenshots-private/`
+  - `docs/design/.impeccable/`
+  - `docs/design/.hallmark/` and `docs/design/prototype/.hallmark/` (skill working files)
+  - `inspiration/` and `photos-source/` were already excluded.
+- **Installs:**
+  - **Skills:** none.
+  - **Fonts and photos:** I used Python's `fonttools` and `brotli` from PyPI, in a virtual environment in the session scratchpad, outside the repo, and puppeteer-core in the same scratchpad, as in round 2. No repo dependency was added.
+- **The references:** I studied their technique only. No layout, illustration, brand, logo or person from them is in the design. They contain Amazon, Google, Microsoft, Apple, Starbucks, Netflix and others, and none of those appears.
+
+## T1. Concept
+
+| Step | Found | Changed |
+|---|---|---|
+| Impeccable `context` | It loaded PRODUCT.md and round 2's DESIGN.md. Directives: run the detector once the UI is finished; image generation is available through David's OpenAI key; probe the user once before deciding. | The probe: David's brief says "You are the designer… make bold choices and own them", which the skill counts as the user telling it to proceed. So no question round. The roll still ran. |
+| My seven grounded directions, ordered by resonance, from the students' world | 1. Golden hour on campus (the sky as the clock). 2. Adire and aso-oke (indigo resist cloth, woven strips as progress). 3. Danfo and motor-park signwriting. 4. **Event-flyer culture** (freshers' nights, fellowship programmes, SUG campaign flyers on WhatsApp and notice boards). 5. Matriculation regalia. 6. Granite domes of the hills around Akure. 7. Naira security print. | |
+| `concept-seed --scope direction --mode operate` | Assigned **candidate 4**. Dealt six catalog challengers. | Built the flyer. It took number 1, the sky following the hour, as its colour behaviour, translated into the four time-of-day tints. |
+| Challenger verdicts (two axes: audience identification, product clarity) | **Dark-first console:** declined. **Botanical folio:** declined. **Doujin event catalogue:** declined. **Orienteering map:** competitive on clarity for the Map screen only. **Jet-age ticket wallet:** declined (round 2 already had the ticket). **Emission-line rail:** declined. | Raises taken, one from each challenger: destructive actions isolated by space (the console: Delete sits apart on Admin); one fixed scale across a sequence (the folio: the first-sync rows); a card's code matches its map pin (the catalogue: B1 to B5); gold reserved for "you are here" and the current item (orienteering); nothing vanishes, it is stamped (the wallet: the verify stamp); state by ring form, not only hue (the rail: dashed rings mean waiting). |
+| Hallmark `redesign`, app screens | `sloplint --before` recorded round 2: 0 FAIL, 24 WAIVED, 63 links, 28 fields, 50 script hooks. | Custom theme. Stamp updated to round 3. |
+| Why the gold line went | It gave a system, but it was strokes on maroon. It could not hold a photo of the real library, a student who looks like the reader, or the hour. | The flyer holds all three. The route survives in the logo (now ending in a rising sun) and in the ring strokes. |
+
+## T2. Type and colour
+
+| Step | Found | Changed |
+|---|---|---|
+| UI UX Pro Max `typography` "bold display font personality readable body" | It offered Calistoga + Inter and Lexend Mega + Public Sans. | Not used. Inter is on Impeccable's "you stopped looking" list, and both would load from Google's CDN. |
+| My choice | **Bricolage Grotesque:** a grotesque with ink-trap quirks at display sizes, the voice of a printed flyer. **Atkinson Hyperlegible Next:** made by the Braille Institute for low-vision readers. Both are OFL. | Bricolage instanced at weight 800, optical size 96 (11.7 KB). Atkinson's weight axis kept from 400 to 700 (11.4 KB). Subset to Latin plus the punctuation the copy uses. I tried a variable Bricolage: 21 KB at weights 600 to 800, and 41 KB with optical size, so it was rejected. |
+| Impeccable `colorize` | Operate mode: colour encodes action, selection, status and wayfinding. | **Night** (brand surface), **maroon** (action) and **gold** (current, confirmed). **Jade, sky and coral** are aso-ebi colours for scopes, charts and doors, each with a wash for text. Four time-of-day tints for the scrim. A drawing palette for the scenes. |
+| Contrast (`tools/tokens.mjs`) | New: text over photos, composited against the worst pixel (white under light text, black under dark text). | Every pair passes. The lowest over a photo is 6.04:1 (secondary text, morning scrim, at 84%). Glass went from 84% to 90% after Hallmark's renderer counted anything under 90% as see-through (T3). |
+| Impeccable `typeset` | Three weights in use. Tabular figures for times and counts. 14px minimum. | Done. Leading raised to 1.3 for titles and 1.4 for leads, after the detector and Hallmark gate 75 flagged 1.25. |
+
+## T3. Images
+
+| Step | Found | Changed |
+|---|---|---|
+| David's seven photos | One matches a public-domain Commons file (the gate with people). One carries another site's watermark and an overlaid crest. Five have no recorded source. | The gate photo was used from Commons, cropped above the people. The watermarked one is not used. The five others were processed as **local only**. |
+| Wikimedia Commons, via its API | About 50 FUTA files, nearly all CC BY-SA 4.0 (Wiki Loves Africa uploaders). | Picked 10 more with readable signs or no people, and no faces close up. |
+| FUTA websites | Not searched. | Their photos have no open licence, so they could only be local, and Commons already covered the brief's subjects except hostels. |
+| Processing (headless Chrome canvas, in the scratchpad) | Crop, resize to 768 px and 384 px, WebP with quality stepped down until at most 60 KB (or 20 KB for the small size). The canvas re-encode drops all metadata. Three placeholder colours are measured per photo. | 13 open and 5 local photos at first. I dropped two near-duplicates, leaving 11 open (22 files) and 5 local (10 files). |
+| Names | A name is shown only when the sign is readable in the photo. | Eight building names come from signs. Three photos are shown without a name. Map buildings without a photo keep sample names. |
+| Characters | Hallmark gate 80 bans drawn illustration. | **Waived on the record:** David asked for illustrated scenes and characters, and they are the fallback for every photo slot and all of Lite. Four original students, drawn in code, with no likeness of anyone. Buildings are generic types. |
+
+## T4. Checks
+
+| Run | Found | Changed |
+|---|---|---|
+| First visual look (Chrome, 390px) | Hero pictures had zero height (a selector-order bug). The scrim covered whole heroes. The drawn students on Welcome and First sync were hidden. | Fixed specificity. Full-screen heroes now put the scene in the top 60% and the text on night below. The scrim sits only under the text. |
+| Hallmark `sloplint` static | 4 FAIL: gate 15 (a focus ring fading in), gate 24a three times (literal 2px and 4px). 3 REFLEX: overshoot easing on the switch, two off-scale gaps. 5 WARN. My gate 48 waiver (photo placeholder colours) **rejected**: Floor gates can't be waived. | All fixed. The waiver was removed (the render tier did not flag the placeholders). |
+| Hallmark `sloplint --render --kept` | 28 FAIL and 12 REFLEX. They were: the prototype bar overflowing at 375; the map search with no focus ring and a faint edge; "Show on map" wrapping at 320; ring SVGs painted over sticker numbers; credit chips on translucent backgrounds; and 11 screens with no `[data-once]` hook (a round 2 script hook). | Fixed: the bar body is hidden when closed; the search field gets a focus ring and the muted edge; small buttons no longer wrap; figures are positioned above their rings; credit chips are solid night; glass is at 90%. Each hero's text now has a once-per-session entrance, so the hook is real again. Re-run: **0 FAIL, 0 REFLEX**, all links, fields and hooks kept. |
+| Hallmark render WARN: fonts fell back | Its renderer loads `file://` pages and Chrome blocks the font fetch there. | Re-ran Home and Welcome over a local http server (127.0.0.1:8797, mine, stopped afterwards): no warning. The screenshot tool and my own checks load the fonts from `file://` with the file-access flag. |
+| Impeccable `detect`, 18 to 32 rendered views at 390 and 1280 | Round 1: 19 and 9 findings. Most were `dark-glow` (the gold shadows), plus tight leading, a cramped chip and a "card in card" on the component sheet. Round 2 (with 200% text added): doors clipping, tab labels cut with an ellipsis, credit chips under titles, the Admin form running off screen, the timetable week strip, stickers at a fixed pixel size, and map pins under hero text. | Gold shadows made neutral and offset (the first-sync ring keeps its sheen, the one deliberate glow). Doors use auto-fit at 10rem. Tab labels wrap and hyphenate. Hero credits join the text column. Cards and forms get `minmax(0, 1fr)` and fields `min-width: 0`. The week strip scrolls. Stickers are sized in rem. Last round: **0 findings** at both widths, except the two map pins at 200% text (see T7). |
+| View Transitions (Chrome over http) | Tapping the Map door runs the transition, which finishes with the title as `vt-map`. Lite skips it. | The stamp, the pack button (Remove leads to "Not downloaded") and the Lite switch all work, with no script errors. |
+| `tools/budget.mjs` | Core 45.0 KB of 60 KB. Fonts 23.0 KB of 40 KB. Zero photos on first load. Pack 872.6 KB of 1.5 MB. 32 photo files, all WebP, no EXIF or XMP, largest 58.4 KB. | |
+
+## T5. Impeccable commands this round
+
+| Command | What it did here |
+|---|---|
+| `overdrive` | Its "propose, then ask" step was waived: David asked me to own the bold choices, and the roll did the proposing. **Directions weighed:** (1) a WebGL sky shader behind every hero, rejected (GPU and battery on cheap phones); (2) scroll-driven parallax and View Transitions, **built**: parallax through CSS `animation-timeline: scroll()` only where supported, plus the door-to-title transition; (3) canvas particle confetti on "You're set", rejected for a CSS burst of eight dots. |
+| `bolder` | The flyer hero on every screen, display type at 2.5 to 3rem, coloured doors, and a night tab bar with a gold current tab. |
+| `animate` | **Thesis:** one entrance per screen, ambient life only on screen, and the motion carries state (the countdown ring, sync progress, the stamp). Rings fill and bars grow on appear. Parallax-lite. |
+| `delight` | **Thesis:** "Sabi knows your campus and your hour." The sky changes with the hour (stars at night). The students wait while data saves and cheer at sunrise when you're set. The "you are here" dot pulses. The seal stamps. Delight sits only at first use, completion and verification. |
+| `colorize`, `typeset` | See T2. |
+| `layout` | Hero first, glass cards lifting over it, then content on paper. Grids at 768 and 1024px. |
+| `onboard` | The new Welcome screen; first sync with rings; the pack offer at "You're set"; state scenes with a clear next action. |
+| `harden` | 200% text on 8 screens (T4). Long sign names wrap. A missing photo falls back to the drawing. Missing local photos fall back too. |
+| `adapt` | 390, 768 and 1280px; dark; Lite; no pack; four times of day. Landscape not checked. |
+| `clarify` | New copy is listed in the README for David. |
+| `optimize` | Budget set by David and checked by a script. Fonts subset. Photos in a separate pack. Glass drops to solid in Lite. Ambient loops only on screen. Screenshots at WebP quality 72. |
+| `polish` | A visual pass on 14 screens. Fixes: the next-class card's empty state overflowed at 390 (the button didn't wrap), and the sticker overlapped the top bar at 200% text. |
+| `critique` | **Degraded:** run in this thread, not by two isolated reviewer agents. **Strengths:** every hero is real FUTA or a drawing that holds its place, credited; first run is the most memorable screen and works with no photos; every number on a sticker or chart is real (sample) and written as text; contrast is measured over photos, not assumed. **Issues:** **P2** Home is long on a phone (about two and a half screens). **P2** The Home hero gate photo is landscape and crops hard (upscaled about 1.6 times). **P2** Glass (`backdrop-filter`) on cheap Android phones is a frame-rate risk outside Lite; untested on a device. **P3** Four characters is a small cast; their faces are simple dots and a smile. **P3** The Notices hero uses a local-only photo, so the committed screenshots show its drawing. |
+| `audit` | **17/20.** Accessibility 3: AA computed, including over photos; 44px targets; focus on paper, glass and night; 200% text; no screen-reader run; reduced motion is a global switch-off that keeps state, but it's not authored per effect. Performance 3: budget met and measured, but glass and fonts are not tested on a low-end device. Theming 4. Responsive 3: landscape not checked. Integrity 4: detectors clean, no script errors. |
+| `document`, `extract` | DESIGN.md rewritten for round 3. Tokens and components are in `tokens.*`, the component sheet and the README hand-off. |
+| `generate-image`, `live` | Not used: the first would bill David's OpenAI key and send prompts out; the second needs a dev server. |
+
+## T6. Hallmark this round
+
+- **Stamp:** genre playful, custom theme, round 3, critique P5 H5 E5 S4 R4 V5.
+- **Waivers:**
+  - **72:** the prototype bar.
+  - **39b:** the 60px "Get started" and "Start exploring" actions.
+  - **49b:** long building names and an email wrap inside their cards.
+  - **71:** a building card's name sits tight under its pin code.
+  - **80:** drawn scenes, students and the map, which are David's request and the fallback for every photo.
+- **Answered:** F4 (one filled primary per surface: gold only on night and photos, maroon only on paper), F5 (the door's tinted disc), F7 (pills on controls, chips, the tab bar and stickers), F19 (three weights).
+- **Kept versus round 2:** links 63/63, fields 28/28, script hooks 50/50, figures 16/16. Eight component-sheet headings were reworded (the gold line's components became the flyer's), recorded in the stamp.
+- **NOTE from Hallmark:** five reflex waivers make a house style, and it suggests locking them in a design.md. DESIGN.md records them in its Do's and Don'ts.
+
+## T7. Waivers, disagreements and choices
+
+| Rule or advice | Choice | Why |
+|---|---|---|
+| Hallmark gate 80 (no drawn illustration) | Waived | David asked for illustrated scenes with characters. They also make Lite and a fresh clone look complete. |
+| Hallmark app screens: "motion is state, never decoration" | Ambient motion added (clouds, stars, the map's route, the ring sheen) | David asked for "alive". It's bounded: on screen only, never in Lite, never under reduced motion. |
+| Impeccable craft floor: "progress rings standing in for content" | Rings used | Each ring holds a real figure, written as text beside it. David asked for rings and charts. |
+| Impeccable `dark-glow` | Gold shadows made neutral; one glow kept (the first-sync ring sheen) | One glowing accent, as the brief asked, at the one moment of waiting. |
+| Impeccable decision page and finish reviewer, and the critique's two isolated assessments | Run in this thread instead | This session spawns agents only when David asks. Disclosed here and in SKILLS.md. |
+| Map pins under hero text at 200% text (Impeccable `text-occlusion`) | Kept | The map is a decorative drawing (`aria-hidden`), and the building list below carries every pin code in text. |
+| Hallmark: photos at most a third of the page | Not applied | App scope skips it. Photos sit in heroes and cards. |
+| Round 2 rule "no pictures of people" | Replaced by "no real person's likeness" | David asked for drawn characters. Lecturers still get initials. |
+
+## T8. Degraded and not done
+
+- **Reviews:** critique, audit and the finish review ran in this thread, without the shipped reviewer agents or the decision page, as in rounds 1 and 2.
+- **Not tested:**
+  - a screen reader
+  - landscape
+  - a real low-end Android phone (glass, fonts and photo decode cost are unmeasured there)
+  - Firefox and Safari: motion and View Transitions were checked in Chrome only
+- **Local server:** 127.0.0.1:8797 (`python -m http.server`) was mine, for the font and transition checks, and was stopped after I checked its command line. Port 8765 was not touched.
+- **A stuck run:** one screenshot run hung (my image-wait step). I stopped it and its Chrome, after checking their command lines held my `sabi-shots-` profile, and fixed the wait.

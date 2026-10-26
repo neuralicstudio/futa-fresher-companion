@@ -30,7 +30,7 @@ Outdoors and between buildings in Akure daylight *(inferred)*, standing in queue
 - Real states: loading, empty, error, offline, first-run sync, failed sync, 503 busy, expired session (401), not an admin.
 - Plain text content only. No images in content.
 - Accounts are optional and only for admin features.
-- First-load JS+CSS under 150 KB gzip; system fonts; inline SVG icons.
+- First-load JS+CSS under 150 KB gzip; inline SVG icons. From round 3 (David's brief): up to two open-licensed fonts (40 KB at most), a design core layer of 60 KB gzipped at most, and campus photos only in a separate visual pack of 1.5 MB at most, downloaded later on a good connection, never in Lite.
 
 ## Brand Commitments
 
@@ -42,7 +42,7 @@ Outdoors and between buildings in Akure daylight *(inferred)*, standing in queue
 
 ## Evidence on Hand
 
-No real campus data, photos, logos or numbers are supplied for design work. Prototypes use obviously fake sample data labelled as sample. No user counts, testimonials or metrics exist and none may be invented.
+No real campus data, logos or numbers are supplied for design work. Photos: David supplied seven (most with no recorded source, kept local only), and round 3 adds openly licensed FUTA photos from Wikimedia Commons (CREDITS.md). Prototypes use obviously fake sample data labelled as sample. No user counts, testimonials or metrics exist and none may be invented.
 
 ## Product Principles
 

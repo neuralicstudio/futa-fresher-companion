@@ -14,18 +14,25 @@ Visitor mode (Impeccable): **Operate**. The student is doing a task, not being p
 - Success: the answer is on screen, with its status (verified, unverified, may be outdated), its source and the date it was updated.
 - Product truth no neighbour can claim: every fact says how sure we are and who said so.
 
-## 3. Selected direction (round 2)
+## 3. Selected direction (round 3)
 
-- **Concept: the gold line.** Sabi draws the line from "I am lost" to "I found it". The line is the route across campus, the gold trim of the gown (round 1's regalia material, kept), and the thread from each fact to its source.
-- **Why it replaced the signpost:** the signpost lived on one screen and stood still. The line runs through every screen and carries real state: offline (it breaks), progress (first sync), now (the timetable). It costs almost nothing to draw.
-- **Signatures:** the route mark; the band (a night-maroon sky with contour lines and a time-of-day edge); Home's ticket (next class) and line of stations; the Now line; the source seal, which stamps on when verified.
-- **Structure:** unchanged app shell. Top bar, four bottom tabs on phones (Home, Map, Academics, Notices), inline from 768px.
-- Round 1's direction (signpost, regalia) is recorded in LOG.md section 1.
+- **Concept: the flyer.** Sabi is the best flyer on the notice board, and it's true. Every screen leads with a layered hero (a FUTA photo from the visual pack, or a drawn scene), a big title, and one round sticker that holds the number that matters.
+- **Why it replaced the gold line:** David found rounds 1 and 2 clean but dry. The line could carry state but not pictures, people or place. The flyer carries all of them, and still carries state (the countdown, the sky by the hour, drawings offline and in Lite).
+- **Signatures:**
+  - the flyer hero
+  - the sticker ring
+  - four original drawn students
+  - the time-of-day sky and scrim
+  - the floating pill tab bar
+  - the logo: a route ending in a rising sun
+- **Structure:** a glass top bar over each hero, and a floating tab bar on phones (Home, Map, Academics, Notices) that moves into the top bar from 1024px. Settings is a new route from the top bar.
+- **New screens:** Welcome (before first sync) and Settings (the visual pack, Lite, theme, photo credits).
+- **History:** round 2's direction (the gold line) and round 1's (the signpost) are recorded in LOG.md.
 
 ## 4. Scope and boundaries
 
 - Fidelity: static, self-contained HTML prototypes of every existing screen and its real states, a component sheet, tokens. Design only: nothing under `web/src`, `api`, `db` or `docs/openapi.yaml` changes.
-- Anti-goals: a corporate dashboard; purple gradients; hero blobs; emoji icons; stock photos; invented numbers, people or campus facts; a fake map.
+- Anti-goals: a corporate dashboard; purple gradients; hero blobs; emoji icons; stock photos; invented numbers, people or campus facts; a map that pretends to be real (the drawn map says it is a drawing); any real person's likeness; any brand from the reference mockups.
 
 ## 5. States and ranges
 
@@ -33,15 +40,44 @@ Real states, taken from `web/src`: loading, empty (including "still saving"), er
 
 ## 6. Interaction and layout
 
-- Mobile first at 360px. One column; the content column caps at 720px; Home goes two-column at 768px.
-- Lists are rows separated by hairlines, each row a full-width target with a small "this way" tip.
-- Disclosure for sources and long notices; an inline confirm for delete; native selects.
-- Motion: feedback 120ms, state 220ms, page transitions 420ms, one entrance per screen 760ms (once per session, on screen). Loops only while on screen. Reduced motion and Lite remove movement and keep the state.
+- **Mobile first at 360px.**
+  - One column. The content column caps at 720px, and grids go to 1040px.
+  - Home's doors go four across at 768px.
+- **Heroes and cards:**
+  - Heroes are full bleed.
+  - Cards that float over a hero are glass.
+  - Lists are cards with photos or drawings, or rows on paper for dense content (courses, lecturers, admin).
+- **Controls:**
+  - Disclosure for sources and long notices.
+  - An inline confirm for delete.
+  - Native selects.
+  - Filter chips that keep one pressed.
+- **Motion:**
+  - Durations: feedback 120ms; state 220ms; transitions, rings and the stamp 480ms; one entrance per screen 900ms (once per session, on screen).
+  - Ambient loops run only on screen, never in Lite.
+  - Reduced motion removes all of it and keeps the state.
 
 ## 7. Constraints and open decisions
 
-- System fonts only (zero font bytes). Inline SVG for the mark, icons, contours and line pieces. Photos only in designed slots, from teammates, never on first load or in Lite (PHOTOS.md).
-- Data budget for Home's design layer: 20 KB gzipped (measured 13.3 KB by `tools/budget.mjs`).
-- WCAG AA in light and dark (ratios computed in `tokens.css`), 44px targets, visible focus, 200% text checked.
-- Open for David (round 2): the greetings and "Up late"; whether "New" on notices is wanted (it needs a last-opened time on the phone); the band's height on detail screens; per-collection counts on first sync (a small change in `web/src/lib/sync.ts`).
-- Still open from round 1: the "Notices" tab label (the app says "Announcements"; it does not fit four tabs at 360px), the exact maroon and gold (he will refine; change `tools/tokens.mjs`), the Timetable sign's destination before a student has picked a department.
+- **Fonts:** two OFL faces, 23 KB, served from the repo.
+- **Photos:** only in the visual pack, never on first load or in Lite (PHOTOS.md). Each is credited (CREDITS.md).
+- **Data budget:**
+  - core layer at most 60 KB gzipped, measured 45.0 KB
+  - visual pack at most 1.5 MB, measured 872.6 KB
+  - `tools/budget.mjs` checks both
+- **Accessibility:**
+  - WCAG AA in light and dark, including text over photos measured against a white pixel.
+  - 44px targets, visible focus, and 200% text checked.
+- **Open for David (round 3):**
+  - The concept itself (the flyer) and its new copy (README "Copy").
+  - Whether the four drawn students fit what freshers expect, and their look (skin tones, hair, hijab, clothes).
+  - The Home hero: today's open gate photo is landscape, so it crops hard on a phone. A portrait gate photo would be better.
+  - Whether to ask the owners of the local-only photos for permission, so they can ship.
+  - The scope colours (University maroon, SUG coral, School jade, Department sky).
+  - Per-collection counts on first sync (a small change in `web/src/lib/sync.ts`).
+  - How the service worker should cache the pack (its own cache, dropped first when storage is short).
+- **Still open from earlier rounds:**
+  - the greetings and "Up late"
+  - "New" on notices (it needs a last-opened time)
+  - the "Notices" tab label
+  - the exact maroon and gold

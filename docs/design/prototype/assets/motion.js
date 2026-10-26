@@ -6,7 +6,8 @@
 //    <head>: on when the phone asks to save data (navigator.connection.saveData, a 2G connection,
 //    or prefers-reduced-data), or when the person turns it on. Lite skips every effect below.
 //  - prefers-reduced-motion skips every effect below. The CSS also collapses durations.
-//  - Loops (the skeleton, the first-sync bar) run only while on screen and while the page is visible.
+//  - Loops (the skeleton, the first-sync ring, clouds, stars, the map's route) run only while on
+//    screen and while the page is visible.
 //  - The one authored entrance per screen (the line drawing in) plays once per session, on screen.
 (function () {
   'use strict';
@@ -41,7 +42,8 @@
 
   function init(scope) {
     scope = scope || document;
-    scope.querySelectorAll('[data-loop]').forEach(function (el) {
+    // Loops: anything marked data-loop, plus every drawn scene and map (clouds, stars, the route).
+    scope.querySelectorAll('[data-loop], .scene, .campus-map').forEach(function (el) {
       if (io) io.observe(el); else el.setAttribute('data-inview', '');
     });
     scope.querySelectorAll('[data-once]').forEach(function (el) {
@@ -92,19 +94,5 @@
     });
   }
 
-  // Photos: a slot's picture loads only outside Lite, lazily, after the page has settled.
-  function photos(scope) {
-    if (lite()) return;
-    (scope || document).querySelectorAll('[data-slot][data-src]').forEach(function (slot) {
-      if (slot.querySelector('img') || !slot.getAttribute('data-src')) return;
-      var img = new Image();
-      img.alt = slot.getAttribute('data-alt') || '';
-      img.loading = 'lazy'; img.decoding = 'async';
-      img.src = slot.getAttribute('data-src');
-      slot.appendChild(img);
-    });
-  }
-  document.addEventListener('sabi:lite', function (e) { if (!e.detail) photos(); });
-
-  window.SABI_MOTION = { init: init, morph: morph, count: count, buzz: buzz, setLite: setLite, lite: lite, calm: calm, photos: photos };
+  window.SABI_MOTION = { init: init, morph: morph, count: count, buzz: buzz, setLite: setLite, lite: lite, calm: calm };
 })();
