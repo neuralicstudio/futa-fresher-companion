@@ -40,6 +40,18 @@ const LIGHT = {
   'offline-band': [23, 0.035, 18], // the offline banner (ink band)
   'on-offline-band': [96, 0.01, 60],
   scrim: [18, 0.03, 18], // behind dialogs (used at 55% alpha)
+  // The band: the maroon "sky" behind every screen title and the top bar. Mode-independent: it is
+  // the brand surface, the same in light and dark. Four dayparts tint its lower edge (Home).
+  'band-top': [21, 0.07, 18], // top of the band and the top bar (night maroon)
+  'band-dawn': [41, 0.13, 32], // morning: the lower edge warms toward the gold
+  'band-day': [36, 0.118, 18], // afternoon: the shell maroon
+  'band-dusk': [30, 0.11, 8], // evening: a deeper, cooler maroon
+  'band-night': [16, 0.045, 18], // night: almost the dark page
+  'on-band': [97, 0.012, 75], // text on the band
+  'on-band-muted': [87, 0.035, 60], // secondary text on the band
+  'maroon-wash': [94.5, 0.022, 18], // tinted chips and the active tab capsule
+  'gold-wash': [95.5, 0.045, 88], // "Today", "in 25 min" chips on paper
+  accent: [55, 0.12, 70], // the gold detail in icons on light paper (non-text, 3:1)
 };
 
 // Dark: re-derived per Hallmark dark-mode.md (paper L 12-18, ink L 92-96, accents lighter and
@@ -72,6 +84,18 @@ const DARK = {
   'offline-band': [33, 0.095, 18],
   'on-offline-band': [97, 0.012, 75],
   scrim: [8, 0.01, 18],
+  // The band: the maroon "sky" behind every screen title and the top bar. Mode-independent: it is
+  // the brand surface, the same in light and dark. Four dayparts tint its lower edge (Home).
+  'band-top': [21, 0.07, 18], // top of the band and the top bar (night maroon)
+  'band-dawn': [41, 0.13, 32], // morning: the lower edge warms toward the gold
+  'band-day': [36, 0.118, 18], // afternoon: the shell maroon
+  'band-dusk': [30, 0.11, 8], // evening: a deeper, cooler maroon
+  'band-night': [16, 0.045, 18], // night: almost the dark page
+  'on-band': [97, 0.012, 75], // text on the band
+  'on-band-muted': [87, 0.035, 60], // secondary text on the band
+  'maroon-wash': [27, 0.05, 18],
+  'gold-wash': [28, 0.05, 80],
+  accent: [82, 0.125, 82],
 };
 
 // Pairs whose contrast must hold, in both modes: [foreground, background, minimum, what].
@@ -102,6 +126,22 @@ const PAIRS = [
   ['action-edge', 'paper', 3, 'outline button and chip edge (non-text)'],
   ['link', 'paper', 4.5, 'links, back links, quiet buttons'],
   ['link', 'paper-2', 4.5, 'links on wells (row tips, bottom tabs)'],
+  ['on-band', 'band-top', 4.5, 'band text at the top'],
+  ['on-band', 'band-dawn', 4.5, 'band text over the morning edge'],
+  ['on-band', 'band-day', 4.5, 'band text over the afternoon edge'],
+  ['on-band', 'band-dusk', 4.5, 'band text over the evening edge'],
+  ['on-band', 'band-night', 4.5, 'band text over the night edge'],
+  ['on-band-muted', 'band-top', 4.5, 'band secondary text'],
+  ['on-band-muted', 'band-dawn', 4.5, 'band secondary text, morning'],
+  ['on-band-muted', 'band-day', 4.5, 'band secondary text, afternoon'],
+  ['on-band-muted', 'band-dusk', 4.5, 'band secondary text, evening'],
+  ['gold', 'band-top', 4.5, 'gold text and the line on the band'],
+  ['gold', 'band-dawn', 3, 'the gold line over the morning edge (non-text)'],
+  ['ink', 'maroon-wash', 4.5, 'text on the active tab capsule'],
+  ['link', 'maroon-wash', 4.5, 'active tab label'],
+  ['ink', 'gold-wash', 4.5, 'text on gold chips'],
+  ['accent', 'paper', 3, 'gold icon detail on the page (non-text)'],
+  ['accent', 'paper-2', 3, 'gold icon detail on wells (non-text)'],
 ];
 // Light only: gold as text sits on light paper only at large sizes.
 const LIGHT_ONLY = [
@@ -151,10 +191,11 @@ const SCALE = {
   'text-lg': '1.2rem', // 19.2px: item titles
   'text-xl': '1.44rem', // 23px: section heads (h2)
   'text-2xl': '1.728rem', // 27.6px: screen titles (h1)
-  'text-3xl': '2.074rem', // 33.2px: the home greeting only
+  'text-3xl': '2.074rem', // 33.2px: band titles on top-level screens
+  'text-4xl': '2.488rem', // 39.8px: the Home greeting and the ticket's time only
 };
 const LEADING = { 'leading-tight': '1.15', 'leading-snug': '1.3', 'leading-body': '1.55' };
-const WEIGHT = { 'weight-body': '400', 'weight-medium': '500', 'weight-strong': '650', 'weight-display': '800' };
+const WEIGHT = { 'weight-body': '400', 'weight-medium': '500', 'weight-strong': '650', 'weight-display': '800', 'weight-black': '900' };
 const SPACE = {
   'space-3xs': '2px', 'space-2xs': '4px', 'space-xs': '8px', 'space-sm': '12px', 'space-md': '16px',
   'space-lg': '24px', 'space-xl': '32px', 'space-2xl': '48px', 'space-3xl': '64px',
@@ -169,20 +210,26 @@ const SIZE = {
   'container': '720px', // content column (the app's current max width)
   'container-wide': '1040px', // tablet two-pane
   'gutter': '16px',
-  'trim': '4px', // the gold trim edge on the shell and the current nav item
+  'trim': '4px', // the gold line: under the top bar, the Home line, the first-sync line
+  'station': '22px', // a station ring on the line
+  'band-pad': '32px', // space under a band title
   'rule-hair': '1px', 'rule-bar': '2px',
 };
-const RADIUS = { 'radius-control': '6px', 'radius-plate': '6px', 'radius-dialog': '10px', 'radius-pill': '999px' };
+const RADIUS = { 'radius-control': '10px', 'radius-plate': '14px', 'radius-card': '18px', 'radius-dialog': '18px', 'radius-pill': '999px' };
 const SHADOW_LIGHT = {
-  'shadow-float': '0 10px 28px -14px oklch(20% 0.04 18 / 0.45)', // dialogs, the sticky bottom nav
+  'shadow-float': '0 10px 28px -14px oklch(20% 0.04 18 / 0.45)', // dialogs, the prototype bar
+  'shadow-lift': '0 12px 14px oklch(20% 0.06 18 / 0.22)', // the ticket over the band (used as a drop-shadow filter)
   'shadow-none': 'none',
 };
-const SHADOW_DARK = { 'shadow-float': 'inset 0 0 0 1px oklch(33% 0.022 18)', 'shadow-none': 'none' };
+const SHADOW_DARK = { 'shadow-float': 'inset 0 0 0 1px oklch(33% 0.022 18)', 'shadow-lift': '0 12px 14px oklch(4% 0.02 18 / 0.6)', 'shadow-none': 'none' };
 const MOTION = {
   'dur-micro': '120ms', // colour and press feedback
-  'dur-short': '200ms', // disclosure, banner in
-  'ease-out': 'cubic-bezier(0.16, 1, 0.3, 1)', // exponential ease-out
-  'ease-in-out': 'cubic-bezier(0.65, 0, 0.35, 1)',
+  'dur-short': '220ms', // disclosure, tab indicator, banner in
+  'dur-long': '420ms', // page transitions (View Transitions), the seal stamp
+  'dur-focal': '760ms', // the one authored entrance per screen: the line drawing in
+  'ease-out': 'cubic-bezier(0.16, 1, 0.3, 1)', // exponential ease-out: arrivals
+  'ease-in': 'cubic-bezier(0.7, 0, 0.84, 0)', // exits, at 65% of the entrance
+  'ease-in-out': 'cubic-bezier(0.65, 0, 0.35, 1)', // toggles
 };
 const Z = { 'z-sticky': '200', 'z-nav': '300', 'z-banner': '350', 'z-dialog': '400' };
 
@@ -210,13 +257,13 @@ const colours = (pal) =>
 const pairLines = (pairs) =>
   pairs.map((p) => ` *   ${p.fg} on ${p.bg}: ${p.ratio.toFixed(2)}:1 (needs ${p.min}) ${p.pass ? 'pass' : 'FAIL'} · ${p.what}`).join('\n');
 
-const css = `/* Hallmark · shape: app screen · genre: modern-minimal (inferred) · theme: custom
- * idea: "the campus signpost in your pocket: every screen points the way and says who said so, and when"
- * paper: oklch(97.6% 0.006 25) · accent: oklch(36% 0.118 18) maroon, oklch(83% 0.135 82) gold · display: system-ui 800 · body: system-ui 400
- * nav: maroon top bar with a gold trim edge, a bottom tab bar of four · signature: the signpost board on Home, the gold source seal on every fact
- * states: loading, empty, error, offline, first sync, sync failed, busy (503), session ended (401), not an admin
- * axes: light/grotesk-heavy/warm · posture: committed (the shell is maroon; content is restrained) · modes: light+dark · contrast: pass · v2.0.0 */
-/* Hallmark · pre-emit critique: P4 H5 E4 S4 R4 V4 · weakest: P, a guide app could look like any directory; the signpost home and the source seal make it argue for trust and direction */
+const css = `/* Hallmark · shape: app screen · genre: modern-minimal (inferred) · theme: custom · round 2
+ * idea: "the gold line: Sabi draws the line from lost to found, and ties every fact to who said so"
+ * paper: oklch(97.6% 0.006 25) · accent: maroon oklch(36% 0.118 18), gold oklch(83% 0.135 82), band oklch(21% 0.07 18) · display: system-ui 800/900 · body: system-ui 400
+ * nav: night-maroon top bar over the gold line, four bottom tabs · signature: the line (logo, trim, Home stations, first sync, timetable now), the ticket, the source seal
+ * states: loading, empty, error, offline (the line breaks), first sync, sync done, sync failed, busy (503), session ended (401), not an admin
+ * axes: light/grotesk-heavy/warm · posture: committed · modes: light+dark · lite: yes · contrast: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P5 H5 E4 S5 R4 V5 · weakest: E, motion and pictures must stay cheap; Lite mode and the data budget carry it */
 
 /* Sabi design tokens. Generated by docs/design/tools/tokens.mjs. Do not edit by hand: change the
  * values in that script and run it again. Colours are OKLCH with the sRGB hex beside each for tools
@@ -293,6 +340,9 @@ const json = {
     'success.text': 'success', 'success.background': 'success-wash',
     'focus.ring': 'focus', 'focus.ring-on-shell': 'focus-on-maroon',
     'offline.background': 'offline-band', 'offline.text': 'on-offline-band', 'offline.icon': 'gold',
+    'band.top': 'band-top', 'band.edge.morning': 'band-dawn', 'band.edge.afternoon': 'band-day', 'band.edge.evening': 'band-dusk', 'band.edge.night': 'band-night',
+    'band.text': 'on-band', 'band.text-secondary': 'on-band-muted', 'line': 'gold', 'icon.detail': 'accent',
+    'tab.active.background': 'maroon-wash', 'chip.gold.background': 'gold-wash',
     'link': 'link', 'divider': 'rule', 'field.edge': 'muted',
   },
   contrast: { light: lightPairs, dark: darkPairs },

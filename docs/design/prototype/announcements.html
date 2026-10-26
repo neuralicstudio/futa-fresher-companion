@@ -6,14 +6,25 @@
 <meta name="description" content="Design prototype screen. Sample data only.">
 <title>Prototype</title>
 <script>
-  /* Pick light or dark before the first paint, so the page never flashes the wrong mode. */
-  (function () { var q = new URLSearchParams(location.search).get('theme'), m = q; try { m = q || localStorage.getItem('sabi-proto-mode'); } catch (e) {} if (m === 'light' || m === 'dark') document.documentElement.setAttribute('data-mode', m); })();
+  /* Before the first paint: light or dark, and Lite mode (pictures and motion off, to save data).
+   * Lite turns on by itself when the phone asks to save data; the switch on Home overrides it. */
+  (function () {
+    var d = document.documentElement, q = new URLSearchParams(location.search), m = q.get('theme'), l = q.get('lite'), p = null;
+    try { m = m || localStorage.getItem('sabi-proto-mode'); p = localStorage.getItem('sabi-lite'); } catch (e) {}
+    if (m === 'light' || m === 'dark') d.setAttribute('data-mode', m);
+    var c = navigator.connection || {};
+    var saver = c.saveData || /2g/.test(c.effectiveType || '') || (window.matchMedia && matchMedia('(prefers-reduced-data: reduce)').matches);
+    var why = l === '1' ? 'url' : l === '0' ? '' : p === 'on' ? 'setting' : p === 'off' ? '' : saver ? 'saver' : '';
+    if (why) d.setAttribute('data-lite', why);
+  })();
 </script>
 <link rel="stylesheet" href="assets/app.css">
 </head>
 <body data-screen="announcements">
 <div id="app"><noscript><p>Turn on JavaScript to view this prototype. Its text comes from assets/strings.js.</p></noscript></div>
 <script src="assets/strings.js"></script>
+<script src="assets/art.js"></script>
+<script src="assets/motion.js"></script>
 <script src="assets/app.js"></script>
 </body>
 </html>
