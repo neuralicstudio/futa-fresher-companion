@@ -12,7 +12,7 @@ The approved mockups, rebuilt as code: dark, the FUTA gate at night, crimson-out
 
 ## Constraints
 
-- First load about 60 KB gzipped before photos (56.1 KB measured, with fonts and icons). The map is a lazy chunk. Photos are an optional pack of 1.5 MB at most, never in Lite mode.
+- First load about 60 KB gzipped before photos (56.2 KB measured, with fonts and icons). The map is a lazy chunk. Photos are an optional pack of 1.5 MB at most, never in Lite mode.
 - Two open-licensed font families (25 KB), Phosphor icons (MIT), OpenStreetMap data (ODbL). No external requests at runtime.
 - WCAG AA contrast (measured, including text over photos), 44px targets, visible focus, 200% text, reduced motion respected.
 - Every screen has loading, empty, error and offline states.
@@ -20,7 +20,7 @@ The approved mockups, rebuilt as code: dark, the FUTA gate at night, crimson-out
 ## Open for David
 
 1. **Light theme.** Dark only for now, as asked. The light code and screenshots were removed.
-2. **The night gate photo.** It comes from FUTA's official Facebook page, used with FUTA's permission, credited in CREDITS.md and on the credits screen. **FUTA's written OK is pending**, so the file stays local-only and is not committed until David confirms. Other missing photos (a hostel, the walkway, lecture theatres inside) need an owner and a licence (PHOTOS.md).
+2. **The night gate photo.** It comes from FUTA's official Facebook page and is credited as such in CREDITS.md and on the credits screen ("Written permission pending"). **FUTA's written OK is pending**, so the file stays local-only and is not committed until David confirms. Other missing photos (a hostel, the walkway, lecture theatres inside) need an owner and a licence (PHOTOS.md).
 3. **Map names.** Place names are exactly as written in OpenStreetMap, including odd spellings. FUTA needs to check them before any can say "Verified".
 4. **Academics data.** The schools and departments are sample data; the real list needs the data team.
 5. **Opening hours** are not known for any place, so every place says "Opening hours no dey" until an admin adds them.

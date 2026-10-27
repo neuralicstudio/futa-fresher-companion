@@ -6,7 +6,7 @@ Where every photo, map, icon and font in the design came from, its licence, and 
 
 ## Rules this follows
 
-- **Sources:** openly licensed images (Wikimedia Commons) in the repo. Photos David supplied stay out of the repo: the night gate is credited to FUTA with permission pending, and the rest have no recorded licence.
+- **Sources:** openly licensed images (Wikimedia Commons) in the repo. Photos David supplied stay out of the repo: the night gate is credited to FUTA's official Facebook page with written permission pending, and the rest have no recorded licence.
 - **Names:** a building is named only when its sign is readable in the photo. Otherwise the alt text says what is visible and nothing more.
 - **Faces:** no identifiable faces. The one photo with people in the street was cropped above them.
 - **Processing:** each photo was cropped where noted, resized to 768 px and 384 px wide and re-encoded as WebP in headless Chrome, which drops all EXIF, GPS and camera metadata. `tools/budget.mjs` fails if any file has EXIF or XMP, or is over 60 KB.
@@ -32,14 +32,14 @@ Each is in the repo at two sizes: `<id>-l.webp` (768 px) and `<id>-s.webp` (384 
 
 Of these, the photos used in the app screens are listed with where in `assets/pack.js` (the "used on" field).
 
-## The night gate photo (local only, permission pending)
+## The night gate photo (local only, written permission pending)
 
 | File | What it shows | Credit | Status |
 |---|---|---|---|
-| `prototype/photos-local/local-gate-night-{l,s}.webp` (from `inspo/images (2).jpg`) | The main gate at night, lit up, three people at its left | **Photo: Federal University of Technology, Akure (official Facebook page)** | **Used with FUTA's permission. FUTA's written confirmation is pending (David is adding it).** The file is **not in the repo and must not be committed until David confirms.** It is kept in `prototype/photos-local/`, which `.git/info/exclude` keeps out of git. |
+| `prototype/photos-local/local-gate-night-{l,s}.webp` (from `inspo/images (2).jpg`) | The main gate at night, lit up, three people at its left | **Photo: Federal University of Technology, Akure (official Facebook page). Written permission pending.** | **Written permission from FUTA is pending** (David is adding it). Until it arrives, nothing here claims permission has been given. The file is **not in the repo and must not be committed until David confirms.** It is kept in `prototype/photos-local/`, which `.git/info/exclude` keeps out of git. |
 
 - **Where it shows:** the Welcome, Home, Map, Timetable and First sync heroes, **on David's machine only**. A fresh clone shows the credited daytime `gate` photo (darkened) or the drawn gate scene. The committed screenshots are taken with `?local=0` and never show it.
-- **The credits screen** lists it with the credit above and the line "Written permission from FUTA is still pending. This photo is not shared yet."
+- **The credits screen** lists it with exactly this line and nothing else about authorship or licence: "Photo: Federal University of Technology, Akure (official Facebook page). Written permission pending."
 - **Faces:** three people stand at the left of the gate, small and unidentifiable. If FUTA's written OK does not cover them, crop them out before it is committed.
 - **To move it into the repo** once David has FUTA's written OK: record the confirmation here, move the two files to `prototype/pack/photos/`, remove the local flag (the last `1`) in `assets/pack.js`, and run `node docs/design/tools/budget.mjs` and `check.mjs`.
 
