@@ -1,73 +1,85 @@
 # Credits
 
-Where every image and font in the design came from, its licence, and what was changed. The prototype also lists the photo credits on its Settings screen, and every large photo shows its credit in a chip.
+Where every photo, map, icon and font in the design came from, its licence, and what was changed. The prototype's Photo credits screen (Settings, then Photo credits) shows the photo rows from `prototype/assets/pack.js`, which carries the same data. In the app it should read from the same table.
 
-Rules this follows (from David's brief for round 3):
-- **Sources:** only FUTA's own websites and openly licensed images (here, Wikimedia Commons). No Google Maps or Street View, Dribbble, agencies, stock sites or other apps.
-- **Licences:** only openly licensed images are in the repo. Images David did not take, with no open licence, stay on David's machine in `prototype/photos-local/`, which `.git/info/exclude` keeps out of git.
-- **Names:** a building is named only when its sign is readable in the photo. Otherwise the alt text describes what is visible and nothing more.
-- **Faces:** no identifiable faces. The one photo with people close to the camera was cropped above them.
-- **Processing:** every photo was cropped where noted, resized to 768 px and 384 px wide, and re-encoded as WebP in headless Chrome, which drops all EXIF, GPS and camera metadata. `tools/budget.mjs` checks that no file has EXIF or XMP and that each is 60 KB or less.
+**Verified on 27 Oct 2026.** Each photo's author and licence were read from the Wikimedia Commons API (`imageinfo` with `extmetadata`) for the file page linked in the table. They are not copied from the mockups: **every credit in the approved mockups is invented** (for example "FUTA Media Unit", "@futastudents (X)", "CC BY 4.0"), so none was used.
+
+## Rules this follows
+
+- **Sources:** openly licensed images only (Wikimedia Commons), plus the photos David supplied, which have no recorded licence and stay out of the repo.
+- **Names:** a building is named only when its sign is readable in the photo. Otherwise the alt text says what is visible and nothing more.
+- **Faces:** no identifiable faces. The one photo with people in the street was cropped above them.
+- **Processing:** each photo was cropped where noted, resized to 768 px and 384 px wide and re-encoded as WebP in headless Chrome, which drops all EXIF, GPS and camera metadata. `tools/budget.mjs` fails if any file has EXIF or XMP, or is over 60 KB.
+- **ShareAlike:** the CC BY-SA 4.0 photos here are modified (cropped, resized, recompressed), so these versions are shared under CC BY-SA 4.0 too. Credit is shown next to every large photo in the app and on the credits screen.
 
 ## Photos in the repo (`prototype/pack/photos/`)
 
-Each photo is in the repo at two sizes: `<id>-l.webp` (768 px) and `<id>-s.webp` (384 px).
+Each is in the repo at two sizes: `<id>-l.webp` (768 px) and `<id>-s.webp` (384 px).
 
-**Licence for the CC BY-SA 4.0 photos.** These are [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). The resized and cropped versions here are shared under the same licence, with the credit shown.
-
-| ID | What it shows (name only where a sign shows it) | Source page | Licence | Credit | Changes |
+| ID | What it shows (named only where a sign shows it) | Commons file page | Author | Licence | Changes |
 |---|---|---|---|---|---|
-| `gate` | The main gate, with "The Federal University of Technology Akure" across the top | [File:Federal University of Technology, Akure.jpg](https://commons.wikimedia.org/wiki/File:Federal_University_of_Technology,_Akure.jpg) | Public domain (as marked on Commons) | Kaizenify, Wikimedia User Group Nigeria | Cropped above the people in the street, so no faces; resized; WebP |
-| `library` | A building with a sign reading "Albert Ilemobade Library" | [File:Albert Ilemobade Library, …, Ondo State104.jpg](https://commons.wikimedia.org/wiki/File:Albert_Ilemobade_Library,_Federal_University_of_Technology,_Akure,_Ondo_State104.jpg) | CC BY-SA 4.0 | MediaMOF | Resized; WebP |
-| `library-inside` | A reading area with bookshelves and patterned cushions (titled "FUTA Library" on Commons; not named in the app, because no sign shows it) | [File:FUTA Library.jpeg](https://commons.wikimedia.org/wiki/File:FUTA_Library.jpeg) | CC BY-SA 4.0 | Geekdidi | Resized; WebP |
-| `computing` | A building entrance with a sign reading "School of Computing" | [File:School of Computing, …, Ondo State6.jpg](https://commons.wikimedia.org/wiki/File:School_of_Computing,_Federal_University_of_Technology,_Akure,_Ondo_State6.jpg) | CC BY-SA 4.0 | MediaMOF | Resized; WebP |
-| `physics` | A roadside sign reading "Department of Physics" | [File:Department of Physics, …, Ondo State.jpg](https://commons.wikimedia.org/wiki/File:Department_of_Physics,_Federal_University_of_Technology,_Akure,_Ondo_State.jpg) | CC BY-SA 4.0 | Jesu-loba | Resized; WebP |
-| `hall` | A hall with a sign reading "Centre for Continuing Education, Multi-purpose Hall" | [File:CCE Multipurpose Hall, …, Ondo State4.jpg](https://commons.wikimedia.org/wiki/File:CCE_Multipurpose_Hall,_Federal_University_of_Technology,_Akure,_Ondo_State4.jpg) | CC BY-SA 4.0 | MediaMOF | Resized; WebP |
-| `crc` | A building with a sign reading "Chief (Dr) Joseph A. Sanusi Computer Resource Centre" | [File:Computer Resource Centre, …, Ondo State3.jpg](https://commons.wikimedia.org/wiki/File:Computer_Resource_Centre,_Federal_University_of_Technology,_Akure,_Ondo_State3.jpg) | CC BY-SA 4.0 | MediaMOF | Resized; WebP |
-| `techpark` | A building with a sign reading "Technology Park and Incubation Centre" | [File:Technology Park and Incubation Centre,, …, Ondo State.jpg](https://commons.wikimedia.org/wiki/File:Technology_Park_and_Incubation_Centre,,_Federal_University_of_Technology,_Akure,_Ondo_State.jpg) | CC BY-SA 4.0 | MediaMOF | Resized; WebP |
-| `studios` | A long building with a sign reading "Industrial Design Studios" | [File:Industrial Design Studios, …, Akure2.jpg](https://commons.wikimedia.org/wiki/File:Industrial_Design_Studios,_Federal_University_of_Technology,_Akure2.jpg) | CC BY-SA 4.0 | Jesu-loba | Resized; WebP |
-| `road` | A road lined with tall trees (titled "FUTA farm road" on Commons; shown without a name) | [File:FUTA farm road.jpg](https://commons.wikimedia.org/wiki/File:FUTA_farm_road.jpg) | CC BY-SA 4.0 | Omaonu | Resized; WebP. One person far down the road is a few pixels tall and cannot be identified |
-| `tree` | A flowering tree in front of a long yellow building (titled "School of Engineering building beside ETF FUTA" on Commons; shown without a name) | [File:School of Engineering building beside ETF FUTA.jpg](https://commons.wikimedia.org/wiki/File:School_of_Engineering_building_beside_ETF_FUTA.jpg) | CC BY-SA 4.0 | Omaonu | Resized; WebP. Two people sitting far under the tree cannot be identified |
+| `gate` | The main gate, "The Federal University of Technology Akure" on the sign | [Federal University of Technology, Akure.jpg](https://commons.wikimedia.org/wiki/File:Federal_University_of_Technology,_Akure.jpg) | Kaizenify (User:Kaizenify, Wikimedia User Group Nigeria), 2016 | Public domain, as marked on the file page | Cropped above the people in the street; resized; WebP |
+| `library` | Front of a building with a sign reading "Albert Ilemobade Library" | [Albert Ilemobade Library, …, Ondo State104.jpg](https://commons.wikimedia.org/wiki/File:Albert_Ilemobade_Library,_Federal_University_of_Technology,_Akure,_Ondo_State104.jpg) | MediaMOF, 2021 | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) | Resized; WebP |
+| `library-inside` | A reading area with bookshelves and patterned cushions (titled "FUTA Library" on Commons; no sign shows a name, so the app does not name it) | [FUTA Library.jpeg](https://commons.wikimedia.org/wiki/File:FUTA_Library.jpeg) | Geekdidi, 2018 | CC BY-SA 4.0 | Resized; WebP |
+| `computing` | A building entrance with a sign reading "School of Computing" | [School of Computing, …, Ondo State6.jpg](https://commons.wikimedia.org/wiki/File:School_of_Computing,_Federal_University_of_Technology,_Akure,_Ondo_State6.jpg) | MediaMOF, 2021 | CC BY-SA 4.0 | Resized; WebP |
+| `physics` | A roadside sign reading "Department of Physics" | [Department of Physics, …, Ondo State.jpg](https://commons.wikimedia.org/wiki/File:Department_of_Physics,_Federal_University_of_Technology,_Akure,_Ondo_State.jpg) | Jesu-loba, 2021 | CC BY-SA 4.0 | Resized; WebP |
+| `hall` | A hall with red angled supports and a sign reading "Centre for Continuing Education, Multi-purpose Hall" | [CCE Multipurpose Hall, …, Ondo State4.jpg](https://commons.wikimedia.org/wiki/File:CCE_Multipurpose_Hall,_Federal_University_of_Technology,_Akure,_Ondo_State4.jpg) | MediaMOF, 2021 | CC BY-SA 4.0 | Resized; WebP |
+| `crc` | A red building with a sign reading "Chief (Dr) Joseph A. Sanusi Computer Resource Centre" | [Computer Resource Centre, …, Ondo State3.jpg](https://commons.wikimedia.org/wiki/File:Computer_Resource_Centre,_Federal_University_of_Technology,_Akure,_Ondo_State3.jpg) | MediaMOF, 2021 | CC BY-SA 4.0 | Resized; WebP |
+| `techpark` | A building with a sign reading "Technology Park and Incubation Centre" | [Technology Park and Incubation Centre,, …, Ondo State.jpg](https://commons.wikimedia.org/wiki/File:Technology_Park_and_Incubation_Centre,,_Federal_University_of_Technology,_Akure,_Ondo_State.jpg) | MediaMOF, 2021 | CC BY-SA 4.0 | Resized; WebP |
+| `studios` | A long building with a sign reading "Industrial Design Studios" | [Industrial Design Studios, …, Akure2.jpg](https://commons.wikimedia.org/wiki/File:Industrial_Design_Studios,_Federal_University_of_Technology,_Akure2.jpg) | Jesu-loba, 2021 | CC BY-SA 4.0 | Resized; WebP |
+| `road` | A road lined with tall trees (titled "FUTA farm road" on Commons; shown without a name) | [FUTA farm road.jpg](https://commons.wikimedia.org/wiki/File:FUTA_farm_road.jpg) | Omaonu, 2017 | CC BY-SA 4.0 | Resized; WebP. One person far down the road is a few pixels tall and cannot be identified |
+| `tree` | A flowering tree in front of a long yellow building (titled "School of Engineering building beside ETF FUTA" on Commons; shown without a name) | [School of Engineering building beside ETF FUTA.jpg](https://commons.wikimedia.org/wiki/File:School_of_Engineering_building_beside_ETF_FUTA.jpg) | Omaonu, 2017 | CC BY-SA 4.0 | Resized; WebP. People far under the tree cannot be identified |
 
-## David's photos (`docs/design/photos-source/`)
+Of these, the photos used in the app screens are listed with where in `assets/pack.js` (the "used on" field).
 
-None of these is in the repo. The prototype uses the local-only copies in `prototype/photos-local/` when they are on the machine, and the drawn scenes when they are not.
+## David's photos (`docs/design/photos-source/`, and `inspo/images (2).jpg`)
+
+**None is in the repo.** The prototype uses the local-only copies in `prototype/photos-local/` when they are on the machine, and falls back to the Commons photo or the drawn scene when they are not. The committed screenshots are taken with `?local=0`, so they never show them.
 
 | File | What it shows | Source and permission | Use |
 |---|---|---|---|
-| `Federal_University_of_Technology,_Akure.jpg` | The main gate, with people in the street | Same title and size as the public-domain Commons file above, so it was used from Commons as `gate` | In the repo as `gate`, cropped above the people |
-| `FUTA.webp` | The main gate, seen from the road | Source not recorded; no licence known | Local only: `local-gate` (not used on a screen yet) |
-| `images (2).jpg` | A three-storey building with a red roof | Source not recorded; no licence known | Local only: `local-red-roof` (not used on a screen yet) |
-| `images (3).jpg` | A tall building with maroon columns among palm trees | Source not recorded; no licence known | Local only: `local-tall`, the Notices hero. A fresh clone shows the drawn hall scene there |
-| `images (4).jpg` | A long yellow building with parked cars in front | Source not recorded; no licence known | Local only: `local-block` (not used on a screen yet) |
-| `cropped-Oasdom-Federal-University-of-Technology-FUTA-courses.jpg` | A cream three-storey building behind a lawn | The file name suggests a third-party education site; no licence known | Local only: `local-building` (not used on a screen yet) |
-| `Federal-University-of-Technology-Akure-FUTA.jpeg` | The FUTA sign and crest | Carries another site's watermark and an overlaid logo | **Not used** |
+| `inspo/images (2).jpg` | The main gate at night, lit up, three people at its left | No source recorded; no licence known | Local only as `local-gate-night`. Welcome, Home, Map and Timetable heroes show it on David's machine; a fresh clone shows the `gate` photo (day) with the night treatment, or the drawn scene |
+| `photos-source/Federal_University_of_Technology,_Akure.jpg` | The main gate, with people in the street | Same title and size as the public-domain Commons file above | In the repo as `gate`, cropped above the people |
+| `FUTA.webp`, `images (2).jpg`, `images (3).jpg`, `images (4).jpg`, `cropped-Oasdom-…courses.jpg` | A gate, a red-roofed building, a tall building, a long yellow building, a cream building | No source recorded; no licence known | Local only (`prototype/photos-local/`); not used on a screen in this round |
+| `photos-source/Federal-University-of-Technology-Akure-FUTA.jpeg` | The FUTA sign and crest | Carries another site's watermark and logo | Not used |
 
 To move a local photo into the repo:
 1. Find its owner and an open licence or written permission.
-2. Record it in this file.
-3. Move the files from `photos-local/` to `pack/photos/` and drop the `1` (local) flag in `assets/pack.js`.
+2. Record it above.
+3. Move the files to `pack/photos/` and remove the local flag in `assets/pack.js`.
 
-## Searched, not used
+## The approved mockups (`docs/design/inspo/`, not in the repo)
 
-- **FUTA's own websites:** not searched this round. Their photos carry no open licence, so they could only ever be local, and the Commons set already covered the gate, library, schools and halls.
-- **Wikimedia Commons:** I looked at about 50 FUTA files. I didn't use:
-  - those showing people close up
-  - near-duplicates (the second gate photo, a white bungalow)
-  - the wildlife park animals, which are off the brief
-- **Hostels:** Commons has no hostel photos, so the hostel slot uses a drawn scene with a "No photo yet" tag.
+They are the source of truth for look and feel, and are **kept out of git** (listed in `.git/info/exclude`): they contain AI-generated people and photos, and credits that are invented. Nothing from them is shipped: colours were sampled as numbers, layouts were rebuilt in code, and no photo, face, logo or text was copied as an image.
 
-## Drawings
+**Not carried over from the mockups:**
+- the people's faces (lecturers get initials avatars)
+- the invented photo credits
+- the "FUTA's privacy policy" wording (it is Sabi's own)
+- the "Verified" tick on notices (they show their source instead)
+- the satellite map (the map is OpenStreetMap vectors)
 
-- **What they are:** all scenes, the four students, the campus map drawing, the state vignettes, the logo and the icons were drawn for this project as SVG code (`prototype/assets/art.js`).
-- **What they aren't:** the students are original characters, not real people. The buildings are generic types (a lecture block, a hostel, a hall, a library, a gate, a walkway), not real FUTA buildings. The hills and the map are invented shapes.
-- **No outside material:** no AI image generation, no stock art, and nothing traced from the reference mockups in `inspiration/`.
+## Map data
+
+- **Source:** [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, licensed under the Open Database Licence (ODbL) 1.0.
+- **What it is:** an extract of the FUTA campus area (south 7.2925, west 5.1285, north 7.3135, east 5.1500), fetched from the Overpass API on 27 Oct 2026 with `tools/bake-map.mjs`.
+- **What was done:** simplified into vector paths in `prototype/assets/campus-map.js` (1,458 buildings, roads, footpaths, grass, water, pitches, and 25 named places). Place names are exactly as written in OpenStreetMap, including its spelling. The status of every place is "not yet checked by FUTA".
+- **Attribution in the app:** "Map data © OpenStreetMap contributors" with a link to the licence, shown on the map.
+- **No satellite or aerial imagery. No Google Maps or Street View.**
+
+## Icons
+
+[Phosphor Icons](https://phosphoricons.com) 2.1.1 (`@phosphor-icons/core`), MIT licence, copyright 2023 Phosphor Icons. The SVGs used are in `icons/regular/` and `icons/fill/`, with the licence in `icons/LICENSE-Phosphor-MIT.txt`. They are compiled into a sprite by `tools/build-icons.mjs`. The only drawings made for Sabi are the logo and the scenes.
 
 ## Fonts (`docs/design/fonts/`)
 
-Both were downloaded from the official Google Fonts repository ([github.com/google/fonts](https://github.com/google/fonts)), then subset to Basic Latin plus `’ ‘ “ ” … × →` and no-break space, as woff2, with `fonttools` (run outside the repo).
+Both were downloaded from the official [Google Fonts repository](https://github.com/google/fonts) and subset to Basic Latin plus `’ ‘ “ ” … →` and no-break space, as woff2, with `fonttools` (run outside the repo). They total 25.3 KB, under the 40 KB limit.
 
-| Font | File | Licence | Copyright | Changes |
+| Font | Files | Licence | Copyright | Used for |
 |---|---|---|---|---|
-| Bricolage Grotesque | `bricolage-grotesque-800.woff2` (11.7 KB) | SIL Open Font License 1.1, `OFL-BricolageGrotesque.txt` | The Bricolage Grotesque Project Authors ([github.com/ateliertriay/bricolage](https://github.com/ateliertriay/bricolage)) | Instanced at weight 800, optical size 96, width 100; subset |
-| Atkinson Hyperlegible Next | `atkinson-hyperlegible-next.woff2` (11.4 KB) | SIL Open Font License 1.1, `OFL-AtkinsonHyperlegibleNext.txt` | The Atkinson Hyperlegible Next Project Authors ([github.com/googlefonts/atkinson-hyperlegible-next](https://github.com/googlefonts/atkinson-hyperlegible-next)) | Weight axis kept from 400 to 700; subset |
+| Poppins | `poppins-400.woff2`, `poppins-600.woff2`, `poppins-700.woff2` (4.5 KB each) | SIL Open Font License 1.1, `OFL-Poppins.txt` | The Poppins Project Authors ([github.com/itfoundry/Poppins](https://github.com/itfoundry/Poppins)) | All text, as in the mockups |
+| Yellowtail | `yellowtail-400.woff2` (11.8 KB) | Apache License 2.0, `LICENSE-Yellowtail-Apache-2.0.txt` | Astigmatic ([fonts.google.com/specimen/Yellowtail](https://fonts.google.com/specimen/Yellowtail)) | The one handwritten line per screen |
+
+## Drawings
+
+The logo, the scenes (sky, hills, trees, generic building types) and the four students were drawn for this project as SVG code (`prototype/assets/art.js`, `scenes.js`). The students are original characters, not real people, and the buildings are generic types, not real FUTA buildings. No AI image generation and no stock art was used, and nothing was traced from the mockups.

@@ -30,30 +30,38 @@ const line = (ok, text) => { if (!ok) over++; console.log(`${ok ? 'ok  ' : 'OVER
 const kb = (b) => (b / KB).toFixed(1).padStart(6) + ' KB';
 
 // ---------------------------------------------------------------- 1. core
+// What the app ships on first load for this design: tokens, stylesheet, the icon sprite, the logo and art
+// code, the drawn scenes (the fallback behind every photo slot, and the whole look in Lite), motion and
+// Lite, the photo-slot code, the inline head script and the fonts. Zero photos. The campus map is a lazy
+// chunk (Map and Place detail only), measured on its own below.
 const headScript = read('prototype/home.html').match(/<script>([\s\S]*?)<\/script>/)[1];
 const fonts = readdirSync(join(D, 'fonts')).filter((f) => f.endsWith('.woff2'));
 const fontBytes = fonts.reduce((s, f) => s + statSync(join(D, 'fonts', f)).size, 0);
 const core = [
-  ['Tokens (tokens.css)', shipped('tokens.css'), 4 * KB],
-  ['Stylesheet (app.css)', shipped('prototype/assets/app.css'), 16 * KB],
-  ['Art: logo, icons, rings, scenes, students, map (art.js)', shipped('prototype/assets/art.js'), 9 * KB],
+  ['Tokens (tokens.css)', shipped('tokens.css'), 5 * KB],
+  ['Stylesheet (app.css)', shipped('prototype/assets/app.css'), 14 * KB],
+  ['Icon sprite, Phosphor (icons.js)', shipped('prototype/assets/icons.js'), 12 * KB],
+  ['Logo, rings, avatars (art.js)', shipped('prototype/assets/art.js'), 2.5 * KB],
+  ['Drawn scenes and students (scenes.js)', shipped('prototype/assets/scenes.js'), 6 * KB],
   ['Motion and Lite (motion.js + the inline head script)', shipped('prototype/assets/motion.js') + gzs(strip(headScript)), 2.5 * KB],
-  ['Photo slots and the pack switch (pack.js)', shipped('prototype/assets/pack.js'), 2.5 * KB],
+  ['Photo slots and the pack switch (pack.js)', shipped('prototype/assets/pack.js'), 3 * KB],
   [`Fonts, woff2 (${fonts.join(', ')})`, fontBytes, 40 * KB],
 ];
 console.log('Core layer: first load, gzipped');
 for (const [what, bytes, budget] of core) line(bytes <= budget, `${kb(bytes)} of ${kb(budget)}  ${what}`);
 const coreTotal = core.reduce((s, c) => s + c[1], 0);
 line(coreTotal <= 60 * KB, `${kb(coreTotal)} of ${kb(60 * KB)}  Core layer, total`);
+const mapChunk = shipped('prototype/assets/campus-map.js') + shipped('prototype/assets/map.js');
+line(mapChunk <= 40 * KB, `${kb(mapChunk)} of ${kb(40 * KB)}  Map chunk (OpenStreetMap data + renderer), lazy: only Map and Place detail, works offline`);
 
-// Zero photos on first load: no image is referenced from the stylesheets or the pages, and the only
-// code that adds a photo is pack.js show(), which needs the pack downloaded and Lite off.
+// Zero photos on first load: no image is referenced from the stylesheets or the pages, and the only code
+// that adds a photo is pack.js show(), which needs the pack downloaded and Lite off.
 const imageRefs = ['tokens.css', 'prototype/assets/app.css'].flatMap((f) => (read(f).match(/url\([^)]*\.(webp|avif|jpe?g|png)\)/g) || []));
 const pageImgs = readdirSync(join(D, 'prototype')).filter((f) => f.endsWith('.html')).filter((f) => /<img\b/.test(read('prototype/' + f)));
 const gated = /function show[\s\S]*?if \(!on\(\)\) return;/.test(read('prototype/assets/pack.js'));
 line(!imageRefs.length && !pageImgs.length && gated, `${String(imageRefs.length + pageImgs.length).padStart(6)} photos on first load (pack.js adds them only when the pack is on the phone and Lite is off)`);
-const licences = ['OFL-BricolageGrotesque.txt', 'OFL-AtkinsonHyperlegibleNext.txt'].filter((f) => existsSync(join(D, 'fonts', f)));
-line(licences.length === 2, `${String(licences.length).padStart(6)} of 2 font licence files beside the fonts`);
+const licences = ['OFL-Poppins.txt', 'LICENSE-Yellowtail-Apache-2.0.txt'].filter((f) => existsSync(join(D, 'fonts', f))).length + (existsSync(join(D, 'icons', 'LICENSE-Phosphor-MIT.txt')) ? 1 : 0);
+line(licences === 3, `${String(licences).padStart(6)} of 3 licence files (two fonts, the icons)`);
 
 // ---------------------------------------------------------------- 2. the visual pack
 console.log('\nVisual pack: downloaded after the first sync, on a good connection, never in Lite');
@@ -87,7 +95,7 @@ console.log(`     ${kb(localBytes)}  local-only photos on this machine (${local.
 line(openBytes + localBytes <= 1.5 * MB, `${kb(openBytes + localBytes)} of ${kb(1.5 * MB)}  Visual pack, total`);
 
 // ---------------------------------------------------------------- 3. the prototype harness, for reference
-const harness = ['prototype/home.html', 'prototype/assets/strings.js', 'prototype/assets/app.js'].reduce((s, f) => s + gz(f), 0);
+const harness = ['prototype/home.html', 'prototype/assets/copy.js', 'prototype/assets/sample.js', 'prototype/assets/ui.js', 'prototype/assets/screens-app.js'].reduce((s, f) => s + gz(f), 0);
 function gz(f) { return gzs(read(f)); }
 console.log('\nFor reference (not shipped as is: the app renders these screens in React)');
 console.log(`     ${kb(harness)}  prototype harness: the page, the screen renderers and the sample text`);

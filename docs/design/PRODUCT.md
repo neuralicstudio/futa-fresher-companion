@@ -30,7 +30,7 @@ Outdoors and between buildings in Akure daylight *(inferred)*, standing in queue
 - Real states: loading, empty, error, offline, first-run sync, failed sync, 503 busy, expired session (401), not an admin.
 - Plain text content only. No images in content.
 - Accounts are optional and only for admin features.
-- First-load JS+CSS under 150 KB gzip; inline SVG icons. From round 3 (David's brief): up to two open-licensed fonts (40 KB at most), a design core layer of 60 KB gzipped at most, and campus photos only in a separate visual pack of 1.5 MB at most, downloaded later on a good connection, never in Lite.
+- First-load JS+CSS under 150 KB gzip. The design's core layer is about 60 KB gzipped before photos, with open-licensed fonts (40 KB at most) and Phosphor icons; campus photos only in a separate optional pack of 1.5 MB at most, downloaded later on a good connection, never in Lite mode. The map is OpenStreetMap data and works offline.
 
 ## Brand Commitments
 
