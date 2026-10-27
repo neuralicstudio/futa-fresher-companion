@@ -485,7 +485,7 @@ One file, every string, by screen and key. **This document is generated** from [
 | `credits.fontsBody` | Poppins (SIL Open Font Licence) and Yellowtail (Apache 2.0). |
 | `credits.footer` | Same campus, different angles. |
 | `credits.none` | No photo dey downloaded, so no credit to show. Download the photo pack in Settings. |
-| `credits.pending` | Written permission from FUTA is still pending. This photo is not shared yet. |
+| `credits.pending` | Photo: Federal University of Technology, Akure (official Facebook page). Written permission pending. |
 | `credits.placeholdersTitle` | Placeholders |
 | `credits.placeholdersBody` | Some screens show drawings instead of photos. Those na placeholders, no real photo yet. We only show a photo here when we fit credit am. |
 | `credits.attribution` | Photos shared under CC BY-SA 4.0 stay under the same licence. |

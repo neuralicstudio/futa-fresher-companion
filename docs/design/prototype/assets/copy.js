@@ -414,7 +414,7 @@ window.SABI_COPY = {
     fontsBody: 'Poppins (SIL Open Font Licence) and Yellowtail (Apache 2.0).',
     footer: 'Same campus, different angles.',
     none: 'No photo dey downloaded, so no credit to show. Download the photo pack in Settings.',
-    pending: 'Written permission from FUTA is still pending. This photo is not shared yet.',
+    pending: 'Photo: Federal University of Technology, Akure (official Facebook page). Written permission pending.',
     placeholdersTitle: 'Placeholders',
     placeholdersBody: 'Some screens show drawings instead of photos. Those na placeholders, no real photo yet. We only show a photo here when we fit credit am.',
     attribution: 'Photos shared under CC BY-SA 4.0 stay under the same licence.',

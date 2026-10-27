@@ -201,11 +201,11 @@
 
   // ---------------------------------------------------------------- Photo credits
   screens.credits = function () {
-    // Every photo we can credit is listed. The night gate is credited to FUTA but is not in the repo yet (written permission pending), so its row says so.
+    // Every photo we can credit is listed. The night gate is credited to FUTA's official Facebook page, written permission pending, and is not in the repo yet; its row says only that.
     var shown = PK.ids.map(PK.info);
     var cards = shown.map(function (p, i) {
       return '<li class="card credit">' + PK.slot(p.id, 's', SC.scene('block', { daypart: 'night', seed: 70 + i }), 'credit__pic') + '<span class="num-badge">' + (i + 1) + '</span>' +
-        '<div class="credit__body"><b>' + esc(p.alt) + '</b><small>' + t('credits.used', { where: p.used }) + '</small><small>' + t('credits.author', { author: p.author }) + '</small><small>' + t('credits.licence', { licence: p.licence }) + '</small></div>' +
+        '<div class="credit__body"><b>' + esc(p.alt) + '</b><small>' + t('credits.used', { where: p.used }) + '</small>' + (p.local ? '<small class="pending">' + t('credits.pending') + '</small>' : '<small>' + t('credits.author', { author: p.author }) + '</small><small>' + t('credits.licence', { licence: p.licence }) + '</small>') + '</div>' +
         (p.page ? '<a class="go" href="' + esc(p.page) + '" rel="noopener" aria-label="' + t('credits.source') + ': ' + esc(p.alt) + '">' + ic('arrow-up-right') + '</a>' : '') + '</li>';
     }).join('');
     U.shell({ title: C.credits.title, tabs: false, sample: false,

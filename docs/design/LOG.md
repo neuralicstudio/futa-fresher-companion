@@ -357,14 +357,28 @@ The same fix list as the README. One decision worth recording: the Home "Latest 
 ## T5. Not done, on purpose
 
 - **No new screens or refactors** after the wrap-up request.
-- **Impeccable `detect` was not re-run after the last fix batch** (the lockup plate, form container, cats grid, notice outline, headings, light theme removal), because I was told to stop. The batch was checked by Hallmark's render pass, the screenshot run (0 script errors) and a visual read, but **not** by the detector. Run `impeccable detect` on the prototype before trusting it.
+- **(Resolved in T7.) Impeccable `detect` was not re-run after the last fix batch** (the lockup plate, form container, cats grid, notice outline, headings, light theme removal), because I was told to stop. The batch was checked by Hallmark's render pass, the screenshot run (0 script errors) and a visual read, but **not** by the detector. Run `impeccable detect` on the prototype before trusting it.
 - **Light theme:** removed (code, tokens, screenshots), as asked.
 - **Not tested:** a screen reader, landscape, a real low-end phone, Firefox and Safari, 200% text on every new screen (only the screenshot looks at 200%, and no detector pass).
 
 ## T6. Three fixes after review (27 Oct 2026)
 
 1. **Welcome:** the feature card (Find your way / Know your academics / See the gist) was removed; the approved mockup has none. COPY.md lost its 6 strings.
-2. **Night gate photo:** credited to "Federal University of Technology, Akure (official Facebook page)", used with FUTA's permission, in CREDITS.md and on the credits screen, with **FUTA's written OK marked pending**. The file stays local-only (not committed) until David confirms; `check.mjs` now fails if a photos-local file is ever tracked.
+2. **Night gate photo:** credited to "Federal University of Technology, Akure (official Facebook page)" in CREDITS.md and on the credits screen, with **FUTA's written OK marked pending**. The file stays local-only (not committed) until David confirms; `check.mjs` now fails if a photos-local file is ever tracked.
 3. **README:** a first line says the approved mockups in the Inspo folder win over the prototype wherever they differ.
 
-Re-run after the fixes: `check.mjs`, `budget.mjs` (56.1 KB core, 943 KB pack), the runtime network check (all pages local, 0 script errors), Hallmark `--render` (0 FAIL, 0 REFLEX, 0 WARN), screenshots of Welcome and Credits. Impeccable `detect` was still not re-run.
+Re-run after the fixes: `check.mjs`, `budget.mjs` (56.1 KB core, 943 KB pack), the runtime network check (all pages local, 0 script errors), Hallmark `--render` (0 FAIL, 0 REFLEX, 0 WARN), screenshots of Welcome and Credits. Impeccable `detect` was re-run afterwards (T7).
+
+## T7. Impeccable detect, and the credit wording (27 Oct 2026)
+
+**Detector run.** 21 pages and 27 extra states (including 200% text on 9 screens), at 390 and 1280px, served over a local http server (127.0.0.1:8801, mine, stopped after I checked its command line).
+
+| Run | 390px | 1280px | What it found |
+|---|---|---|---|
+| First | 11 | 142 | At 1280: `nested-cards` on every card, because the 560px app column had a background and a shadow, so the detector read it as a card around everything (about 130 findings, one cause). Also: the map attribution padding, the tight line height of the Publish textarea, an orphaned word in two places, and at 200% text: the password meter, the day strip, the hero lead on Notices and the department blurb overflowing the screen |
+| Second | 1 | 0 | One orphaned word in the Register error list |
+| Final | **0** | **0** | Fixed: the column's shadow removed; padding, line height and text wrapping set; the meter, hero and department panel allowed to shrink; the day strip shows half a day at rest so it reads as scrollable |
+
+**Credit wording.** The night gate credit now reads exactly "Photo: Federal University of Technology, Akure (official Facebook page). Written permission pending." in CREDITS.md and on the credits screen. Every phrase saying it is used with permission was removed (README, BRIEF, LOG, CREDITS, `pack.js`), and `check.mjs` fails if any returns. The file remains local-only.
+
+**Re-run:** `check.mjs`, `budget.mjs` (core 56.2 KB), Hallmark `--render` (0 FAIL, 0 REFLEX, 0 WARN), the 104 screenshots (0 script errors).

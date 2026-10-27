@@ -56,7 +56,7 @@ A **sample-data note** shows at the top of every screen in the prototype (hidden
 
 ## Budget
 
-The core layer (first load, with both fonts and the icon sprite, **no photos**) is **56.1 KB gzipped of 60 KB**; fonts **24.7 KB of 40 KB** (three Poppins weights and Yellowtail, OFL and Apache 2.0, subset to Latin, woff2). The map is a separate lazy chunk (34 KB). The photo pack is **943 KB of 1.5 MB** (11 open-licensed photos in the repo, 22 files, plus 12 local-only files on one machine), every photo WebP under 60 KB with no metadata. `node docs/design/tools/budget.mjs` measures all of it and exits 1 if anything is over.
+The core layer (first load, with both fonts and the icon sprite, **no photos**) is **56.2 KB gzipped of 60 KB**; fonts **24.7 KB of 40 KB** (three Poppins weights and Yellowtail, OFL and Apache 2.0, subset to Latin, woff2). The map is a separate lazy chunk (34 KB). The photo pack is **943 KB of 1.5 MB** (11 open-licensed photos in the repo, 22 files, plus 12 local-only files on one machine), every photo WebP under 60 KB with no metadata. `node docs/design/tools/budget.mjs` measures all of it and exits 1 if anything is over.
 
 ## Checks
 

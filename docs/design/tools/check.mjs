@@ -77,7 +77,7 @@ if (!localInRepo.length) ok(`${creditedCount} of ${onDisk.length} photos in the 
 const localIds = PK.ids.filter((id) => PK.info(id).local);
 for (const id of localIds) {
   const p = PK.info(id);
-  const sound = /Federal University of Technology, Akure \(official Facebook page\)/.test(p.author) && /pending/i.test(p.licence) && /permission pending|pending/i.test(credits);
+  const sound = /Federal University of Technology, Akure \(official Facebook page\)/.test(p.author) && /pending/i.test(p.licence) && credits.includes('Photo: Federal University of Technology, Akure (official Facebook page). Written permission pending.') && !/used with (FUTA'?s? )?permission/i.test(credits + p.licence + p.author);
   sound ? ok(`local-only photo ${id}: credited to "${p.author}", permission pending, listed in CREDITS.md, file not in the repo`) : fail(`local-only photo ${id} lacks its credit or the pending-permission note`);
 }
 const tracked = (await import('node:child_process')).execSync('git ls-files docs/design/prototype/photos-local', { encoding: 'utf8' }).trim();
