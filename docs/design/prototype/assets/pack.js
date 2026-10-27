@@ -8,7 +8,7 @@
 // the Settings screen (localStorage "sabi-pack"). The default is ready. ?local=0 hides the photos that live
 // in photos-local/ (David's own, not in the repo), which is how the committed screenshots are made.
 //
-// Every entry below is a real photo with a verified Wikimedia Commons file page. Authors and licences
+// Every entry below is a real photo with a verified credit: a Wikimedia Commons file page, or (the one local-only entry) FUTA's own page and permission. Authors and licences
 // were read from the Commons API on 2026-10-27 and are repeated in docs/design/CREDITS.md. A name is
 // shown only when the photo itself shows it on a sign; otherwise alt text says only what is visible.
 (function () {
@@ -29,8 +29,10 @@
     studios: [['#99c3e0', '#6c7a6c', '#877042'], 'A long building with a sign reading "Industrial Design Studios"', 'Jesu-loba', BYSA, C + 'Industrial_Design_Studios,_Federal_University_of_Technology,_Akure2.jpg', 'Academics'],
     road: [['#5b6766', '#5f653d', '#77865e'], 'A road lined with tall trees', 'Omaonu', BYSA, C + 'FUTA_farm_road.jpg', 'Home, Register, Login'],
     tree: [['#98b2b6', '#718244', '#847c28'], 'A flowering tree in front of a long yellow building', 'Omaonu', BYSA, C + 'School_of_Engineering_building_beside_ETF_FUTA.jpg', 'Settings, Admin'],
-    // David's own photos, source not recorded, kept out of git. The committed screenshots never show them.
-    'local-gate-night': [['#0a0f2a', '#3a2418', '#1a1208'], 'The main gate at night, lit up', 'supplied by David, source not recorded', 'no licence known (local only)', '', 'Welcome, Home (local preview only)', 1],
+    // The night gate: a photo from FUTA's official Facebook page, used with FUTA's permission. David is adding
+    // FUTA's written OK, which is still pending, so the file stays LOCAL ONLY (photos-local/, out of git) until he
+    // confirms. The committed screenshots never show it (they use ?local=0).
+    'local-gate-night': [['#0a0f2a', '#3a2418', '#1a1208'], 'The main gate at night, lit up', 'Federal University of Technology, Akure (official Facebook page)', "Used with FUTA's permission (written confirmation pending)", '', 'Welcome, Home, Map, Timetable, First sync (local preview only, not in the repo yet)', 1],
   };
   function root() { return document.documentElement; }
   function state() {

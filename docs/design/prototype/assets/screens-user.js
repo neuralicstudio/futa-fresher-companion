@@ -201,8 +201,8 @@
 
   // ---------------------------------------------------------------- Photo credits
   screens.credits = function () {
-    // Only photos we can credit are listed. Local-only photos have no known licence: they are placeholders, not credits.
-    var shown = PK.ids.map(PK.info).filter(function (p) { return !p.local; });
+    // Every photo we can credit is listed. The night gate is credited to FUTA but is not in the repo yet (written permission pending), so its row says so.
+    var shown = PK.ids.map(PK.info);
     var cards = shown.map(function (p, i) {
       return '<li class="card credit">' + PK.slot(p.id, 's', SC.scene('block', { daypart: 'night', seed: 70 + i }), 'credit__pic') + '<span class="num-badge">' + (i + 1) + '</span>' +
         '<div class="credit__body"><b>' + esc(p.alt) + '</b><small>' + t('credits.used', { where: p.used }) + '</small><small>' + t('credits.author', { author: p.author }) + '</small><small>' + t('credits.licence', { licence: p.licence }) + '</small></div>' +

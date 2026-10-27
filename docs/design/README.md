@@ -1,5 +1,7 @@
 # Sabi design handoff (docs/design)
 
+**The approved mockups in the design Inspo folder win over this prototype wherever they differ. The prototype is a reference for tokens, components, copy and states.**
+
 The handoff for the FUTA campus guide (working name **Sabi**), built from the approved mockups. It is **design only**: nothing in `web/src`, `api`, `db` or `docs/openapi.yaml` changed, and no dependency was added. **Dark only for now**; a light theme is a later task.
 
 Start with [prototype/index.html](prototype/index.html) (double-click it; it works from the file system with no server). Every screen has a **Prototype** button at the left edge: switch its state, Lite mode, the photo pack and who is signed in.
@@ -23,7 +25,7 @@ Start with [prototype/index.html](prototype/index.html) (double-click it; it wor
 1. **Five tabs only**: Home, Map, Academics, Timetable, Notices. Settings and Admin open from the profile icon (Admin only for admins).
 2. **"Verified" only when a record is truly verified** (an admin did it; who and when are in its Source). **Notices show their source** ("From SUG"), never "Verified".
 3. **"Sabi's privacy policy"**, not FUTA's. The footer says **"Unofficial app, not affiliated with FUTA."**
-4. **Every credit in the mockups was invented.** The credits here are read from the real Wikimedia Commons file pages (author, licence, link), see [CREDITS.md](CREDITS.md). Photos we cannot credit are **placeholders** (drawn scenes).
+4. **Every credit in the mockups was invented.** The credits here are read from the real Wikimedia Commons file pages (author, licence, link), see [CREDITS.md](CREDITS.md). Photos we cannot credit are **placeholders** (drawn scenes). The night gate photo is credited to FUTA's official Facebook page and stays local until FUTA's written OK arrives.
 5. **No invented lecturers or faces**: initials avatars and "Prof. A. Sample" style names.
 6. **At most one handwritten line per screen** (the hero kicker). Pidgin everywhere else; **the notice text is whatever the admin wrote**.
 7. **Email fields accept any email** (the placeholder is gmail, not futa.edu.ng).

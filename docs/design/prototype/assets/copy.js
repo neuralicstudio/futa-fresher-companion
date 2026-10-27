@@ -69,12 +69,6 @@ window.SABI_COPY = {
     start: 'Oya, make we start!',
     haveAccount: 'I don get account.',
     login: 'Log in',
-    pillars: [
-      { title: 'Find your way', body: 'Lecture theatre, library, hostel. No waka aimlessly.' },
-      { title: 'Know your academics', body: 'Schools, courses and timetable, all in one place.' },
-      { title: 'See the gist', body: 'Notices from SUG, your school and your department.' },
-    ],
-    dots: 'Step {n} of {total}',
   },
 
   home: {
@@ -420,6 +414,7 @@ window.SABI_COPY = {
     fontsBody: 'Poppins (SIL Open Font Licence) and Yellowtail (Apache 2.0).',
     footer: 'Same campus, different angles.',
     none: 'No photo dey downloaded, so no credit to show. Download the photo pack in Settings.',
+    pending: 'Written permission from FUTA is still pending. This photo is not shared yet.',
     placeholdersTitle: 'Placeholders',
     placeholdersBody: 'Some screens show drawings instead of photos. Those na placeholders, no real photo yet. We only show a photo here when we fit credit am.',
     attribution: 'Photos shared under CC BY-SA 4.0 stay under the same licence.',

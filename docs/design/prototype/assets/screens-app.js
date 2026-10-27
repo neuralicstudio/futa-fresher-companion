@@ -26,15 +26,12 @@
 
   // ---------------------------------------------------------------- Welcome
   screens.welcome = function () {
-    var pillars = C.welcome.pillars.map(function (p, i) {
-      return '<li><span class="pillar__icon">' + ic(['map-pin', 'book-open-text', 'bell'][i]) + '</span><span><b>' + esc(p.title) + '</b><small>' + esc(p.body) + '</small></span>' + ic('arrow-right', 'ic--sm') + '</li>';
-    }).join('');
     U.shell({
       title: C.welcome.title, tabs: false, mainCls: 'main--welcome', sample: false,
       hero: U.hero({ size: 'tall', cls: 'hero--welcome', photo: NIGHT_GATE, scene: 'gate', seed: 11, people: [[0, 92, 'walk'], [1, 326, 'wave']], kicker: C.welcome.kicker, title: C.welcome.title, gold: C.welcome.titleGold, lead: C.welcome.lead, noProfile: true, id: 'w-h',
         after: '<div class="cta">' + U.btn(C.welcome.start, { kind: 'maroon', href: U.href('sync'), after: 'arrow-right', cls: 'btn--block btn--lg' }) + '</div>' +
           '<p class="login-line">' + t('welcome.haveAccount') + ' <a href="' + U.href('login') + '">' + t('welcome.login') + '</a></p>' }),
-      content: '<ul class="pillars card" aria-label="' + t('welcome.title') + '">' + pillars + '</ul>',
+      content: '',
     });
   };
 

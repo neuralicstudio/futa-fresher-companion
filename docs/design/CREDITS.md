@@ -6,7 +6,7 @@ Where every photo, map, icon and font in the design came from, its licence, and 
 
 ## Rules this follows
 
-- **Sources:** openly licensed images only (Wikimedia Commons), plus the photos David supplied, which have no recorded licence and stay out of the repo.
+- **Sources:** openly licensed images (Wikimedia Commons) in the repo. Photos David supplied stay out of the repo: the night gate is credited to FUTA with permission pending, and the rest have no recorded licence.
 - **Names:** a building is named only when its sign is readable in the photo. Otherwise the alt text says what is visible and nothing more.
 - **Faces:** no identifiable faces. The one photo with people in the street was cropped above them.
 - **Processing:** each photo was cropped where noted, resized to 768 px and 384 px wide and re-encoded as WebP in headless Chrome, which drops all EXIF, GPS and camera metadata. `tools/budget.mjs` fails if any file has EXIF or XMP, or is over 60 KB.
@@ -32,21 +32,26 @@ Each is in the repo at two sizes: `<id>-l.webp` (768 px) and `<id>-s.webp` (384 
 
 Of these, the photos used in the app screens are listed with where in `assets/pack.js` (the "used on" field).
 
-## David's photos (`docs/design/photos-source/`, and `inspo/images (2).jpg`)
+## The night gate photo (local only, permission pending)
 
-**None is in the repo.** The prototype uses the local-only copies in `prototype/photos-local/` when they are on the machine, and falls back to the Commons photo or the drawn scene when they are not. The committed screenshots are taken with `?local=0`, so they never show them.
+| File | What it shows | Credit | Status |
+|---|---|---|---|
+| `prototype/photos-local/local-gate-night-{l,s}.webp` (from `inspo/images (2).jpg`) | The main gate at night, lit up, three people at its left | **Photo: Federal University of Technology, Akure (official Facebook page)** | **Used with FUTA's permission. FUTA's written confirmation is pending (David is adding it).** The file is **not in the repo and must not be committed until David confirms.** It is kept in `prototype/photos-local/`, which `.git/info/exclude` keeps out of git. |
+
+- **Where it shows:** the Welcome, Home, Map, Timetable and First sync heroes, **on David's machine only**. A fresh clone shows the credited daytime `gate` photo (darkened) or the drawn gate scene. The committed screenshots are taken with `?local=0` and never show it.
+- **The credits screen** lists it with the credit above and the line "Written permission from FUTA is still pending. This photo is not shared yet."
+- **Faces:** three people stand at the left of the gate, small and unidentifiable. If FUTA's written OK does not cover them, crop them out before it is committed.
+- **To move it into the repo** once David has FUTA's written OK: record the confirmation here, move the two files to `prototype/pack/photos/`, remove the local flag (the last `1`) in `assets/pack.js`, and run `node docs/design/tools/budget.mjs` and `check.mjs`.
+
+## David's other photos (`docs/design/photos-source/`)
+
+**None is in the repo.** They are placeholders on David's machine, never listed as credited.
 
 | File | What it shows | Source and permission | Use |
 |---|---|---|---|
-| `inspo/images (2).jpg` | The main gate at night, lit up, three people at its left | No source recorded; no licence known | Local only as `local-gate-night`. Welcome, Home, Map and Timetable heroes show it on David's machine; a fresh clone shows the `gate` photo (day) with the night treatment, or the drawn scene |
-| `photos-source/Federal_University_of_Technology,_Akure.jpg` | The main gate, with people in the street | Same title and size as the public-domain Commons file above | In the repo as `gate`, cropped above the people |
-| `FUTA.webp`, `images (2).jpg`, `images (3).jpg`, `images (4).jpg`, `cropped-Oasdom-…courses.jpg` | A gate, a red-roofed building, a tall building, a long yellow building, a cream building | No source recorded; no licence known | Local only (`prototype/photos-local/`); not used on a screen in this round |
-| `photos-source/Federal-University-of-Technology-Akure-FUTA.jpeg` | The FUTA sign and crest | Carries another site's watermark and logo | Not used |
-
-To move a local photo into the repo:
-1. Find its owner and an open licence or written permission.
-2. Record it above.
-3. Move the files to `pack/photos/` and remove the local flag in `assets/pack.js`.
+| `Federal_University_of_Technology,_Akure.jpg` | The main gate, with people in the street | Same title and size as the public-domain Commons file above | In the repo as `gate`, cropped above the people |
+| `FUTA.webp`, `images (2).jpg`, `images (3).jpg`, `images (4).jpg`, `cropped-Oasdom-…courses.jpg` | A gate, a red-roofed building, a tall building, a long yellow building, a cream building | No source recorded; no licence known | Local only (`prototype/photos-local/`); not used on a screen |
+| `Federal-University-of-Technology-Akure-FUTA.jpeg` | The FUTA sign and crest | Carries another site's watermark and logo | Not used |
 
 ## The approved mockups (`docs/design/inspo/`, not in the repo)
 

@@ -9,7 +9,7 @@
 /* Hallmark · answered F7 · pills sit on controls, chips, the tab bar, badges and avatars; cards and photos take --radius-card */
 /* Hallmark · waive 72 · details.proto, the review bar fixed at the edge · the prototype's state and theme bar is review chrome the app never ships */
 /* Hallmark · waive 80 · svg.scene, svg.campus-map · the drawn scene is the fallback behind every photo slot and the whole look in Lite; the map is OpenStreetMap data drawn as vectors, which is what a map is */
-/* Hallmark · answered F5 · .iconbtn, .dept__icon, .pillar__icon, .tile__ic, .door-style discs · each is one round plate that holds one icon, the mockups' own device; there is one per element, never a tinted coin under a card icon */
+/* Hallmark · answered F5 · .iconbtn, .dept__icon, .tile__ic, .door-style discs · each is one round plate that holds one icon, the mockups' own device; there is one per element, never a tinted coin under a card icon */
 /* Hallmark · waive 29 · .badge-ring · the mockups' countdown badge: the gold ring is its glow; the shadow is neutral and offset */
 /* Note: Hallmark's static pass reads gate 40 (1.37:1, 1.57:1) on .tile__ic and .icon-cell as if their gold icons sat on a light fallback. Computed in the browser they are gold #fcc13c on #12050e and #1b0714 (about 11:1), and they are non-text. Dismissed in LOG.md. */
 /* Hallmark · waive 39b · .btn--lg, the 56px actions · the mockups' primary buttons, sized for a thumb */
@@ -454,7 +454,7 @@ a.srow, .srow--btn { cursor: pointer; }
 .credits { display: grid; gap: var(--space-sm); }
 .credit { grid-template-columns: 4.5rem minmax(0, 1fr) auto; align-items: center; column-gap: var(--space-sm); padding: var(--space-xs); border-radius: var(--radius-md); }
 .credit__pic { width: 4.5rem; height: 4.5rem; border-radius: var(--radius-sm); } .credit .num-badge { position: absolute; left: var(--space-xs); top: var(--space-xs); margin: 0; width: 1.75rem; }
-.credit__body { display: grid; gap: var(--space-3xs); min-width: 0; } .credit__body b { overflow-wrap: anywhere; font-size: var(--text-sm); } .credit__body small { color: var(--color-text-2); overflow-wrap: anywhere; }
+.credit__body { display: grid; gap: var(--space-3xs); min-width: 0; } .credit__body b { overflow-wrap: anywhere; font-size: var(--text-sm); } .credit__body small { color: var(--color-text-2); overflow-wrap: anywhere; } .credit__body .pending { color: var(--color-amber); font-weight: var(--weight-strong); }
 .role-bar { display: flex; align-items: center; gap: var(--space-sm); min-height: 3.5rem; padding: var(--space-xs) var(--space-md); border-radius: var(--radius-pill); border: var(--outline) solid var(--color-outline); background: var(--color-field); color: var(--color-text); } .role-bar .ic { color: var(--color-gold); }
 .tiles { display: grid; gap: var(--space-sm); grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr)); }
 .tile { position: relative; display: grid; gap: var(--space-xs); min-height: 12.5rem; padding: var(--space-md); border-radius: var(--radius-card); border: var(--outline) solid var(--color-outline); background: var(--grad-card); text-decoration: none; align-content: start; color: var(--color-text-2); }
@@ -501,9 +501,7 @@ body.is-sheet { overflow: hidden; }
 .index-group { display: grid; gap: var(--space-sm); } .index { display: grid; gap: var(--space-sm); grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); } .index__item { padding: var(--space-sm) var(--space-md); }
 .index__link { display: flex; align-items: center; justify-content: space-between; gap: var(--space-sm); min-height: var(--hit); font-weight: var(--weight-display); font-size: var(--text-lg); text-decoration: none; color: var(--color-text); }
 .index__states { display: flex; flex-wrap: wrap; gap: var(--space-2xs) var(--space-sm); } .index__states a { display: inline-flex; align-items: center; min-height: var(--hit); color: var(--color-gold); font-size: var(--text-sm); }
-.pillars { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 0; border-color: var(--color-gold); } .pillars li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--space-sm); align-items: center; padding: var(--space-sm) var(--space-md); border-top: var(--rule-hair) solid var(--color-rule); color: var(--color-gold); } .pillars li:first-child { border-top: 0; } .pillars li > span:nth-child(2) { display: grid; color: var(--color-text-2); } .pillars small { color: var(--color-muted); font-size: var(--text-sm); }
-.pillar__icon { display: grid; place-items: center; width: 3rem; height: 3rem; border-radius: 50%; border: var(--outline) solid var(--color-outline); background: var(--color-bg-raised); }
-.main--welcome .page { padding-top: var(--space-md); }
+.main--welcome .page:empty { display: none; }
 
 /* ---------------------------------------------------------------- the prototype bar (review chrome, not the app) */
 .proto { position: fixed; z-index: var(--z-dialog); left: var(--space-xs); top: 50%; translate: 0 -50%; max-width: calc(100% - 2 * var(--space-xs)); width: 16rem; border-radius: var(--radius-md); background: var(--color-card); color: var(--color-text); border: var(--outline) solid var(--color-outline); box-shadow: var(--shadow-float); font-size: var(--text-sm); }

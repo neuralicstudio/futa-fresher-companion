@@ -7,8 +7,8 @@
 //     which the browser does not fetch.
 //  2. Pages: every page links only to pages that exist (the screens call each other by name).
 //  3. Credits: every photo file in pack/photos has an entry in pack.js with an author, a licence and a
-//     Commons file page, and appears in CREDITS.md. Photos in photos-local/ have no credit by design and
-//     are never listed as credited.
+//     Commons file page, and appears in CREDITS.md. A photo in photos-local/ must carry its credit and the
+//     pending-permission note, and no file in photos-local may be tracked by git.
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -75,7 +75,13 @@ for (const id of onDisk) {
 const localInRepo = onDisk.filter((id) => PK.info(id) && PK.info(id).local);
 if (!localInRepo.length) ok(`${creditedCount} of ${onDisk.length} photos in the repo are credited with a real author, licence and Commons file page, and listed in CREDITS.md`);
 const localIds = PK.ids.filter((id) => PK.info(id).local);
-ok(`${localIds.length} local-only photo entr${localIds.length === 1 ? 'y' : 'ies'} (${localIds.join(', ')}): placeholders, never shown as credited, files kept out of git`);
+for (const id of localIds) {
+  const p = PK.info(id);
+  const sound = /Federal University of Technology, Akure \(official Facebook page\)/.test(p.author) && /pending/i.test(p.licence) && /permission pending|pending/i.test(credits);
+  sound ? ok(`local-only photo ${id}: credited to "${p.author}", permission pending, listed in CREDITS.md, file not in the repo`) : fail(`local-only photo ${id} lacks its credit or the pending-permission note`);
+}
+const tracked = (await import('node:child_process')).execSync('git ls-files docs/design/prototype/photos-local', { encoding: 'utf8' }).trim();
+tracked ? fail('files in photos-local are tracked by git: ' + tracked) : ok('no file in prototype/photos-local is tracked by git');
 if (existsSync(join(P, 'photos-local'))) {
   const stray = readdirSync(join(P, 'photos-local')).length;
   ok(`prototype/photos-local has ${stray} files on this machine; they must stay out of git (see .git/info/exclude)`);

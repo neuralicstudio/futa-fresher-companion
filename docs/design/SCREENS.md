@@ -24,12 +24,12 @@ A short spec for every screen: what it is for, what is on it in order, its data,
 
 ## 1. Welcome (`welcome.html`)
 
-**For:** the first screen before anything is saved. **Mockups:** Welcome (night gate; "Get started"), and the "Oya, fresher!" variant. I used the second's copy and the first's layout (one maroon button, a text link for Log in), with the three pillars from the third as a card below.
-- Full-bleed night gate hero (the photo pack, or the drawn gate scene), logo lockup top left, no profile icon, no tab bar.
-- Handwritten "Oya, fresher!", title "Welcome to FUTA, **Akure**", one line, a maroon "Oya, make we start!" button (goes to First-time sync), "I don get account. Log in".
-- A gold-outlined card: Find your way, Know your academics, See the gist.
+**For:** the first screen before anything is saved. **Mockup:** Welcome (night gate; "Oya, fresher!"; one button; a text link for Log in). Exactly what the mockup has and nothing more.
+- Full-bleed night gate hero (the photo pack, or the drawn gate scene), the logo lockup top left, no profile icon, no tab bar.
+- Handwritten "Oya, fresher!", title "Welcome to FUTA, **Akure**", one line of text, a maroon "Oya, make we start!" button (goes to First-time sync), "I don get account. Log in", and the footer.
+- **No feature card.** (An earlier draft had three "Find your way / Know your academics / See the gist" rows; the approved mockup has none, so they were removed.)
 - **Data:** none. **States:** none (it is static).
-- **Photo:** `gate`; David's night photo when present locally. On first run no pack is on the phone, so the scene shows.
+- **Photo:** the night gate photo is local-only for now (see CREDITS.md); a fresh clone shows the credited daytime `gate` photo, darkened, or the drawn gate scene.
 
 ## 2. Home (`home.html`)
 **Mockups:** Dashboard (12 mins badge, Next Lecture, Latest Notice, Popular Places).

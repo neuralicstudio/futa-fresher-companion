@@ -12,7 +12,7 @@ One file, every string, by screen and key. **This document is generated** from [
 - **It's Sabi's, not FUTA's.** The privacy policy is "Sabi's privacy policy". The footer says "Unofficial app, not affiliated with FUTA." It is "FUTA no go hard for you. We dey with you." as a friendly sign-off, not a claim of affiliation.
 - **Mechanics.** Sentence case. No em or en dashes. No emoji. Placeholders are {braces}. Plurals are separate keys (`department1`, `departments`).
 
-## Strings (599)
+## Strings (593)
 
 ### App (shared)
 
@@ -87,13 +87,6 @@ One file, every string, by screen and key. **This document is generated** from [
 | `welcome.start` | Oya, make we start! |
 | `welcome.haveAccount` | I don get account. |
 | `welcome.login` | Log in |
-| `welcome.pillars.0.title` | Find your way |
-| `welcome.pillars.0.body` | Lecture theatre, library, hostel. No waka aimlessly. |
-| `welcome.pillars.1.title` | Know your academics |
-| `welcome.pillars.1.body` | Schools, courses and timetable, all in one place. |
-| `welcome.pillars.2.title` | See the gist |
-| `welcome.pillars.2.body` | Notices from SUG, your school and your department. |
-| `welcome.dots` | Step {n} of {total} |
 
 ### Home
 
@@ -492,6 +485,7 @@ One file, every string, by screen and key. **This document is generated** from [
 | `credits.fontsBody` | Poppins (SIL Open Font Licence) and Yellowtail (Apache 2.0). |
 | `credits.footer` | Same campus, different angles. |
 | `credits.none` | No photo dey downloaded, so no credit to show. Download the photo pack in Settings. |
+| `credits.pending` | Written permission from FUTA is still pending. This photo is not shared yet. |
 | `credits.placeholdersTitle` | Placeholders |
 | `credits.placeholdersBody` | Some screens show drawings instead of photos. Those na placeholders, no real photo yet. We only show a photo here when we fit credit am. |
 | `credits.attribution` | Photos shared under CC BY-SA 4.0 stay under the same licence. |

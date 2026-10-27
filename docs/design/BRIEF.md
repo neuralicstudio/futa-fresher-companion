@@ -20,7 +20,7 @@ The approved mockups, rebuilt as code: dark, the FUTA gate at night, crimson-out
 ## Open for David
 
 1. **Light theme.** Dark only for now, as asked. The light code and screenshots were removed.
-2. **Real photos.** The committed photos are the 11 we can credit. For a night gate hero, a hostel, the walkway and lecture theatres inside, we need photos with an owner and a licence (PHOTOS.md). Six of David's photos (including the night gate) have no recorded source, so they are placeholders on his machine only.
+2. **The night gate photo.** It comes from FUTA's official Facebook page, used with FUTA's permission, credited in CREDITS.md and on the credits screen. **FUTA's written OK is pending**, so the file stays local-only and is not committed until David confirms. Other missing photos (a hostel, the walkway, lecture theatres inside) need an owner and a licence (PHOTOS.md).
 3. **Map names.** Place names are exactly as written in OpenStreetMap, including odd spellings. FUTA needs to check them before any can say "Verified".
 4. **Academics data.** The schools and departments are sample data; the real list needs the data team.
 5. **Opening hours** are not known for any place, so every place says "Opening hours no dey" until an admin adds them.

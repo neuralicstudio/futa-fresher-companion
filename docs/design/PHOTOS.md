@@ -27,7 +27,7 @@ Hero text never sits on a raw photo. A night scrim is under every line (72% or m
 ## Which photos may be committed
 
 - **Committed** (`prototype/pack/photos/`): photos with an open licence and a verified credit. Today: 11 from Wikimedia Commons.
-- **Local only** (`prototype/photos-local/`, excluded from git): photos with no known licence. They are **placeholders on David's machine** and never listed as credited. The committed screenshots are taken with `?local=0`, so they show the credited photos or the drawings.
+- **Local only** (`prototype/photos-local/`, excluded from git): the night gate (FUTA's official Facebook page, credited, **written permission pending**) and photos with no known licence (placeholders, never credited). The committed screenshots are taken with `?local=0`, so they show the credited photos or the drawings.
 - To add a photo to the repo: find its owner and licence, record it in CREDITS.md and `assets/pack.js`, export at 768 and 384 px as WebP of at most 60 KB, run `node docs/design/tools/budget.mjs` and `check.mjs`.
 
 ## Photos wanted (no open photo exists yet)

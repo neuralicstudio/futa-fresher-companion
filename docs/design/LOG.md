@@ -360,3 +360,11 @@ The same fix list as the README. One decision worth recording: the Home "Latest 
 - **Impeccable `detect` was not re-run after the last fix batch** (the lockup plate, form container, cats grid, notice outline, headings, light theme removal), because I was told to stop. The batch was checked by Hallmark's render pass, the screenshot run (0 script errors) and a visual read, but **not** by the detector. Run `impeccable detect` on the prototype before trusting it.
 - **Light theme:** removed (code, tokens, screenshots), as asked.
 - **Not tested:** a screen reader, landscape, a real low-end phone, Firefox and Safari, 200% text on every new screen (only the screenshot looks at 200%, and no detector pass).
+
+## T6. Three fixes after review (27 Oct 2026)
+
+1. **Welcome:** the feature card (Find your way / Know your academics / See the gist) was removed; the approved mockup has none. COPY.md lost its 6 strings.
+2. **Night gate photo:** credited to "Federal University of Technology, Akure (official Facebook page)", used with FUTA's permission, in CREDITS.md and on the credits screen, with **FUTA's written OK marked pending**. The file stays local-only (not committed) until David confirms; `check.mjs` now fails if a photos-local file is ever tracked.
+3. **README:** a first line says the approved mockups in the Inspo folder win over the prototype wherever they differ.
+
+Re-run after the fixes: `check.mjs`, `budget.mjs` (56.1 KB core, 943 KB pack), the runtime network check (all pages local, 0 script errors), Hallmark `--render` (0 FAIL, 0 REFLEX, 0 WARN), screenshots of Welcome and Credits. Impeccable `detect` was still not re-run.
