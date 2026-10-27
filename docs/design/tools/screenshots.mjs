@@ -28,33 +28,39 @@ const PROTO = join(HERE, '..', 'prototype');
 const PRIVATE = process.argv.includes('--private');
 const OUT = join(HERE, '..', PRIVATE ? 'screenshots-private' : 'screenshots');
 const WIDTHS = [390, 768];
+const SKIP_768 = new Set(['sync', 'states', 'components', 'index']);
 
 // [file, states] in the same order as the prototype index. 'default' is the normal state.
-const SCREENS = PRIVATE ? [['home', ['default']], ['announcements', ['default']], ['settings', ['default']]] : [
+const SCREENS = PRIVATE ? [['welcome', ['default']], ['home', ['default']], ['sync', ['default']]] : [
   ['welcome', ['default']],
-  ['first-sync', ['default', 'done']],
-  ['home', ['default', 'offline', 'syncFailed', 'noDept']],
+  ['sync', ['default', 'done', 'failed']],
+  ['home', ['default', 'offline', 'syncFailed', 'noDept', 'noNotice']],
   ['map', ['default', 'offline', 'searchEmpty']],
-  ['academics', ['default', 'loading', 'empty', 'error', 'offline']],
-  ['department', ['default', 'loading', 'empty', 'error', 'notFound']],
-  ['timetable', ['default', 'loading', 'empty', 'levelEmpty', 'error']],
-  ['announcements', ['default', 'loading', 'empty', 'error', 'offline']],
-  ['login', ['default', 'registered', 'invalid', 'sending', 'wrong', 'busy', 'offline']],
-  ['register', ['default', 'invalid', 'busy']],
-  ['admin', ['default', 'signedOut', 'notAdmin', 'session', 'loading', 'empty', 'error', 'confirm', 'published', 'invalid']],
-  ['settings', ['default', 'lite', 'offline']],
+  ['place', ['default', 'noPhoto', 'notFound']],
+  ['academics', ['default', 'loading', 'empty', 'error']],
+  ['timetable', ['default', 'loading', 'empty', 'error', 'noDept']],
+  ['notices', ['default', 'loading', 'empty', 'error']],
+  ['notice', ['default', 'notFound']],
+  ['register', ['default', 'invalid', 'taken', 'sending', 'busy']],
+  ['login', ['default', 'invalid', 'wrong', 'sending', 'busy', 'offline']],
+  ['settings', ['default', 'offline']],
+  ['credits', ['default']],
+  ['admin', ['default', 'signedOut', 'session']],
+  ['publish', ['default', 'invalid', 'published', 'session']],
+  ['mynotices', ['default', 'confirm', 'drafts', 'empty']],
+  ['verify', ['default', 'detail', 'needSource', 'verified', 'empty', 'offline']],
+  ['role', ['default']],
+  ['states', ['default']],
   ['components', ['default']],
   ['index', ['default']],
 ];
-// The extra looks, at phone width only: [screen, state, look]. Looks: dark, lite, a daypart, text200 (WCAG 1.4.4).
-// Looks: dark, lite, nopack (the photos not downloaded: drawn scenes everywhere), a daypart, text200.
+// Looks, at phone width (dark only for now): lite, nopack (the photo pack not on the
+// phone: drawings everywhere), waiting and downloading (the pack's states), text200 (WCAG 1.4.4).
 const EXTRA = PRIVATE ? [] : [
-  ...['welcome', 'first-sync', 'home', 'map', 'academics', 'department', 'timetable', 'announcements', 'admin', 'settings', 'components'].map((s) => [s, 'default', 'dark']),
-  ...['home', 'first-sync', 'map', 'department', 'components'].map((s) => [s, 'default', 'lite']),
-  ...['home', 'academics', 'department', 'login'].map((s) => [s, 'default', 'nopack']),
-  ['home', 'default', 'afternoon'], ['home', 'default', 'evening'], ['home', 'default', 'night'], ['home', 'default', 'night-dark'],
-  ['welcome', 'default', 'night'], ['welcome', 'default', 'evening'], ['timetable', 'default', 'evening'],
-  ...[['home', 'default'], ['welcome', 'default'], ['department', 'default'], ['timetable', 'default'], ['admin', 'default'], ['login', 'invalid'], ['first-sync', 'default']].map(([s, st]) => [s, st, 'text200']),
+  ...['welcome', 'home', 'map', 'academics', 'notices', 'sync'].map((s) => [s, 'default', 'lite']),
+  ...['welcome', 'home', 'academics', 'notices', 'place'].map((s) => [s, 'default', 'nopack']),
+  ['settings', 'default', 'waiting'], ['settings', 'default', 'downloading'], ['settings', 'default', 'lite'],
+  ...[['home', 'default'], ['welcome', 'default'], ['academics', 'default'], ['timetable', 'default'], ['notices', 'default'], ['register', 'invalid'], ['publish', 'default'], ['settings', 'default']].map(([s, st]) => [s, st, 'text200']),
 ];
 
 const only = process.argv.includes('--only') ? process.argv[process.argv.indexOf('--only') + 1] : null;
@@ -110,11 +116,9 @@ async function shoot(screen, state, width, look) {
   const name = `${screen}${state === 'default' ? '' : '-' + state}${look ? '-' + look : ''}-${width}.webp`;
   if (only && !name.includes(only)) return null;
   await send('Emulation.setDeviceMetricsOverride', { width, height: 800, deviceScaleFactor: 1, mobile: width < 600 });
-  const dark = look && look.includes('dark');
-  const q = new URLSearchParams({ proto: '0', state, theme: dark ? 'dark' : 'light', lite: look === 'lite' ? '1' : '0', pack: look === 'nopack' ? 'none' : 'ready' });
+  const q = new URLSearchParams({ proto: '0', state, lite: look === 'lite' ? '1' : '0', pack: look === 'nopack' ? 'none' : ['waiting', 'downloading'].includes(look) ? look : 'ready' });
   if (!PRIVATE) q.set('local', '0');
   if (look === 'text200') q.set('text', '200');
-  if (['afternoon', 'evening', 'night', 'night-dark'].includes(look)) q.set('daypart', look.replace('-dark', ''));
   const url = pathToFileURL(join(PROTO, `${screen}.html`)).href + '?' + q;
   const loaded = once('Page.loadEventFired');
   await send('Page.navigate', { url });
@@ -137,7 +141,7 @@ let count = 0, bytes = 0;
 try {
   for (const [screen, states] of SCREENS)
     for (const state of states)
-      for (const w of state === 'default' ? WIDTHS : [390]) {
+      for (const w of state === 'default' && !SKIP_768.has(screen) ? WIDTHS : [390]) {
         const r = await shoot(screen, state, w, '');
         if (r) { count++; bytes += r[1]; }
       }

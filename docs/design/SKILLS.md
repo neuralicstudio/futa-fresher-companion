@@ -2,6 +2,10 @@
 
 Every installed design skill, each of its commands, modes and rule groups: what it does and where it was used in this project, or why it cannot apply. Run order and results are in [LOG.md](LOG.md) (round 1 in sections 0 to 6, round 2 in R1 to R7, round 3 in T1 to T8). Rows marked **R2** changed in round 2. The table below them is round 1 and 2; round 3 is summarised here.
 
+## Round 4 at a glance
+
+Round 4 built a handoff from approved mockups. It reused Impeccable's `context` and `detect`, Hallmark's `sloplint --before` and `--render`, and UI UX Pro Max's sister skills for the token structure; **no new skills were installed or updated**. The Impeccable direction roll, `overdrive`, `critique` and the finish reviewer did **not** run (the direction was fixed by the approved mockups, and the user asked to wrap up). Impeccable's `detect` ran three times; its last pass was before the final fix batch (see LOG.md T5). Hallmark found 29 failures on its first render pass and 0 on its last full run.
+
 ## Round 3 at a glance
 
 **Impeccable**
