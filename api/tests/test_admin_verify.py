@@ -641,7 +641,11 @@ def test_an_unverified_row_with_a_leftover_verifier_is_cleaned():
 
 
 def test_entity_types_match_the_contract_and_map_to_a_fixed_list_of_tables():
-    contract = SPEC["components"]["schemas"]["VerifyRequest"]["properties"]["entity_type"]["enum"]
+    schemas = SPEC["components"]["schemas"]
+    # One list of kinds: VerifyRequest points at VerifiableEntityType (the queue uses it too).
+    ref = schemas["VerifyRequest"]["properties"]["entity_type"]["$ref"]
+    assert ref == "#/components/schemas/VerifiableEntityType"
+    contract = schemas["VerifiableEntityType"]["enum"]
 
     assert set(contract) == set(admin_router.ENTITIES)
     assert {e.table for e in admin_router.ENTITIES.values()} == set(contract)
