@@ -403,8 +403,7 @@ paths:
       summary: Records waiting to be verified, inside the caller's own scope (admin roles only)
       description: |
         The to-do list behind the Verify Data screen. It lists records whose status is
-        `unverified` (or `outdated`, see `status`) that the caller may verify with
-        `POST /admin/verify`. Both use the same scope rules (`api/app/admin_scope.py`), so every
+        `unverified` that the caller may verify with `POST /admin/verify`. Both use the same scope rules (`api/app/admin_scope.py`), so every
         item listed here can be verified by the caller, and nothing the caller may verify is
         left out.
 
@@ -425,7 +424,7 @@ paths:
         or one that was altered, is 422.
 
         `counts` and `total` are for the badge and the type tabs. They count everything the caller
-        may verify with the chosen `status`, ignoring `entity_type` and `cursor`, so they do not
+        may verify that is unverified, ignoring `entity_type` and `cursor`, so they do not
         change while paging.
 
         No personal contact details are returned: no lecturer email or office, no class rep
@@ -435,19 +434,18 @@ paths:
         Not signed in is 401, signed in but not an admin is 403.
       security: [{ bearerAuth: [] }]
       parameters:
-        - name: status
-          in: query
-          description: Which waiting records to list. `outdated` is the list for re-checking.
-          schema: { type: string, enum: [unverified, outdated], default: unverified }
         - name: entity_type
           in: query
           description: Only this kind of record. Leave out for all kinds.
           schema: { $ref: '#/components/schemas/VerifiableEntityType' }
         - name: cursor
           in: query
-          description: Opaque value from `next_cursor`. Send it with the same `status` and `entity_type`.
+          description: Opaque value from `next_cursor`. Send it with the same `entity_type`.
           schema: { type: string, maxLength: 512 }
-        - { $ref: '#/components/parameters/Limit' }
+        - name: limit
+          in: query
+          description: Maximum items in this page. Smaller than the shared default because each item is a card.
+          schema: { type: integer, minimum: 1, maximum: 200, default: 25 }
       responses:
         '200':
           description: One page of the queue
@@ -775,16 +773,14 @@ components:
       type: object
       required: [entity_type, entity_id, status]
       properties:
-        entity_type:
-          type: string
-          enum: [faculties, departments, lecturers, courses, class_reps, buildings, timetable_entries, announcements]
+        entity_type: { $ref: '#/components/schemas/VerifiableEntityType' }
         entity_id: { type: string, format: uuid }
         status: { $ref: '#/components/schemas/VerificationStatus' }
         source: { type: string, nullable: true }
 
     VerifiableEntityType:
       type: string
-      description: The kinds of record an admin can verify. Same values as `VerifyRequest.entity_type`.
+      description: The kinds of record an admin can verify. The one list, used by `VerifyRequest.entity_type` and the verify queue.
       enum: [faculties, departments, lecturers, courses, class_reps, buildings, timetable_entries, announcements]
 
     NamedRef:
@@ -799,7 +795,7 @@ components:
       description: |
         One record waiting to be verified, with just enough to show a card. Send `entity_type` and
         `id` back to `POST /admin/verify` to verify it.
-      required: [entity_type, id, name, status, belongs_to, created_at, updated_at]
+      required: [entity_type, id, name, belongs_to, created_at, updated_at]
       properties:
         entity_type: { $ref: '#/components/schemas/VerifiableEntityType' }
         id: { type: string, format: uuid }
@@ -809,7 +805,6 @@ components:
             A display name built from non-personal fields, in English, not localised: the faculty,
             department or building name; a lecturer's name; a course as "CSC101 Title"; a class rep's name;
             a timetable entry as "CSC101 Mon 08:00-10:00"; an announcement's title.
-        status: { $ref: '#/components/schemas/VerificationStatus' }
         belongs_to:
           type: object
           description: Where the record sits. Both are null for faculties and buildings.

@@ -347,8 +347,7 @@ export interface paths {
         /**
          * Records waiting to be verified, inside the caller's own scope (admin roles only)
          * @description The to-do list behind the Verify Data screen. It lists records whose status is
-         *     `unverified` (or `outdated`, see `status`) that the caller may verify with
-         *     `POST /admin/verify`. Both use the same scope rules (`api/app/admin_scope.py`), so every
+         *     `unverified` that the caller may verify with `POST /admin/verify`. Both use the same scope rules (`api/app/admin_scope.py`), so every
          *     item listed here can be verified by the caller, and nothing the caller may verify is
          *     left out.
          *
@@ -369,7 +368,7 @@ export interface paths {
          *     or one that was altered, is 422.
          *
          *     `counts` and `total` are for the badge and the type tabs. They count everything the caller
-         *     may verify with the chosen `status`, ignoring `entity_type` and `cursor`, so they do not
+         *     may verify that is unverified, ignoring `entity_type` and `cursor`, so they do not
          *     change while paging.
          *
          *     No personal contact details are returned: no lecturer email or office, no class rep
@@ -635,15 +634,14 @@ export interface components {
             expires_at?: string | null;
         };
         VerifyRequest: {
-            /** @enum {string} */
-            entity_type: "faculties" | "departments" | "lecturers" | "courses" | "class_reps" | "buildings" | "timetable_entries" | "announcements";
+            entity_type: components["schemas"]["VerifiableEntityType"];
             /** Format: uuid */
             entity_id: string;
             status: components["schemas"]["VerificationStatus"];
             source?: string | null;
         };
         /**
-         * @description The kinds of record an admin can verify. Same values as `VerifyRequest.entity_type`.
+         * @description The kinds of record an admin can verify. The one list, used by `VerifyRequest.entity_type` and the verify queue.
          * @enum {string}
          */
         VerifiableEntityType: "faculties" | "departments" | "lecturers" | "courses" | "class_reps" | "buildings" | "timetable_entries" | "announcements";
@@ -666,7 +664,6 @@ export interface components {
              *     a timetable entry as "CSC101 Mon 08:00-10:00"; an announcement's title.
              */
             name: string;
-            status: components["schemas"]["VerificationStatus"];
             /** @description Where the record sits. Both are null for faculties and buildings. */
             belongs_to: {
                 faculty: components["schemas"]["NamedRef"] | null;
@@ -1337,13 +1334,12 @@ export interface operations {
     listVerifyQueue: {
         parameters: {
             query?: {
-                /** @description Which waiting records to list. `outdated` is the list for re-checking. */
-                status?: "unverified" | "outdated";
                 /** @description Only this kind of record. Leave out for all kinds. */
                 entity_type?: components["schemas"]["VerifiableEntityType"];
-                /** @description Opaque value from `next_cursor`. Send it with the same `status` and `entity_type`. */
+                /** @description Opaque value from `next_cursor`. Send it with the same `entity_type`. */
                 cursor?: string;
-                limit?: components["parameters"]["Limit"];
+                /** @description Maximum items in this page. Smaller than the shared default because each item is a card. */
+                limit?: number;
             };
             header?: never;
             path?: never;
