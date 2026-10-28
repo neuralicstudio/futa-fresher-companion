@@ -97,9 +97,10 @@
   buildings are `super_admin` only). `department_admin` their department, its records and its
   announcements. `sug` only `sug` announcements. Everyone else: 403. A faculty admin with no
   faculty, or a department admin with no department, sees an empty queue, not an error.
-- **What is listed:** `status=unverified` (default) or `status=outdated` (the re-check list).
-  `verified` is never listed. Soft-deleted rows never are. An optional `entity_type` narrows it.
-- **Item (just enough for a card):** `entity_type`, `id`, `name`, `status`, `belongs_to` (faculty and
+- **What is listed:** only records whose status is `unverified`. There is no `status` parameter:
+  `verified` and `outdated` are never listed, and neither are soft-deleted rows. An optional
+  `entity_type` narrows it. (Re-checking `outdated` records is not part of this queue.)
+- **Item (just enough for a card):** `entity_type`, `id`, `name`, `belongs_to` (faculty and
   department, each `{id, name}` or null, plus `scope` for announcements), `source`, `created_at`,
   `updated_at`. `name` is built on the server from non-personal fields and is not localised.
   Clients send `entity_type` and `id` back to `POST /admin/verify`.
@@ -108,13 +109,14 @@
   names are already public in the normal lists. The next PR adds a test that no item contains any
   of these keys.
 - **Order and paging:** oldest first, by `(created_at, entity_type, id)`. Keyset paging with an
-  opaque, signed `cursor` (the same approach as `/sync`), `limit` 1-200 (default 50). Offset paging
+  opaque, signed `cursor` (the same approach as `/sync`), `limit` 1-200, **default 25** (smaller
+  than the shared default of 50, because each item is a card; the maximum is unchanged). Offset paging
   is not offered: a record verified between two pages would shift every later row and skip one.
   Seed imports share one `created_at`, so `entity_type` and `id` break the ties. A cursor made
   with other filters, or altered, is 422.
 - **Counts:** `counts` has all eight kinds (zero when none) and `total` is their sum. They ignore
-  `entity_type` and `cursor`, so they stay the same while paging. They respect the same scope and
-  `status`.
+  `entity_type` and `cursor`, so they stay the same while paging. They respect the same scope and count only
+  unverified records.
 - **Errors, in order:** no or bad token 401; not an admin role 403 (the role is read from the
   database, as everywhere); bad query value or cursor 422; database trouble 503 with `Retry-After: 5`
   (the existing handler). **There is no 404** because the route has no id in its path (the rule
@@ -124,13 +126,13 @@
   small branches (each `ORDER BY created_at, id LIMIT n+1`), and one query of eight `count(*)`.
   The biggest tables hold a few thousand rows, so a sequential scan is a few milliseconds and **no
   migration is needed for this PR**. If `EXPLAIN` on real data says otherwise, the next PR proposes a
-  partial index `(created_at, id) WHERE verification_status <> 'verified' AND deleted_at IS NULL`
+  partial index `(created_at, id) WHERE verification_status = 'unverified' AND deleted_at IS NULL`
   on `courses`, `timetable_entries` and `lecturers` as `002_*.sql`, with the numbers.
-- **In this PR:** `docs/openapi.yaml`, this note, a route that answers 501 (so
+- **In this PR:** `docs/openapi.yaml`, this note, the one-list change to `VerifyRequest`, a route that answers 501 (so
   `test_contract.py` passes with no logic, the same way other unbuilt routes started) and the
   regenerated `web/src/api/schema.d.ts` (CI fails if it is out of sync with the contract).
+- **One list of kinds:** the new schema `VerifiableEntityType` is the only list. `VerifyRequest.entity_type`
+  now points at it, with the same eight values, so the two cannot drift.
 - **Open:**
-  - `VerifiableEntityType` repeats the list inside `VerifyRequest.entity_type`. Making that point at
-    the new component is the same contract and should be done in one go.
   - The caller's role decides what a "department" means for `faculty_admin` of a soft-deleted
     department, exactly as `POST /admin/verify`: 403 there, and absent from the queue here.
