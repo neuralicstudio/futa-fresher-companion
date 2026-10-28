@@ -5,14 +5,15 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from psycopg import Connection
 from pydantic import BaseModel, BeforeValidator, Field
 
 from app.admin_scope import may_manage_department, may_publish
 from app.auth_deps import AdminUser
 from app.db import get_conn
-from app.stubs import not_implemented
+from app.verify_queue import EntityType as QueueEntityType
+from app.verify_queue import VerifyQueue, list_queue
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -168,10 +169,19 @@ def verify_record(body: VerifyRequest, admin: AdminUser, conn: DbConn):
     return Response(status_code=204)
 
 
-@router.get("/verify/queue")
-def list_verify_queue():
-    # Contract first (docs/DECISIONS.md, decision 10). Built in the next PR with its tests.
-    not_implemented()
+@router.get("/verify/queue", response_model=VerifyQueue)
+def list_verify_queue(
+    admin: AdminUser,
+    conn: DbConn,
+    response: Response,
+    entity_type: QueueEntityType | None = None,
+    cursor: Annotated[str | None, Query(max_length=512)] = None,
+    limit: Annotated[int, Query(ge=1, le=200)] = 25,
+):
+    """Records waiting to be verified, inside the caller's own scope (decision 10)."""
+    # Private to this admin: no browser or shared cache may keep it.
+    response.headers["Cache-Control"] = "no-store"
+    return list_queue(conn, admin, entity_type, cursor, limit)
 
 
 def _nothing_to_change(stored: dict[str, Any], status: str, source: str | None) -> bool:
