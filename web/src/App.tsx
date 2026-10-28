@@ -11,7 +11,10 @@ import { isAdminRole } from './lib/composerView';
 // Heavy / rarely used screens are lazy-loaded to protect the first-load budget.
 // The Academics screens read the offline cache (Dexie), so they load on demand too.
 const MapPage = lazy(() => import('./pages/MapPage'));
+// The admin screens share one stylesheet that loads with them, not on first load.
 const Admin = lazy(() => import('./pages/Admin'));
+const AdminPublish = lazy(() => import('./pages/AdminPublish'));
+const AdminVerify = lazy(() => import('./pages/AdminVerify'));
 const Academics = lazy(() => import('./pages/Academics'));
 const FacultyDepartments = lazy(() => import('./pages/FacultyDepartments'));
 const DepartmentDetail = lazy(() => import('./pages/DepartmentDetail'));
@@ -90,6 +93,8 @@ export default function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/admin" element={<Admin />} />
+              <Route path="/admin/publish" element={<AdminPublish />} />
+              <Route path="/admin/verify" element={<AdminVerify />} />
             </Routes>
           </Suspense>
         )}
