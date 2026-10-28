@@ -337,6 +337,56 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/admin/verify/queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Records waiting to be verified, inside the caller's own scope (admin roles only)
+         * @description The to-do list behind the Verify Data screen. It lists records whose status is
+         *     `unverified` (or `outdated`, see `status`) that the caller may verify with
+         *     `POST /admin/verify`. Both use the same scope rules (`api/app/admin_scope.py`), so every
+         *     item listed here can be verified by the caller, and nothing the caller may verify is
+         *     left out.
+         *
+         *     Who sees what:
+         *     - `super_admin`: everything.
+         *     - `faculty_admin`: their faculty's departments, the records of those departments, and
+         *       announcements scoped to their faculty or to those departments.
+         *     - `department_admin`: their own department, its records, and announcements scoped to it.
+         *     - `sug`: announcements with scope `sug` only.
+         *     - Students, class reps and anyone else: 403.
+         *
+         *     Order: oldest first, by `created_at`, then `entity_type`, then `id`. The order never
+         *     changes between calls, so paging neither skips nor repeats a record. A record verified
+         *     while the client is paging simply stops appearing.
+         *
+         *     Paging: if `next_cursor` is not null, call again with `cursor` set to it and the same
+         *     filters. Keep going until it is null. `cursor` is opaque. A cursor from different filters,
+         *     or one that was altered, is 422.
+         *
+         *     `counts` and `total` are for the badge and the type tabs. They count everything the caller
+         *     may verify with the chosen `status`, ignoring `entity_type` and `cursor`, so they do not
+         *     change while paging.
+         *
+         *     No personal contact details are returned: no lecturer email or office, no class rep
+         *     contact or consent flag, and no user ids. Each item has only what a card needs.
+         *
+         *     There is no 404: the route has no id in its path, so there is nothing that can be missing.
+         *     Not signed in is 401, signed in but not an admin is 403.
+         */
+        get: operations["listVerifyQueue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/sync": {
         parameters: {
             query?: never;
@@ -591,6 +641,64 @@ export interface components {
             entity_id: string;
             status: components["schemas"]["VerificationStatus"];
             source?: string | null;
+        };
+        /**
+         * @description The kinds of record an admin can verify. Same values as `VerifyRequest.entity_type`.
+         * @enum {string}
+         */
+        VerifiableEntityType: "faculties" | "departments" | "lecturers" | "courses" | "class_reps" | "buildings" | "timetable_entries" | "announcements";
+        NamedRef: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        /**
+         * @description One record waiting to be verified, with just enough to show a card. Send `entity_type` and
+         *     `id` back to `POST /admin/verify` to verify it.
+         */
+        VerifyQueueItem: {
+            entity_type: components["schemas"]["VerifiableEntityType"];
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description A display name built from non-personal fields, in English, not localised: the faculty,
+             *     department or building name; a lecturer's name; a course as "CSC101 Title"; a class rep's name;
+             *     a timetable entry as "CSC101 Mon 08:00-10:00"; an announcement's title.
+             */
+            name: string;
+            status: components["schemas"]["VerificationStatus"];
+            /** @description Where the record sits. Both are null for faculties and buildings. */
+            belongs_to: {
+                faculty: components["schemas"]["NamedRef"] | null;
+                department: components["schemas"]["NamedRef"] | null;
+                /** @description Announcements only. Null for every other kind. */
+                scope?: components["schemas"]["AnnouncementScope"] | null;
+            };
+            /** @description Where this information came from */
+            source?: string | null;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            updated_at: string;
+        };
+        /** @description How many records of each kind are waiting. Every kind is present, zero when none. */
+        VerifyQueueCounts: {
+            faculties: number;
+            departments: number;
+            lecturers: number;
+            courses: number;
+            class_reps: number;
+            buildings: number;
+            timetable_entries: number;
+            announcements: number;
+        };
+        VerifyQueue: {
+            items: components["schemas"]["VerifyQueueItem"][];
+            /** @description Send as `cursor` to get the next page. Null on the last page. Opaque. */
+            next_cursor: string | null;
+            counts: components["schemas"]["VerifyQueueCounts"];
+            /** @description The sum of `counts`. The number for the badge on the Admin Home card. */
+            total: number;
         };
         RouteResponse: {
             distance_m: number;
@@ -1224,6 +1332,38 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             422: components["responses"]["ValidationError"];
+        };
+    };
+    listVerifyQueue: {
+        parameters: {
+            query?: {
+                /** @description Which waiting records to list. `outdated` is the list for re-checking. */
+                status?: "unverified" | "outdated";
+                /** @description Only this kind of record. Leave out for all kinds. */
+                entity_type?: components["schemas"]["VerifiableEntityType"];
+                /** @description Opaque value from `next_cursor`. Send it with the same `status` and `entity_type`. */
+                cursor?: string;
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of the queue */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VerifyQueue"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            403: components["responses"]["Forbidden"];
+            422: components["responses"]["ValidationError"];
+            503: components["responses"]["ServiceUnavailable"];
         };
     };
     sync: {

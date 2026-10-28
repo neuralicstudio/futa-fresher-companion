@@ -78,3 +78,59 @@
   content (for example via the importer) does not reset its status; a person decides when
   something is outdated.
 
+## 10. The verify queue (`GET /admin/verify/queue`)
+
+**Status: contract only (this PR). The implementation and tests come in the next PR.**
+
+- **Decision:** one read-only admin call lists the records waiting to be verified, inside the
+  caller's own scope, with a count per kind. It feeds the Verify Data screen and the badge on the
+  Admin Home card. It sits next to `POST /admin/verify` and covers the same eight kinds.
+- **Same scope as `POST /admin/verify`, with a guarantee.** The queue shows exactly the records the
+  caller could verify (table in decision 9). `app/admin_scope.py` holds the rules per record. A queue
+  must filter in SQL (paging and counts cannot be done in Python), so the next PR adds one function
+  to `admin_scope.py` that returns the SQL condition for each role and kind, next to the existing
+  per-record checks. A test then runs every role against every kind and fails if the two ever
+  disagree (every listed item passes `may_verify`; no verifiable unverified record is missing).
+  Nothing in a route builds a scope condition by hand.
+- **Roles:** `super_admin` everything. `faculty_admin` their faculty's departments, the records of
+  those departments, and announcements for their faculty or those departments (faculties and
+  buildings are `super_admin` only). `department_admin` their department, its records and its
+  announcements. `sug` only `sug` announcements. Everyone else: 403. A faculty admin with no
+  faculty, or a department admin with no department, sees an empty queue, not an error.
+- **What is listed:** `status=unverified` (default) or `status=outdated` (the re-check list).
+  `verified` is never listed. Soft-deleted rows never are. An optional `entity_type` narrows it.
+- **Item (just enough for a card):** `entity_type`, `id`, `name`, `status`, `belongs_to` (faculty and
+  department, each `{id, name}` or null, plus `scope` for announcements), `source`, `created_at`,
+  `updated_at`. `name` is built on the server from non-personal fields and is not localised.
+  Clients send `entity_type` and `id` back to `POST /admin/verify`.
+- **Never exposed (NDPR):** lecturer `email` and `office_location`; class rep `contact` and
+  `consent_given`; user ids (`verified_by`, `author_id`); announcement bodies. Lecturer and class rep
+  names are already public in the normal lists. The next PR adds a test that no item contains any
+  of these keys.
+- **Order and paging:** oldest first, by `(created_at, entity_type, id)`. Keyset paging with an
+  opaque, signed `cursor` (the same approach as `/sync`), `limit` 1-200 (default 50). Offset paging
+  is not offered: a record verified between two pages would shift every later row and skip one.
+  Seed imports share one `created_at`, so `entity_type` and `id` break the ties. A cursor made
+  with other filters, or altered, is 422.
+- **Counts:** `counts` has all eight kinds (zero when none) and `total` is their sum. They ignore
+  `entity_type` and `cursor`, so they stay the same while paging. They respect the same scope and
+  `status`.
+- **Errors, in order:** no or bad token 401; not an admin role 403 (the role is read from the
+  database, as everywhere); bad query value or cursor 422; database trouble 503 with `Retry-After: 5`
+  (the existing handler). **There is no 404** because the route has no id in its path (the rule
+  "404 before 403" is about records a caller names, and this call names none).
+- **Caching:** `Cache-Control: no-store` (private to the admin).
+- **Speed on Neon free tier:** at most two queries, in one connection: one `UNION ALL` of eight
+  small branches (each `ORDER BY created_at, id LIMIT n+1`), and one query of eight `count(*)`.
+  The biggest tables hold a few thousand rows, so a sequential scan is a few milliseconds and **no
+  migration is needed for this PR**. If `EXPLAIN` on real data says otherwise, the next PR proposes a
+  partial index `(created_at, id) WHERE verification_status <> 'verified' AND deleted_at IS NULL`
+  on `courses`, `timetable_entries` and `lecturers` as `002_*.sql`, with the numbers.
+- **In this PR:** `docs/openapi.yaml`, this note, a route that answers 501 (so
+  `test_contract.py` passes with no logic, the same way other unbuilt routes started) and the
+  regenerated `web/src/api/schema.d.ts` (CI fails if it is out of sync with the contract).
+- **Open:**
+  - `VerifiableEntityType` repeats the list inside `VerifyRequest.entity_type`. Making that point at
+    the new component is the same contract and should be done in one go.
+  - The caller's role decides what a "department" means for `faculty_admin` of a soft-deleted
+    department, exactly as `POST /admin/verify`: 403 there, and absent from the queue here.
