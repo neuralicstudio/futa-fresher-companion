@@ -396,6 +396,69 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '422': { $ref: '#/components/responses/ValidationError' }
 
+  /admin/verify/queue:
+    get:
+      tags: [admin]
+      operationId: listVerifyQueue
+      summary: Records waiting to be verified, inside the caller's own scope (admin roles only)
+      description: |
+        The to-do list behind the Verify Data screen. It lists records whose status is
+        `unverified` (or `outdated`, see `status`) that the caller may verify with
+        `POST /admin/verify`. Both use the same scope rules (`api/app/admin_scope.py`), so every
+        item listed here can be verified by the caller, and nothing the caller may verify is
+        left out.
+
+        Who sees what:
+        - `super_admin`: everything.
+        - `faculty_admin`: their faculty's departments, the records of those departments, and
+          announcements scoped to their faculty or to those departments.
+        - `department_admin`: their own department, its records, and announcements scoped to it.
+        - `sug`: announcements with scope `sug` only.
+        - Students, class reps and anyone else: 403.
+
+        Order: oldest first, by `created_at`, then `entity_type`, then `id`. The order never
+        changes between calls, so paging neither skips nor repeats a record. A record verified
+        while the client is paging simply stops appearing.
+
+        Paging: if `next_cursor` is not null, call again with `cursor` set to it and the same
+        filters. Keep going until it is null. `cursor` is opaque. A cursor from different filters,
+        or one that was altered, is 422.
+
+        `counts` and `total` are for the badge and the type tabs. They count everything the caller
+        may verify with the chosen `status`, ignoring `entity_type` and `cursor`, so they do not
+        change while paging.
+
+        No personal contact details are returned: no lecturer email or office, no class rep
+        contact or consent flag, and no user ids. Each item has only what a card needs.
+
+        There is no 404: the route has no id in its path, so there is nothing that can be missing.
+        Not signed in is 401, signed in but not an admin is 403.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: status
+          in: query
+          description: Which waiting records to list. `outdated` is the list for re-checking.
+          schema: { type: string, enum: [unverified, outdated], default: unverified }
+        - name: entity_type
+          in: query
+          description: Only this kind of record. Leave out for all kinds.
+          schema: { $ref: '#/components/schemas/VerifiableEntityType' }
+        - name: cursor
+          in: query
+          description: Opaque value from `next_cursor`. Send it with the same `status` and `entity_type`.
+          schema: { type: string, maxLength: 512 }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: One page of the queue
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VerifyQueue' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+        '503': { $ref: '#/components/responses/ServiceUnavailable' }
+
   /sync:
     get:
       tags: [sync]
@@ -718,6 +781,84 @@ components:
         entity_id: { type: string, format: uuid }
         status: { $ref: '#/components/schemas/VerificationStatus' }
         source: { type: string, nullable: true }
+
+    VerifiableEntityType:
+      type: string
+      description: The kinds of record an admin can verify. Same values as `VerifyRequest.entity_type`.
+      enum: [faculties, departments, lecturers, courses, class_reps, buildings, timetable_entries, announcements]
+
+    NamedRef:
+      type: object
+      required: [id, name]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+
+    VerifyQueueItem:
+      type: object
+      description: |
+        One record waiting to be verified, with just enough to show a card. Send `entity_type` and
+        `id` back to `POST /admin/verify` to verify it.
+      required: [entity_type, id, name, status, belongs_to, created_at, updated_at]
+      properties:
+        entity_type: { $ref: '#/components/schemas/VerifiableEntityType' }
+        id: { type: string, format: uuid }
+        name:
+          type: string
+          description: |
+            A display name built from non-personal fields, in English, not localised: the faculty,
+            department or building name; a lecturer's name; a course as "CSC101 Title"; a class rep's name;
+            a timetable entry as "CSC101 Mon 08:00-10:00"; an announcement's title.
+        status: { $ref: '#/components/schemas/VerificationStatus' }
+        belongs_to:
+          type: object
+          description: Where the record sits. Both are null for faculties and buildings.
+          required: [faculty, department]
+          properties:
+            faculty:
+              nullable: true
+              allOf: [{ $ref: '#/components/schemas/NamedRef' }]
+            department:
+              nullable: true
+              allOf: [{ $ref: '#/components/schemas/NamedRef' }]
+            scope:
+              nullable: true
+              description: Announcements only. Null for every other kind.
+              allOf: [{ $ref: '#/components/schemas/AnnouncementScope' }]
+        source: { type: string, nullable: true, description: Where this information came from, as stored }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    VerifyQueueCounts:
+      type: object
+      description: How many records of each kind are waiting. Every kind is present, zero when none.
+      required: [faculties, departments, lecturers, courses, class_reps, buildings, timetable_entries, announcements]
+      properties:
+        faculties: { type: integer, minimum: 0 }
+        departments: { type: integer, minimum: 0 }
+        lecturers: { type: integer, minimum: 0 }
+        courses: { type: integer, minimum: 0 }
+        class_reps: { type: integer, minimum: 0 }
+        buildings: { type: integer, minimum: 0 }
+        timetable_entries: { type: integer, minimum: 0 }
+        announcements: { type: integer, minimum: 0 }
+
+    VerifyQueue:
+      type: object
+      required: [items, next_cursor, counts, total]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/VerifyQueueItem' }
+        next_cursor:
+          type: string
+          nullable: true
+          description: Send as `cursor` to get the next page. Null on the last page. Opaque.
+        counts: { $ref: '#/components/schemas/VerifyQueueCounts' }
+        total:
+          type: integer
+          minimum: 0
+          description: The sum of `counts`. The number for the badge on the Admin Home card.
 
     RouteResponse:
       type: object

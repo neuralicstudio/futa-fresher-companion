@@ -12,6 +12,7 @@ from pydantic import BaseModel, BeforeValidator, Field
 from app.admin_scope import may_manage_department, may_publish
 from app.auth_deps import AdminUser
 from app.db import get_conn
+from app.stubs import not_implemented
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -165,6 +166,12 @@ def verify_record(body: VerifyRequest, admin: AdminUser, conn: DbConn):
     if row is None:  # deleted between the check and the update
         raise HTTPException(status_code=404, detail="Record not found")
     return Response(status_code=204)
+
+
+@router.get("/verify/queue")
+def list_verify_queue():
+    # Contract first (docs/DECISIONS.md, decision 10). Built in the next PR with its tests.
+    not_implemented()
 
 
 def _nothing_to_change(stored: dict[str, Any], status: str, source: str | None) -> bool:
