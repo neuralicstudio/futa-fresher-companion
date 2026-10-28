@@ -41,7 +41,8 @@ _VERIFICATION = (
     " verified_at TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, deleted_at TEXT"
 )
 SCHEMA = [
-    "CREATE TABLE users (id TEXT PRIMARY KEY, full_name TEXT, email TEXT, role TEXT, matric_no TEXT,"
+    "CREATE TABLE users (id TEXT PRIMARY KEY, full_name TEXT, email TEXT, role TEXT,"
+    " matric_no TEXT,"
     " department_id TEXT, faculty_id TEXT, level INTEGER, is_active INTEGER, created_at TEXT,"
     " updated_at TEXT)",
     f"CREATE TABLE faculties (id TEXT PRIMARY KEY, name TEXT, short_name TEXT, {_VERIFICATION})",
@@ -51,7 +52,8 @@ SCHEMA = [
     f" rank TEXT, email TEXT, office_location TEXT, specialization TEXT, {_VERIFICATION})",
     "CREATE TABLE courses (id TEXT PRIMARY KEY, department_id TEXT, code TEXT, title TEXT,"
     f" units INTEGER, level INTEGER, semester INTEGER, {_VERIFICATION})",
-    "CREATE TABLE class_reps (id TEXT PRIMARY KEY, department_id TEXT, level INTEGER, full_name TEXT,"
+    "CREATE TABLE class_reps (id TEXT PRIMARY KEY, department_id TEXT, level INTEGER,"
+    " full_name TEXT,"
     f" contact TEXT, consent_given INTEGER, {_VERIFICATION})",
     "CREATE TABLE buildings (id TEXT PRIMARY KEY, name TEXT, type TEXT, description TEXT,"
     f" {_VERIFICATION})",
@@ -88,7 +90,8 @@ def from_db(column, value):
 
 class SqliteDb:
     def __init__(self):
-        self.con = sqlite3.connect(":memory:", check_same_thread=False)  # sync routes run in a worker thread
+        # Sync routes run in a worker thread, so the connection must be usable from it.
+        self.con = sqlite3.connect(":memory:", check_same_thread=False)
         for statement in SCHEMA:
             self.con.execute(statement)
         self.queries = []

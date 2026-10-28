@@ -80,7 +80,7 @@
 
 ## 10. The verify queue (`GET /admin/verify/queue`)
 
-**Status: contract only (this PR). The implementation and tests come in the next PR.**
+**Status: implemented** (`app/verify_queue.py`, `admin_scope.verifiable_sql`, `tests/test_verify_queue.py`).
 
 - **Decision:** one read-only admin call lists the records waiting to be verified, inside the
   caller's own scope, with a count per kind. It feeds the Verify Data screen and the badge on the
@@ -125,12 +125,17 @@
 - **Speed on Neon free tier:** at most two queries, in one connection: one `UNION ALL` of eight
   small branches (each `ORDER BY created_at, id LIMIT n+1`), and one query of eight `count(*)`.
   The biggest tables hold a few thousand rows, so a sequential scan is a few milliseconds and **no
-  migration is needed for this PR**. If `EXPLAIN` on real data says otherwise, the next PR proposes a
+  migration is needed**. If `EXPLAIN` on real data says otherwise, propose a
   partial index `(created_at, id) WHERE verification_status = 'unverified' AND deleted_at IS NULL`
   on `courses`, `timetable_entries` and `lecturers` as `002_*.sql`, with the numbers.
-- **In this PR:** `docs/openapi.yaml`, this note, the one-list change to `VerifyRequest`, a route that answers 501 (so
-  `test_contract.py` passes with no logic, the same way other unbuilt routes started) and the
-  regenerated `web/src/api/schema.d.ts` (CI fails if it is out of sync with the contract).
+- **How it is built:** `admin_scope.verifiable_sql(admin, kind)` returns the SQL scope condition
+  (one function, next to the per-record checks). `tests/test_verify_queue.py` runs every role against
+  every kind and compares the queue with the per-record checks `POST /admin/verify` uses, so a change
+  to one without the other fails. The tests run the real SQL on in-memory SQLite
+  (`tests/sqlitedb.py`); the same SQL was also run read-only against the Neon dev branch
+  (PostgreSQL 18) when it was written. The dev data is small (about 76 waiting records, no
+  lecturers or courses yet), so it shows the SQL is valid and fast, not how an index would help at
+  the real size. Re-run `EXPLAIN` after the real import.
 - **One list of kinds:** the new schema `VerifiableEntityType` is the only list. `VerifyRequest.entity_type`
   now points at it, with the same eight values, so the two cannot drift.
 - **Open:**

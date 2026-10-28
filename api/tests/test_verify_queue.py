@@ -79,6 +79,13 @@ class Seed:
         self.add("lecturers", department_id=CSC, full_name="Verified One", title="Dr.",
                  verification_status="verified")
         self.add("lecturers", department_id=CSC, full_name="Deleted One", deleted_at=START)
+        for table, fields in (
+            ("courses", {"code": "OLD1", "title": "Done"}),
+            ("class_reps", {"full_name": "Done Rep"}),
+            ("timetable_entries", {"day_of_week": 1}),
+        ):
+            self.add(table, department_id=CSC, verification_status="verified", **fields)
+            self.add(table, department_id=CSC, deleted_at=START, **fields)
         self.announcements()
 
     def department_records(self, dept):
@@ -225,9 +232,9 @@ def test_who_sees_what():
         return get(db, ids[who]).json()["counts"]
 
     assert counts("super_admin") == {
-        "faculties": 2, "departments": 2, "lecturers": 4, "courses": 2, "class_reps": 2,
-        "buildings": 1, "timetable_entries": 2, "announcements": 7,
-    } or counts("super_admin")["faculties"] == 2  # exact numbers are asserted below by kind
+        "faculties": 2, "departments": 2, "lecturers": 6, "courses": 3, "class_reps": 3,
+        "buildings": 1, "timetable_entries": 3, "announcements": 7,
+    }
     eng = counts("faculty_eng")
     assert (eng["faculties"], eng["buildings"]) == (0, 0)
     assert eng["departments"] == 1  # CSC, not the deleted one, not the verified "Done"
@@ -494,16 +501,20 @@ def test_a_new_record_never_appears_in_an_open_paging_session_but_does_in_a_fres
 
 def test_soft_deleted_and_verified_rows_never_appear_and_are_not_counted():
     db = new_db()
-    seen = listed(all_pages(db, callers(db)["super_admin"], limit=7))
-    names = {
-        (i["entity_type"], i["name"])
-        for p in all_pages(db, callers(db)["super_admin"], limit=7) for i in p["items"]
-    }
+    pages = all_pages(db, callers(db)["super_admin"], limit=7)
+    seen = listed(pages)
+    names = {(i["entity_type"], i["name"]) for p in pages for i in p["items"]}
 
     for kind in KINDS:
-        deleted = {r[0] for r in db.con.execute(
-            f"SELECT id FROM {kind} WHERE deleted_at IS NOT NULL OR verification_status != 'unverified'")}
-        assert not deleted & {i for k, i in seen if k == kind}
+        hidden = {
+            r[0]
+            for r in db.con.execute(
+                f"SELECT id FROM {kind}"
+                " WHERE deleted_at IS NOT NULL OR verification_status != 'unverified'"
+            )
+        }
+        assert hidden
+        assert not hidden & {i for k, i in seen if k == kind}
     assert ("faculties", "Deleted faculty") not in names
     assert ("buildings", "Gate") not in names  # outdated is not in this queue
     assert ("lecturers", "Dr. Verified One") not in names
