@@ -198,9 +198,14 @@ def test_columns_match_the_template_headers(kind):
 
 
 def test_no_fixture_is_committed_under_data_collected():
-    # Real collected files are added by the data team. This repo's tests must not add any.
+    # Real collected files are added by the data team. This repo's tests must not add any fixture,
+    # so no file there may contain the made-up values used above.
     collected = pathlib.Path(__file__).resolve().parents[2] / "data" / "collected"
-    assert not list(collected.rglob("*.csv")) if collected.exists() else True
+    made_up = ("Fake Collector", "Fake Hall", "Dr Fake Person", "Fake Rep", "Intro to Fakes")
+    files = list(collected.rglob("*.csv")) if collected.exists() else []
+    for path in files:
+        text = path.read_text(encoding="utf-8-sig")
+        assert not [value for value in made_up if value in text], path
 
 
 # ----------------------------------------------------------------- reading files
