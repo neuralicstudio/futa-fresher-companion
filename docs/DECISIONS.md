@@ -81,6 +81,7 @@
 ## 10. The verify queue (`GET /admin/verify/queue`)
 
 **Status: implemented** (`app/verify_queue.py`, `admin_scope.verifiable_sql`, `tests/test_verify_queue.py`).
+**Search (`q`) is proposed: contract only (PR 1 of 3).** The backend and the web search box follow.
 
 - **Decision:** one read-only admin call lists the records waiting to be verified, inside the
   caller's own scope, with a count per kind. It feeds the Verify Data screen and the badge on the
@@ -113,12 +114,58 @@
   than the shared default of 50, because each item is a card; the maximum is unchanged). Offset paging
   is not offered: a record verified between two pages would shift every later row and skip one.
   Seed imports share one `created_at`, so `entity_type` and `id` break the ties. A cursor made
-  with other filters, or altered, is 422.
+  with other filters, or altered, is 422. With `q` the order is best match first (see Search).
 - **Counts:** `counts` has all eight kinds (zero when none) and `total` is their sum. They ignore
   `entity_type` and `cursor`, so they stay the same while paging. They respect the same scope and count only
   unverified records.
+- **Search (`q`), proposed:** an optional `q` on the same call, so an admin with hundreds of waiting
+  records does not have to scroll. Same route, same scope, same item shape, same paging. A caller
+  that does not send `q` sees no change.
+  - **How a record matches.** `q` is split into at most 6 words (case ignored). Every word must match
+    somewhere in the record's *searchable text*: the `name` the card shows, the school and
+    department names in `belongs_to`, the kind in English words, and the `source`. A word matches
+    when it is inside that text (a plain substring test, so partial words work and `%` or `_` mean
+    nothing special) or, only for words of 4 or more letters, when pg_trgm `word_similarity(word,
+    text)` is at least about 0.5 (typos: `compting`, `libary`). Short words such as `crc` must be
+    inside the text, so a typo in a 3-letter word does not match noise.
+  - **Kind words (my proposal).** faculties: school, faculty. departments: department. lecturers:
+    lecturer. courses: course. class_reps: class rep. buildings: building. timetable_entries: class,
+    timetable. announcements: notice, announcement. So `courses`, typed on the All tab, finds courses.
+  - **Ranking.** A word scores 1.0 if it is inside the text, otherwise its similarity. A match in
+    the name counts in full, a match only in the place, kind or source counts 0.6 of that. A
+    record's score is the average over its words, as a whole percent (so it fits in the cursor).
+    Order: score (best first), then `created_at`, `entity_type`, `id`. The cutoffs and weights are
+    starting values, to be tuned in the backend PR against the 163 collected building names. The
+    tests keep `abiola`, `compting`, `lecture theatre`, `CRC` and `mosque` working.
+  - **Paging.** The cursor also holds the last record's score and the normalised words, so a cursor
+    made with another `q` is 422, like one made with another `entity_type`.
+  - **Counts.** With `q`, `counts` and `total` count the matches of every kind (the tabs can show
+    "Courses (4)" while searching), still ignoring `entity_type` and `cursor`. The Admin Home badge
+    calls without `q`, so it still shows everything waiting.
+  - **Scope.** The search condition is added with AND inside each branch, beside
+    `admin_scope.verifiable_sql`, so it can only remove records. The parity test is extended: for
+    every role and a spread of words, every result passes the per-record check `POST /admin/verify`
+    uses, and a search with the broadest words returns a subset of the plain queue.
+  - **Personal data.** Only what the card shows is read. Never lecturer `email` or
+    `office_location`, class rep `contact` or `consent_given`, announcement `body`, or user ids. A
+    test puts made-up values in those columns and shows that searching for them finds nothing.
+  - **Why pg_trgm, and no migration.** `pg_trgm` is already created by `001_init.sql` (line 5) and
+    is installed on the Neon dev branch (pg_trgm 1.6, PostgreSQL 18), so there is **no extension
+    request and no new migration**. I tried the idea read-only on the dev branch with the 163
+    collected building names: `abiola` finds 5 places, `compting` the 3 School of Computing rows,
+    `lecture theatre` 7 (including the "Theater" spelling), `CRC` 3 and `mosque` 5. A query over
+    20,000 made-up rows with 3 words ran in 67 ms of execution, with no index. The tables hold a few
+    thousand rows, so there is no index. If one table passes about 20,000 waiting rows, add trigram
+    GIN indexes in a numbered migration. The existing `idx_lecturers_name_trgm` and
+    `idx_buildings_name_trgm` will not be used, because the searched text spans joined tables.
+  - **Rejected.** Postgres full-text search (no typo tolerance, and it needs a stored column across
+    joins); `ILIKE` alone (partial words but no typos); searching in the browser (the whole queue
+    would have to reach a cheap phone); an external search service (a new dependency and cost).
+  - **Tests.** The queue tests run the real SQL on SQLite, which has no `word_similarity`. The
+    backend PR registers a Python version of pg_trgm's measure in `tests/sqlitedb.py`, and checks
+    the real function with a read-only script against the dev branch, so the two cannot quietly differ.
 - **Errors, in order:** no or bad token 401; not an admin role 403 (the role is read from the
-  database, as everywhere); bad query value or cursor 422; database trouble 503 with `Retry-After: 5`
+  database, as everywhere); bad query value, a `q` of more than 100 characters, or a bad cursor 422; database trouble 503 with `Retry-After: 5`
   (the existing handler). **There is no 404** because the route has no id in its path (the rule
   "404 before 403" is about records a caller names, and this call names none).
 - **Caching:** `Cache-Control: no-store` (private to the admin).
@@ -139,5 +186,13 @@
 - **One list of kinds:** the new schema `VerifiableEntityType` is the only list. `VerifyRequest.entity_type`
   now points at it, with the same eight values, so the two cannot drift.
 - **Open:**
+  - **Where `q` travels.** It is a query parameter, like the other filters, so it is in the URL and
+    the host's request logs can hold what an admin typed (often a lecturer's name, which is already
+    on the cards). The API will not log it. If that is not acceptable, the alternative is a
+    `POST /admin/verify/search` with the words in the body: a new route, so a bigger contract change.
+  - **Kind words are English only.** The screen's Pidgin tab names ("Schools", "Notices") are not
+    searched. Say if they should be.
+  - **Announcement bodies are not searched**, only titles, to keep the rule that no body leaves the
+    server through this call.
   - The caller's role decides what a "department" means for `faculty_admin` of a soft-deleted
     department, exactly as `POST /admin/verify`: 403 there, and absent from the queue here.
