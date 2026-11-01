@@ -69,6 +69,7 @@ They are the source of truth for look and feel, and are **kept out of git** (lis
 - **Source:** [OpenStreetMap](https://www.openstreetmap.org/copyright) contributors, licensed under the Open Database Licence (ODbL) 1.0.
 - **What it is:** an extract of the FUTA campus area (south 7.2925, west 5.1285, north 7.3135, east 5.1500), fetched from the Overpass API on 27 Oct 2026 with `tools/bake-map.mjs`.
 - **What was done:** simplified into vector paths in `prototype/assets/campus-map.js` (1,458 buildings, roads, footpaths, grass, water, pitches, and 25 named places). Place names are exactly as written in OpenStreetMap, including its spelling. The status of every place is "not yet checked by FUTA".
+- **Building and place data (`data/collected/osm-campus/buildings.csv`):** 163 named places on and beside the FUTA campus (schools, lecture theatres, hostels, libraries, sports places and more), read from the Overpass API on 29 Oct 2026 (OSM data as of 2026-10-29 15:14 UTC) with `data/tools/osm_buildings.py`. Each row's `source` names its OpenStreetMap object and the licence. Names are as written in OpenStreetMap, spelling slips included, and positions are OSM's. These rows are a database derived from OpenStreetMap, so they stay under the ODbL 1.0 and need the same attribution. Every row is unverified.
 - **Attribution in the app:** "Map data © OpenStreetMap contributors" with a link to the licence, shown on the map.
 - **No satellite or aerial imagery. No Google Maps or Street View.**
 
