@@ -118,19 +118,42 @@
 - **Counts:** `counts` has all eight kinds (zero when none) and `total` is their sum. They ignore
   `entity_type` and `cursor`, so they stay the same while paging. They respect the same scope and count only
   unverified records.
-- **Search (`q`), proposed:** an optional `q` on the same call, so an admin with hundreds of waiting
+- **Search (`q`), proposed (review changes applied):** an optional `q` on the same call, so an admin with hundreds of waiting
   records does not have to scroll. Same route, same scope, same item shape, same paging. A caller
   that does not send `q` sees no change.
   - **How a record matches.** `q` is split into at most 6 words (case ignored). Every word must match
     somewhere in the record's *searchable text*: the `name` the card shows, the school and
-    department names in `belongs_to`, the kind in English words, and the `source`. A word matches
+    department names in `belongs_to`, the kind (see Kind words), and the `source` (see Source text). A word matches
     when it is inside that text (a plain substring test, so partial words work and `%` or `_` mean
     nothing special) or, only for words of 4 or more letters, when pg_trgm `word_similarity(word,
     text)` is at least about 0.5 (typos: `compting`, `libary`). Short words such as `crc` must be
     inside the text, so a typo in a 3-letter word does not match noise.
-  - **Kind words (my proposal).** faculties: school, faculty. departments: department. lecturers:
-    lecturer. courses: course. class_reps: class rep. buildings: building. timetable_entries: class,
-    timetable. announcements: notice, announcement. So `courses`, typed on the All tab, finds courses.
+  - **Kind words (review change: plurals and the tab labels).** Each kind matches its singular,
+    its plural, and the label its tab shows in the app (`COPY.kinds` in
+    `web/src/lib/adminCopy.ts`, which is English). The matching words are:
+
+    | Kind | Words that match |
+    |---|---|
+    | faculties (tab: Schools) | school, schools, faculty, faculties |
+    | departments | department, departments |
+    | lecturers | lecturer, lecturers |
+    | courses | course, courses |
+    | class_reps (tab: Class reps) | class rep, class reps, class representative, class representatives |
+    | buildings | building, buildings |
+    | timetable_entries (tab: Class times) | class time, class times, timetable, timetables |
+    | announcements (tab: Notices) | notice, notices, announcement, announcements |
+
+    For **buildings**, the building type also matches, so `hostels` finds every hostel and `lecture
+    halls` every lecture hall. The types with words are: hostel (hostel, hostels); lecture_hall
+    (lecture hall, lecture halls, lecture theatre, lecture theatres, lecture theater, lecture
+    theaters); library (library, libraries); sports (sports, sport); food (food); health (health);
+    worship (worship); gate (gate, gates). The types `admin`, `department`, `faculty` and `other`
+    have no words, because their words are already kind words or say nothing.
+    So `courses`, typed on the All tab, finds courses.
+  - **Source text (review change).** The importer stores a source as `<source> (collected by
+    <name>, <date>)`. Only the part before ` (collected by ` is searched, so the collector's name
+    and the date do not match. The card still shows the full stored text. A source that does not
+    end with that note is searched in full.
   - **Ranking.** A word scores 1.0 if it is inside the text, otherwise its similarity. A match in
     the name counts in full, a match only in the place, kind or source counts 0.6 of that. A
     record's score is the average over its words, as a whole percent (so it fits in the cursor).
@@ -149,6 +172,17 @@
   - **Personal data.** Only what the card shows is read. Never lecturer `email` or
     `office_location`, class rep `contact` or `consent_given`, announcement `body`, or user ids. A
     test puts made-up values in those columns and shows that searching for them finds nothing.
+  - **`q` is never logged (review change).** What an admin types is personal, so the API never
+    writes `q` to a log. **This is not yet met by the design, and PR 2 cannot start until you choose
+    how:** `q` is in the URL, and the installed uvicorn writes the request URL, query string included,
+    to its access log (`uvicorn/protocols/http/h11_impl.py`, the `get_path_with_query_string` call).
+    The hosting platform may also keep URL logs that the app cannot change.
+    - **Option A (keep GET):** the access log for this route drops the query string, so `q` is
+      never written. A test sends a made-up word and checks the log output for it. The platform's
+      own URL logs would still hold it.
+    - **Option B (POST):** `POST /admin/verify/search` with the words in a JSON body. Bodies are not
+      in access logs or in most platform URL logs, so this is the only option that keeps the words out
+      of every log we do not control. It is a new route and a second paging path, a bigger contract change.
   - **Why pg_trgm, and no migration.** `pg_trgm` is already created by `001_init.sql` (line 5) and
     is installed on the Neon dev branch (pg_trgm 1.6, PostgreSQL 18), so there is **no extension
     request and no new migration**. I tried the idea read-only on the dev branch with the 163
@@ -164,6 +198,9 @@
   - **Tests.** The queue tests run the real SQL on SQLite, which has no `word_similarity`. The
     backend PR registers a Python version of pg_trgm's measure in `tests/sqlitedb.py`, and checks
     the real function with a read-only script against the dev branch, so the two cannot quietly differ.
+  - **Tuning table (review change).** PR 2 includes a table of about 20 real test queries, each with
+    what it returns in order (records, scores), taken from the dev branch and the 163 collected
+    building names. The cutoffs and weights are changed on that table, not on guesses.
 - **Errors, in order:** no or bad token 401; not an admin role 403 (the role is read from the
   database, as everywhere); bad query value, a `q` of more than 100 characters, or a bad cursor 422; database trouble 503 with `Retry-After: 5`
   (the existing handler). **There is no 404** because the route has no id in its path (the rule
@@ -186,12 +223,10 @@
 - **One list of kinds:** the new schema `VerifiableEntityType` is the only list. `VerifyRequest.entity_type`
   now points at it, with the same eight values, so the two cannot drift.
 - **Open:**
-  - **Where `q` travels.** It is a query parameter, like the other filters, so it is in the URL and
-    the host's request logs can hold what an admin typed (often a lecturer's name, which is already
-    on the cards). The API will not log it. If that is not acceptable, the alternative is a
-    `POST /admin/verify/search` with the words in the body: a new route, so a bigger contract change.
-  - **Kind words are English only.** The screen's Pidgin tab names ("Schools", "Notices") are not
-    searched. Say if they should be.
+  - **Where `q` travels.** See *`q` is never logged* above. The choice between Option A and Option
+    B is open, and the earlier claim that the API would not log it was wrong.
+  - **Kind words (resolved in review).** The app's tabs use the English labels in `COPY.kinds`, so
+    those are the words that match (see Kind words). No Pidgin tab names are added.
   - **Announcement bodies are not searched**, only titles, to keep the rule that no body leaves the
     server through this call.
   - The caller's role decides what a "department" means for `faculty_admin` of a soft-deleted

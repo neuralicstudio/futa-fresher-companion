@@ -376,14 +376,18 @@ export interface paths {
          *     Search (`q`): type a word or two to narrow the queue. Words are split on spaces (the first
          *     6 are used, and case does not matter). A record matches when every word matches somewhere
          *     in what its card shows: its `name`, the school and department names in `belongs_to`, its
-         *     kind (in English: school or faculty, department, lecturer, course, class rep, building,
-         *     class timetable, notice or announcement) and its `source`. A word matches when it is part
+         *     kind (each kind's singular and plural name, and the label its tab shows, for example
+         *     `building`, `buildings`, `class times`; for buildings also the building type, for example
+         *     `hostel` or `lecture hall`; decision 10 has the full list) and its `source`, without the
+         *     `(collected by …)` note the importer adds, so the collector's name and the date are not
+         *     matched. A word matches when it is part
          *     of a word or phrase (partial words work: `abio` finds `Abiola`), or, for words of 4 or
          *     more letters, when it is spelled almost the same (`compting` finds `Computing`). Search
          *     only narrows: the scope rules above are applied first, so an admin never finds a record
          *     they cannot verify. It reads only the fields above, never lecturer email or office, class
          *     rep contact, announcement bodies or user ids. A blank `q` is the same as no `q`. A `q` of
-         *     more than 100 characters is 422.
+         *     more than 100 characters is 422. The value of `q` is never written to a log by the API
+         *     (see decision 10 for how the request log is handled).
          *
          *     No personal contact details are returned: no lecturer email or office, no class rep
          *     contact or consent flag, and no user ids. Each item has only what a card needs.
