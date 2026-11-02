@@ -6,8 +6,8 @@ export const manifest = {
   name: APP_NAME,
   short_name: APP_NAME,
   description: APP_DESCRIPTION,
-  theme_color: '#0b6e4f',
-  background_color: '#ffffff',
+  theme_color: '#0a0309',
+  background_color: '#0a0309',
   display: 'standalone' as const,
   start_url: '/',
   icons: [
