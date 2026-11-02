@@ -361,15 +361,33 @@ export interface paths {
          *
          *     Order: oldest first, by `created_at`, then `entity_type`, then `id`. The order never
          *     changes between calls, so paging neither skips nor repeats a record. A record verified
-         *     while the client is paging simply stops appearing.
+         *     while the client is paging simply stops appearing. With `q` (see Search), the best match
+         *     comes first, and records that match equally well keep that same order.
          *
          *     Paging: if `next_cursor` is not null, call again with `cursor` set to it and the same
-         *     filters. Keep going until it is null. `cursor` is opaque. A cursor from different filters,
-         *     or one that was altered, is 422.
+         *     filters. Keep going until it is null. `cursor` is opaque. A cursor from different filters
+         *     (a different `entity_type` or `q`), or one that was altered, is 422.
          *
          *     `counts` and `total` are for the badge and the type tabs. They count everything the caller
          *     may verify that is unverified, ignoring `entity_type` and `cursor`, so they do not
-         *     change while paging.
+         *     change while paging. With `q` they count only the records that match, for every kind, so
+         *     the tabs show how many matches each kind has. The Admin Home badge calls without `q`.
+         *
+         *     Search (`q`): type a word or two to narrow the queue. Words are split on spaces (the first
+         *     6 are used, and case does not matter). A record matches when every word matches somewhere
+         *     in what its card shows: its `name`, the school and department names in `belongs_to`, its
+         *     kind (each kind's singular and plural name, and the label its tab shows, for example
+         *     `building`, `buildings`, `class times`; for buildings also the building type, for example
+         *     `hostel` or `lecture hall`; decision 10 has the full list) and its `source`, without the
+         *     `(collected by …)` note the importer adds, so the collector's name and the date are not
+         *     matched. A word matches when it is part
+         *     of a word or phrase (partial words work: `abio` finds `Abiola`), or, for words of 4 or
+         *     more letters, when it is spelled almost the same (`compting` finds `Computing`). Search
+         *     only narrows: the scope rules above are applied first, so an admin never finds a record
+         *     they cannot verify. It reads only the fields above, never lecturer email or office, class
+         *     rep contact, announcement bodies or user ids. A blank `q` is the same as no `q`. A `q` of
+         *     more than 100 characters is 422. The value of `q` is never written to a log by the API
+         *     (see decision 10 for how the request log is handled).
          *
          *     No personal contact details are returned: no lecturer email or office, no class rep
          *     contact or consent flag, and no user ids. Each item has only what a card needs.
@@ -1336,7 +1354,13 @@ export interface operations {
             query?: {
                 /** @description Only this kind of record. Leave out for all kinds. */
                 entity_type?: components["schemas"]["VerifiableEntityType"];
-                /** @description Opaque value from `next_cursor`. Send it with the same `entity_type`. */
+                /**
+                 * @description Words to search for, for example `lecture theatre`. See Search above. Leave out, or
+                 *     send blank, for the whole queue. Clients should wait for the typing to pause before
+                 *     sending.
+                 */
+                q?: string;
+                /** @description Opaque value from `next_cursor`. Send it with the same `entity_type` and `q`. */
                 cursor?: string;
                 /** @description Maximum items in this page. Smaller than the shared default because each item is a card. */
                 limit?: number;
