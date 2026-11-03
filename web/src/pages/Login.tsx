@@ -1,11 +1,43 @@
+// Log in. Optional: only admin features need an account.
+//
+// Follows docs/design/SCREENS.md (10) and the `login` screenshots: hero with a drawn student,
+// email and password with show/hide, Log in, "Or", the Register button and the offline note.
 import { useState, type FormEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { ApiError } from '../api/client';
+import AppHeader from '../components/AppHeader';
+import Field from '../components/Field';
+import Footer from '../components/Footer';
+import Hero from '../components/Hero';
+import Icon from '../components/Icon';
+import StateBlock from '../components/StateBlock';
+import { COPY } from '../copy/pidgin';
 import { useAuth } from '../lib/auth';
-import { friendlyError, type FieldErrors, validateLogin } from '../lib/authView';
+import { validateLogin } from '../lib/authView';
 
-type Field = 'email' | 'password';
+type FieldName = 'email' | 'password';
+type Problems = Partial<Record<FieldName, string>>;
 
-// Login is optional. Only admin features need it, so the rest of the app never asks for it.
+type Failure = 'wrong' | 'busy' | 'offline' | 'session' | 'invalid' | 'retry';
+
+const ALERTS: Record<Exclude<Failure, 'wrong'>, { icon: 'warningCircle' | 'wifiSlash'; text: string }> = {
+  busy: { icon: 'warningCircle', text: COPY.login.errBusy },
+  offline: { icon: 'wifiSlash', text: COPY.login.errOffline },
+  session: { icon: 'warningCircle', text: COPY.login.errSession },
+  invalid: { icon: 'warningCircle', text: COPY.login.errInvalid },
+  retry: { icon: 'warningCircle', text: COPY.login.errRetry },
+};
+
+function failureOf(error: unknown): Failure {
+  if (!navigator.onLine) return 'offline';
+  if (error instanceof ApiError) {
+    if (error.status === 401) return 'wrong';
+    if (error.status === 429 || error.status === 503) return 'busy';
+    if (error.status === 422) return 'invalid';
+  }
+  return 'retry';
+}
+
 export default function Login() {
   const { signIn } = useAuth();
   const navigate = useNavigate();
@@ -14,24 +46,33 @@ export default function Login() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState<FieldErrors<Field>>({});
-  const [formError, setFormError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [problems, setProblems] = useState<Problems>({});
+  const [failure, setFailure] = useState<Failure | null>(null);
   const [sending, setSending] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (sending) return;
-    const problems = validateLogin({ email, password });
-    setErrors(problems);
-    setFormError(null);
-    if (Object.keys(problems).length > 0) return;
+
+    const check = validateLogin({ email, password });
+    const next: Problems = {};
+    if (check.email) next.email = COPY.login.errEmail;
+    if (check.password) next.password = COPY.login.errPassword;
+
+    setProblems(next);
+    setFailure(null);
+    if (Object.keys(next).length > 0) return;
 
     setSending(true);
     try {
       await signIn(email.trim(), password);
       navigate('/');
     } catch (error) {
-      setFormError(friendlyError(error, navigator.onLine));
+      const kind = failureOf(error);
+      setFailure(kind);
+      // The mockup puts "Incorrect email or password" on the password field, not in a banner.
+      if (kind === 'wrong') setProblems({ password: COPY.login.errWrong });
     } finally {
       // The password is not kept after submit, whether it worked or not.
       setPassword('');
@@ -39,70 +80,123 @@ export default function Login() {
     }
   }
 
+  const alert = failure && failure !== 'wrong' ? ALERTS[failure] : null;
+
   return (
     <>
-      <h1>Log in</h1>
-      {justRegistered && (
-        <p role="status">Your account is ready. Log in to continue.</p>
-      )}
-      <p className="muted">Log in to use admin features. Everything else works without it.</p>
+      <Hero
+        size="std"
+        className="hero--auth"
+        photo="/photos/road-l.webp"
+        kicker={COPY.login.kicker}
+        title={COPY.login.title}
+        gold={COPY.login.titleGold}
+        lead={COPY.login.lead}
+        student="phone"
+        header={<AppHeader variant="hero" />}
+      />
 
-      <form onSubmit={submit} noValidate className="form">
-        <div className="field">
-          <label htmlFor="login-email">Email</label>
-          <input
+      <div className="page">
+        <form className="form" noValidate onSubmit={submit}>
+          {justRegistered && (
+            <div className="alert alert--success" role="status">
+              <Icon name="checkCircle" size={24} />
+              <p>{COPY.login.registered}</p>
+            </div>
+          )}
+
+          <Field
             id="login-email"
-            name="email"
-            type="email"
-            inputMode="email"
-            autoComplete="username"
-            autoCapitalize="none"
-            spellCheck={false}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            aria-invalid={Boolean(errors.email)}
-            aria-describedby={errors.email ? 'login-email-error' : undefined}
-          />
-          {errors.email && (
-            <p id="login-email-error" className="field-error">
-              {errors.email}
-            </p>
-          )}
-        </div>
+            icon="envelope"
+            label={COPY.login.email}
+            error={problems.email}
+          >
+            <input
+              id="login-email"
+              name="email"
+              type="email"
+              inputMode="email"
+              autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
+              placeholder={COPY.login.emailPh}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              aria-invalid={Boolean(problems.email)}
+              aria-describedby={problems.email ? 'login-email-err' : undefined}
+            />
+          </Field>
 
-        <div className="field">
-          <label htmlFor="login-password">Password</label>
-          <input
+          <Field
             id="login-password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            aria-invalid={Boolean(errors.password)}
-            aria-describedby={errors.password ? 'login-password-error' : undefined}
-          />
-          {errors.password && (
-            <p id="login-password-error" className="field-error">
-              {errors.password}
-            </p>
+            icon="lock"
+            label={COPY.login.password}
+            error={problems.password}
+            trailing={
+              <button
+                type="button"
+                className="iconbtn iconbtn--plain"
+                aria-pressed={showPassword}
+                aria-label={showPassword ? COPY.login.hidePassword : COPY.login.showPassword}
+                onClick={() => setShowPassword((shown) => !shown)}
+              >
+                <Icon name={showPassword ? 'eyeSlash' : 'eye'} size={22} />
+              </button>
+            }
+          >
+            <input
+              id="login-password"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
+              placeholder={COPY.login.passwordPh}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              aria-invalid={Boolean(problems.password)}
+              aria-describedby={problems.password ? 'login-password-err' : undefined}
+            />
+          </Field>
+
+          {alert && (
+            <div className="alert alert--error" role="alert">
+              <Icon name={alert.icon} size={24} />
+              <p>{alert.text}</p>
+            </div>
           )}
-        </div>
 
-        {formError && (
-          <p role="alert" className="field-error">
-            {formError}
+          <div className="btn-row">
+            <button
+              type="submit"
+              className={`btn btn--gold btn--block btn--lg${sending ? ' is-loading' : ''}`}
+              disabled={sending}
+            >
+              {sending && <Icon name="arrowsClockwise" size={22} />}
+              <span>{sending ? COPY.login.sending : COPY.login.submit}</span>
+              {!sending && <Icon name="arrowRight" size={22} />}
+            </button>
+          </div>
+
+          <p className="or">
+            <span>{COPY.login.or}</span>
           </p>
-        )}
 
-        <button type="submit" disabled={sending}>
-          {sending ? 'Logging in…' : 'Log in'}
-        </button>
-      </form>
+          <Link className="btn btn--outline btn--block btn--lg" to="/register">
+            <Icon name="userPlus" size={22} />
+            <span>
+              {COPY.login.noAccount} <b>{COPY.login.register}</b>
+            </span>
+          </Link>
+        </form>
 
-      <p>
-        New here? <Link to="/register">Create an account</Link>
-      </p>
+        <StateBlock
+          inline
+          icon="wifiSlash"
+          title={COPY.login.offlineTitle}
+          body={COPY.login.offlineBody}
+        />
+      </div>
+
+      <Footer photoCredit="Photo: Omaonu, CC BY-SA 4.0 (Wikimedia Commons)." />
     </>
   );
 }

@@ -27,6 +27,24 @@ export function passwordLength(password: string): number {
   return Array.from(password).length;
 }
 
+/** The four-segment strength meter: 0 for an empty field, then 1 to 4. */
+export type PasswordStrength = 0 | 1 | 2 | 3 | 4;
+
+/**
+ * How strong a password looks, for the meter only. The server is the real judge: this never
+ * blocks a sign-up. Any typed password is at least "weak" (one segment), so the meter never
+ * shows nothing while the field has text.
+ */
+export function passwordStrength(password: string): PasswordStrength {
+  if (!password) return 0;
+  let score = 0;
+  if (passwordLength(password) >= 8) score += 1;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score += 1;
+  if (/\d/.test(password)) score += 1;
+  if (/[^A-Za-z0-9]/.test(password)) score += 1;
+  return Math.max(1, Math.min(score, 4)) as PasswordStrength;
+}
+
 export function validateRegister(values: {
   fullName: string;
   email: string;

@@ -1,14 +1,14 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
-import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { lazy, Suspense, useEffect } from 'react';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import AppHeader from './components/AppHeader';
 import FirstSyncScreen from './components/FirstSyncScreen';
 import OfflineBanner from './components/OfflineBanner';
-import ProfileSheet from './components/ProfileSheet';
 import SyncNotice from './components/SyncNotice';
 import TabBar from './components/TabBar';
+import { hasSeenWelcome } from './lib/firstRun';
 import { dismissFirstSync, showFirstSyncScreen, useSyncView } from './lib/syncStatus';
 import Home from './pages/Home';
-import { useAuth } from './lib/auth';
+import Welcome from './pages/Welcome';
 
 // Heavy / rarely used screens are lazy-loaded to protect the first-load budget.
 // The Academics screens read the offline cache (Dexie), so they load on demand too.
@@ -35,23 +35,36 @@ function retrySync() {
 }
 
 /**
- * The five-tab bar belongs to the main sections only. Log in, sign-up, the admin screens and
- * the first-sync screen each stand on their own (design handoff, screenshots `login-390`,
- * `sync-390`, `admin-390`).
+ * Screens that carry their own header inside the hero, so App must not draw a second one.
+ * Welcome, log in and sign-up all show the logo over the photo (screenshots `welcome-390`,
+ * `login-390`, `register-390`).
+ */
+function showsHeader(pathname: string): boolean {
+  return pathname !== '/welcome' && pathname !== '/login' && pathname !== '/register';
+}
+
+/**
+ * The five-tab bar belongs to the main sections only. Welcome, log in, sign-up, the admin
+ * screens and the first-sync screen each stand on their own (screenshots `welcome-390`,
+ * `login-390`, `sync-390`, `admin-390`).
  */
 function showsTabBar(pathname: string, firstSync: boolean): boolean {
   if (firstSync) return false;
   if (pathname.startsWith('/admin')) return false;
-  return pathname !== '/login' && pathname !== '/register';
+  return pathname !== '/welcome' && pathname !== '/login' && pathname !== '/register';
 }
 
 export default function App() {
   const sync = useSyncView();
-  const firstSync = showFirstSyncScreen(sync);
-  const auth = useAuth();
-  const navigate = useNavigate();
   const { pathname } = useLocation();
-  const [profileOpen, setProfileOpen] = useState(false);
+
+  // Welcome owns the first visit, so the sync screen must not jump over it. Once the student
+  // taps "Oya, make we start!" the route changes and this turns back on.
+  const firstSync = showFirstSyncScreen(sync) && pathname !== '/welcome';
+  const bare = !showsTabBar(pathname, false);
+  // Welcome, log in and sign-up stand alone: no sync banner over their hero.
+  const authScreen =
+    pathname === '/welcome' || pathname === '/login' || pathname === '/register';
 
   useEffect(() => {
     // Prime the offline cache in the background. Fails silently when offline / API not ready.
@@ -61,29 +74,22 @@ export default function App() {
     return () => window.removeEventListener('online', retrySync);
   }, []);
 
-  // A route change closes the sheet, so it never floats over a screen it did not open from.
-  useEffect(() => {
-    setProfileOpen(false);
-  }, [pathname]);
-
-  const signedIn = auth.status === 'signed-in';
-
   return (
     <>
       <OfflineBanner />
-      <AppHeader
-        signedIn={signedIn}
-        name={auth.user?.full_name}
-        onOpenProfile={() => setProfileOpen(true)}
-      />
-      <SyncNotice onRetry={retrySync} />
-      <main>
+      {showsHeader(pathname) && <AppHeader />}
+      {!authScreen && <SyncNotice onRetry={retrySync} />}
+      <main className={bare ? 'main--bare' : undefined}>
         {firstSync ? (
           <FirstSyncScreen progress={sync.progress} onContinue={dismissFirstSync} />
         ) : (
           <Suspense fallback={<p className="muted">Loading…</p>}>
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route
+                path="/"
+                element={hasSeenWelcome() ? <Home /> : <Navigate to="/welcome" replace />}
+              />
+              <Route path="/welcome" element={<Welcome />} />
               <Route path="/map" element={<MapPage />} />
               <Route path="/academics" element={<Academics />} />
               <Route path="/academics/:facultyId" element={<FacultyDepartments />} />
@@ -107,17 +113,6 @@ export default function App() {
       </main>
 
       {showsTabBar(pathname, firstSync) && <TabBar />}
-
-      <ProfileSheet
-        open={profileOpen}
-        onClose={() => setProfileOpen(false)}
-        user={auth.user}
-        signedIn={signedIn}
-        onSignOut={() => {
-          auth.signOut();
-          navigate('/');
-        }}
-      />
     </>
   );
 }

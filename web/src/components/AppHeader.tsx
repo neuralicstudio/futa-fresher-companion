@@ -1,60 +1,87 @@
-// The logo row: mark, wordmark and the profile button.
+// The logo row: mark, wordmark and the profile button, which is the only way to Settings and Admin.
 //
-// It sits at the top of every screen, including the ones without a tab bar (log in, first
-// sync). The design shows it over each screen's hero photo, so it is transparent: the scrim
-// that makes the text readable belongs to the hero behind it, not to this row.
-import { Link } from 'react-router-dom';
+// It sits at the top of every screen. On a screen with a hero it is rendered INSIDE the hero
+// (`variant="hero"`), so it reads over the photo; elsewhere App renders it above the page.
+// The profile sheet lives here too, so any header can open it.
+import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Icon from './Icon';
+import Logo from './Logo';
+import ProfileSheet from './ProfileSheet';
 import { COPY } from '../copy/pidgin';
 import { initials } from '../lib/initials';
+import { useAuth } from '../lib/auth';
 
 interface AppHeaderProps {
-  signedIn: boolean;
-  name?: string;
-  onOpenProfile: () => void;
+  /** `hero` removes the page padding and lets the photo show through. */
+  variant?: 'bar' | 'hero';
+  /** Welcome has no profile icon (docs/design/SCREENS.md, 1). */
+  showProfile?: boolean;
+  /** The lockup on a dark pill, as on Welcome. */
+  pill?: boolean;
 }
 
-/** The Sabi mark: a gold map pin with a graduation cap, from docs/design/brand/mark.svg. */
-function Mark() {
-  return (
-    <svg className="app-header__mark" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
-      <path d="M24 3C14.6 3 7 10.4 7 19.5 7 31 24 45 24 45s17-14 17-25.5C41 10.4 33.4 3 24 3z" fill="#fcc13c" />
-      <path d="M24 12.5 11.5 18.6 24 24.7l12.5-6.1L24 12.5z" fill="#0a0309" />
-      <path
-        d="M17.5 22.3v4.6c0 1.6 3 3.1 6.5 3.1s6.5-1.5 6.5-3.1v-4.6M36.5 18.6v7"
-        fill="none"
-        stroke="#0a0309"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
+export default function AppHeader({
+  variant = 'bar',
+  showProfile = true,
+  pill = false,
+}: AppHeaderProps) {
+  const auth = useAuth();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const [open, setOpen] = useState(false);
 
-export default function AppHeader({ signedIn, name, onOpenProfile }: AppHeaderProps) {
-  return (
-    <header className="app-header">
-      <Link className="app-header__brand" to="/">
-        <Mark />
-        <span className="app-header__word">
-          <b>{COPY.app.name}</b>
-          <small>{COPY.app.tagline}</small>
-        </span>
-      </Link>
+  // A route change closes the sheet, so it never floats over a screen it did not open from.
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
 
-      <button
-        type="button"
-        className="app-header__profile"
-        onClick={onOpenProfile}
-        aria-label={COPY.shell.profile}
-      >
-        {signedIn ? (
-          <span aria-hidden="true">{initials(name)}</span>
-        ) : (
-          <Icon name="profile" size={22} />
+  const signedIn = auth.status === 'signed-in';
+
+  return (
+    <>
+      <header className={`app-header app-header--${variant}`}>
+        <Link
+          className={`app-header__brand${pill ? ' is-pill' : ''}`}
+          to="/"
+          aria-label={`${COPY.app.name}, ${COPY.shell.tabs.home}`}
+        >
+          <Logo className="app-header__mark" />
+          <span className="app-header__word">
+            <b>{COPY.app.name}</b>
+            <small>{COPY.app.tagline}</small>
+          </span>
+        </Link>
+
+        {showProfile && (
+          <button
+            type="button"
+            className="app-header__profile"
+            onClick={() => setOpen(true)}
+            aria-haspopup="dialog"
+            aria-label={COPY.shell.profile}
+          >
+            {signedIn ? (
+              <span aria-hidden="true">{initials(auth.user?.full_name)}</span>
+            ) : (
+              <Icon name="profile" size={22} />
+            )}
+          </button>
         )}
-      </button>
-    </header>
+      </header>
+
+      {showProfile && (
+        <ProfileSheet
+          open={open}
+          onClose={() => setOpen(false)}
+          user={auth.user}
+          signedIn={signedIn}
+          onSignOut={() => {
+            auth.signOut();
+            navigate('/');
+          }}
+        />
+      )}
+    </>
   );
 }
