@@ -1454,3 +1454,248 @@ main h1 {
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------------- first-time sync */
+.hero--sync {
+  min-height: 380px;
+}
+
+.page--sync {
+  padding-top: var(--space-lg);
+}
+
+.card {
+  display: block;
+  padding: var(--space-md);
+  border: var(--outline) solid var(--color-outline);
+  border-radius: var(--radius-card);
+  background: var(--grad-card);
+}
+
+.card--soft {
+  background: var(--color-card-2);
+}
+
+.card--success {
+  border-color: color-mix(in srgb, var(--color-green) 55%, transparent);
+  background: var(--color-success-fill);
+}
+
+.card--danger {
+  border-color: color-mix(in srgb, var(--color-red) 60%, transparent);
+  background: var(--color-error-fill);
+}
+
+.note-row {
+  display: flex;
+  gap: var(--space-sm);
+  align-items: flex-start;
+}
+
+.note-row > svg {
+  flex: none;
+  color: var(--color-gold);
+}
+
+.note-row > div {
+  display: grid;
+  gap: var(--space-3xs);
+  min-width: 0;
+}
+
+.note-row b {
+  font-size: var(--text-md);
+}
+
+.note-row p {
+  margin: 0;
+  color: var(--color-text-2);
+}
+
+.ic--green {
+  color: var(--color-green);
+}
+
+.ic--red {
+  color: var(--color-red);
+}
+
+.btn--outline-red {
+  flex: none;
+  border-color: var(--color-red);
+  background: transparent;
+  color: var(--color-text);
+}
+
+.btn--outline-red:hover {
+  background: color-mix(in srgb, var(--color-red) 16%, transparent);
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.meta-line {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: flex-start;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.meta-line > svg {
+  flex: none;
+  color: var(--color-gold);
+}
+
+.meta-line--center {
+  justify-content: center;
+  align-items: center;
+  text-align: left;
+}
+
+/* The ring: no total, so it spins while saving instead of printing a made-up percentage. */
+.syncing {
+  display: grid;
+  gap: var(--space-lg);
+  justify-items: center;
+}
+
+.sync-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 9.5rem;
+  height: 9.5rem;
+}
+
+.sync-ring svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.sync-ring__track {
+  fill: none;
+  stroke: var(--color-strength-off);
+  stroke-width: 12;
+}
+
+.sync-ring__arc {
+  fill: none;
+  stroke: var(--color-gold);
+  stroke-width: 12;
+  stroke-linecap: round;
+  /* A fixed share of the ring: there is no total to show, so it never pretends to be a %. */
+  stroke-dasharray: 238 89;
+}
+
+.sync-ring.is-busy svg {
+  animation: spin 2.4s linear infinite;
+}
+
+.sync-ring.is-done .sync-ring__arc {
+  stroke: var(--color-green);
+}
+
+.sync-ring.is-fail .sync-ring__arc {
+  stroke: var(--color-red);
+}
+
+.sync-ring__in {
+  display: grid;
+  justify-items: center;
+  line-height: 1.1;
+}
+
+.sync-ring__in b {
+  color: var(--color-text);
+  font-size: 2.25rem;
+  font-weight: var(--weight-display);
+}
+
+.sync-ring__in small {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.syncing__list {
+  display: grid;
+  gap: var(--space-sm);
+  width: 100%;
+}
+
+.syncing__list h2 {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--weight-display);
+}
+
+.sync-rows {
+  display: grid;
+  gap: var(--space-2xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sync-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  gap: var(--space-sm);
+  align-items: center;
+  min-height: 2.5rem;
+}
+
+.sync-row__ic {
+  flex: none;
+  color: var(--color-gold);
+}
+
+.sync-row__name {
+  color: var(--color-text);
+}
+
+.sync-row__n {
+  color: var(--color-text-2);
+}
+
+.st {
+  flex: none;
+}
+
+.st--done {
+  color: var(--color-green);
+}
+
+.st--fail {
+  color: var(--color-red);
+}
+
+.st--wait {
+  color: var(--color-muted);
+}
+
+.st--now {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--color-gold);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sync-ring.is-busy svg,
+  .st--now {
+    animation: none;
+  }
+}

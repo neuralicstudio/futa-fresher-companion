@@ -17,6 +17,21 @@ export const COLLECTIONS = [
 export const LAST_SYNC_KEY = 'last_sync';
 export const CURSOR_KEY = 'sync_cursor';
 
+export type CollectionName = (typeof COLLECTIONS)[number];
+
+export function emptyCounts(): Record<CollectionName, number> {
+  return {
+    faculties: 0,
+    departments: 0,
+    lecturers: 0,
+    courses: 0,
+    class_reps: 0,
+    buildings: 0,
+    timetable_entries: 0,
+    announcements: 0,
+  };
+}
+
 /** One page, written in a single transaction by the store. */
 export interface PageWrite {
   page: SyncResponse;
@@ -48,6 +63,11 @@ export interface SyncProgress {
   firstRun: boolean;
   pages: number;
   rows: number;
+  /**
+   * Rows written per collection so far in this run, for the first-sync screen. The server does
+   * not say how many rows a full sync has, so these are counts, never a fraction.
+   */
+  counts: Record<CollectionName, number>;
 }
 
 /** Longest time one /sync page may take before the request is given up. */
@@ -80,8 +100,9 @@ export async function runSync({
     firstRun: lastSync === undefined,
     pages: 0,
     rows: 0,
+    counts: emptyCounts(),
   };
-  onProgress({ ...progress });
+  onProgress({ ...progress, counts: { ...progress.counts } });
   let restarted = false;
 
   try {
@@ -112,8 +133,10 @@ export async function runSync({
       });
 
       progress.pages += 1;
-      progress.rows += countRows(page);
-      onProgress({ ...progress });
+      const counted = countRows(page);
+      progress.rows += counted.total;
+      for (const name of COLLECTIONS) progress.counts[name] += counted.counts[name];
+      onProgress({ ...progress, counts: { ...progress.counts } });
 
       if (!next) return;
       cursor = next;
@@ -122,7 +145,7 @@ export async function runSync({
     progress.failed = true;
     throw error;
   } finally {
-    onProgress({ ...progress, running: false });
+    onProgress({ ...progress, running: false, counts: { ...progress.counts } });
   }
 }
 
@@ -152,8 +175,16 @@ function isCursorRejected(error: unknown): boolean {
   return error instanceof ApiError && error.status === 422;
 }
 
-function countRows(page: SyncResponse): number {
-  const rows = COLLECTIONS.reduce((sum, name) => sum + page[name].length, 0);
-  const deleted = Object.values(page.deleted).reduce((sum, ids) => sum + ids.length, 0);
-  return rows + deleted;
+function countRows(page: SyncResponse): {
+  total: number;
+  counts: Record<CollectionName, number>;
+} {
+  const counts = emptyCounts();
+  let total = 0;
+  for (const name of COLLECTIONS) {
+    // The screen counts rows it can show; `rows` also counts deleted ids, so the two can differ.
+    counts[name] = page[name].length;
+    total += page[name].length + (page.deleted[name] ?? []).length;
+  }
+  return { total, counts };
 }
