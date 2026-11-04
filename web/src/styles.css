@@ -2792,3 +2792,322 @@ main h1 {
     opacity: 0.55;
   }
 }
+
+/* ---------------------------------------------------------------- a school and a department */
+/* The two screens under the schools grid: the head card they share, the rows they list, and the
+   tabbed department panel from the mockup (academics-390). */
+.stack {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+/* A way back that is not over a photo. */
+.back {
+  display: inline-flex;
+  gap: var(--space-xs);
+  align-items: center;
+  min-height: var(--hit);
+  color: var(--color-text);
+  font-weight: var(--weight-strong);
+  text-decoration: none;
+}
+
+.back:hover span {
+  text-decoration: underline;
+}
+
+/* The head: a photo (or the drawn night) with the back chip on it, then the symbol, the name and
+   the trust mark, all over the picture's own scrim. */
+.head-card {
+  overflow: hidden;
+  border: var(--outline) solid var(--color-outline);
+  border-radius: var(--radius-card);
+  background: var(--grad-card);
+  box-shadow: var(--shadow-card);
+  color: var(--color-text-2);
+}
+
+.head-card__top {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  gap: var(--space-sm);
+  /* Room above the head for the back chip, which sits on the picture's top edge. */
+  padding: 4.5rem var(--space-md) var(--space-md);
+}
+
+.head-card__pic {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+.head-card__pic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.head-card__top::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--color-scrim) 55%, transparent),
+    color-mix(in srgb, var(--color-scrim) 88%, transparent)
+  );
+}
+
+.back--chip {
+  position: absolute;
+  left: var(--space-sm);
+  top: var(--space-sm);
+  gap: var(--space-2xs);
+  padding: 0 var(--space-md) 0 var(--space-sm);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-scrim) 78%, transparent);
+  color: var(--color-on-photo);
+}
+
+.head-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+}
+
+.head-card__name {
+  flex: 1 1 8rem;
+  min-width: 0;
+}
+
+.head-card__head .seal {
+  margin-left: auto;
+}
+
+.head-card__name h1 {
+  color: var(--color-on-photo);
+  font-size: var(--text-2xl);
+  /* Break at the spaces, as the mockup does: "Computer / Science", never "Compute / r". */
+  overflow-wrap: break-word;
+}
+
+.head-card__name p {
+  color: var(--color-night-muted);
+  font-size: var(--text-sm);
+}
+
+.head-card__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-gold);
+  color: var(--color-on-gold);
+}
+
+.head-card__body {
+  padding: var(--space-md);
+}
+
+/* On the narrowest phones the symbol and the name still share a line, so the name steps down a
+   size rather than pushing the symbol onto a line of its own. */
+@media (max-width: 380px) {
+  .head-card__name h1 {
+    font-size: var(--text-xl);
+  }
+}
+
+/* The department's tabs bring their own spacing. */
+.head-card__body--flush {
+  padding: 0;
+}
+
+/* ---------------------------------------------------------------- tabs */
+.tabs {
+  display: flex;
+  margin: var(--space-sm) var(--space-md) 0;
+  border-bottom: var(--rule-hair) solid var(--color-rule);
+}
+
+.tabs__tab {
+  flex: 1;
+  display: inline-flex;
+  gap: var(--space-2xs);
+  align-items: center;
+  justify-content: center;
+  min-height: var(--hit);
+  margin-bottom: -1px;
+  padding: var(--space-xs) var(--space-2xs);
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--color-muted);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-strong);
+  cursor: pointer;
+}
+
+.tabs__tab[aria-selected='true'] {
+  color: var(--color-gold);
+  border-bottom-color: var(--color-gold);
+}
+
+.tabs__pane {
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+}
+
+/* `display: grid` above would otherwise beat the `hidden` attribute. */
+.tabs__pane[hidden] {
+  display: none;
+}
+
+.tabs__pane h2 {
+  font-size: var(--text-lg);
+}
+
+.tabs__pane h3 {
+  font-size: var(--text-md);
+  color: var(--color-text-2);
+}
+
+/* Popular courses and Key lecturers: side by side from 640px, stacked on a phone. */
+.duo--flat {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+@media (min-width: 640px) {
+  .duo--flat {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ---------------------------------------------------------------- rows */
+.rows {
+  display: grid;
+  gap: var(--space-xs);
+  margin: var(--space-xs) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rows-group {
+  display: grid;
+  gap: var(--space-2xs);
+}
+
+.rows-group + .rows-group {
+  margin-top: var(--space-sm);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-sm);
+  align-items: center;
+  min-height: var(--hit);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  background: var(--color-card-2);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+a.row:hover {
+  background: color-mix(in srgb, var(--color-gold) 10%, var(--color-card-2));
+}
+
+a.row:focus-visible {
+  outline: var(--rule-bar) solid var(--color-focus);
+  outline-offset: var(--space-3xs);
+}
+
+.row--code,
+.row--person {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.row__title {
+  display: grid;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.row__title small {
+  color: var(--color-muted);
+}
+
+/* An address is long, so it sits a step smaller than the lines above it and never overflows. */
+.row__email {
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+}
+
+.row__star {
+  display: inline-flex;
+  margin-left: var(--space-2xs);
+  color: var(--color-gold);
+  vertical-align: -2px;
+}
+
+/* A course code, as the mockup draws it beside the title. A step small, so the title beside it
+   keeps room for "3 units · Semester 1" even in the panel's two columns at 768. */
+.code {
+  display: inline-flex;
+  padding: var(--space-3xs) var(--space-xs);
+  font-size: var(--text-xs);
+  border-radius: var(--radius-sm);
+  background: var(--color-card);
+  color: var(--color-text-2);
+  font-weight: var(--weight-strong);
+  white-space: nowrap;
+}
+
+/* A lecturer's initials, cycling through the design's four colours. */
+.avatar {
+  display: inline-grid;
+  flex: none;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-md);
+  font-weight: var(--weight-display);
+  letter-spacing: 0.02em;
+}
+
+.avatar--gold {
+  background: var(--color-gold);
+  color: var(--color-on-gold);
+}
+
+.avatar--green {
+  background: var(--color-green);
+  color: var(--color-on-green);
+}
+
+.avatar--indigo {
+  background: var(--color-indigo);
+  color: var(--color-on-indigo);
+}
+
+.avatar--red {
+  background: var(--color-red-chip);
+  color: var(--color-on-red);
+}
+
+/* "View all" is a button that changes tab, so it needs to look like the design's link. */
+button.link {
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}

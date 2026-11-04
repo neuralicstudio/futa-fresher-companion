@@ -8,14 +8,14 @@ import { Link, useParams } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
 import Footer from '../components/Footer';
 import Hero from '../components/Hero';
-import Icon, { type IconName } from '../components/Icon';
+import Icon from '../components/Icon';
 import Scene from '../components/Scene';
+import { SealNote } from '../components/Seal';
 import StateBlock from '../components/StateBlock';
 import CampusMap from '../components/map/CampusMap';
 import PlaceRow from '../components/map/PlaceRow';
 import { COPY } from '../copy/pidgin';
 import type { Building } from '../api/types';
-import { formatUpdated } from '../lib/academicsView';
 import {
   CATEGORIES,
   categoryBlurb,
@@ -29,18 +29,6 @@ import {
 import { readBuildings } from '../lib/offline';
 import { useCachedRows } from '../lib/useCachedRows';
 
-/** How the record's verification reads, in the design's seal (place-390). */
-const SEALS: Record<string, { icon: IconName; text: string; className: string }> = {
-  verified: { icon: 'checkCircleFill', text: COPY.status.verified, className: 'seal--verified' },
-  unverified: { icon: 'info', text: COPY.status.unverified, className: 'seal--unverified' },
-  outdated: { icon: 'warning', text: COPY.status.outdated, className: 'seal--outdated' },
-};
-const UNKNOWN_SEAL = {
-  icon: 'info' as IconName,
-  text: COPY.status.unknown,
-  className: 'seal--unverified',
-};
-
 export default function PlacePage() {
   const { id = '' } = useParams();
   const { result } = useCachedRows(readBuildings);
@@ -53,8 +41,6 @@ export default function PlacePage() {
   const photo = building ? placePhoto(building.name, 'l') : undefined;
   const credit = building ? placePhotoCredit(building.name) : undefined;
   const nearby = place ? nearbyPlaces(places, place.id) : [];
-  const seal = building ? (SEALS[building.verification.status] ?? UNKNOWN_SEAL) : UNKNOWN_SEAL;
-
   // The hero says what the screen is about; the card below only appears when there is a place.
   let title: string = COPY.place.notFoundTitle;
   if (result.state === 'loading') title = COPY.states.loadingTitle;
@@ -127,22 +113,7 @@ export default function PlacePage() {
 
               <p>{categoryBlurb(place.category)}</p>
 
-              <div className="seal-wrap">
-                <p className="seal-line">
-                  <span className={`seal ${seal.className}`}>
-                    <Icon name={seal.icon} size={16} />
-                    {seal.text}
-                  </span>
-                  <span className="seal-line__date">{formatUpdated(building.updated_at)}</span>
-                </p>
-                <details className="source">
-                  <summary>
-                    <Icon name="caretRight" size={16} />
-                    <span>{COPY.shell.sourceLabel}</span>
-                  </summary>
-                  <p>{building.verification.source ?? COPY.shell.noSource}</p>
-                </details>
-              </div>
+              <SealNote verification={building.verification} updatedAt={building.updated_at} />
 
               <div className="btn-row">
                 <Link className="btn btn--gold" to={`/map?place=${place.id}`}>
