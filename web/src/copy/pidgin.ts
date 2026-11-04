@@ -218,6 +218,7 @@ export const COPY = {
     contactDept: 'Contact dept.',
     times: 'Times na Nigerian time.',
     venueMissing: 'Venue never dey yet.',
+    buildingMissing: 'Building no dey saved on this phone.',
     courseMissing: 'Course details no dey saved on this phone.',
     loading: 'Dey load timetable',
     errorTitle: 'We no fit read your timetable',

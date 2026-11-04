@@ -1,5 +1,6 @@
 // Pure view logic for the timetable. No Dexie or React imports, so Vitest can run it.
-import type { Building, Course, TimetableEntry } from '../api/types';
+import type { Building, TimetableEntry } from '../api/types';
+import { COPY } from '../copy/pidgin';
 import { emptyMessage } from './academicsView';
 import { liveRows } from './departmentView';
 
@@ -14,13 +15,27 @@ const DAY_NAMES: Record<number, string> = {
   7: 'Sunday',
 };
 const SHORT_DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const MONTHS = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+];
 
 export const LEVEL_KEY = 'futa-timetable-level';
-export const TIMETABLE_EMPTY = 'The timetable for this department has not been added yet.';
-export const LEVEL_EMPTY = 'No timetable entries for this level yet.';
-export const COURSE_MISSING = 'Course details are not saved on this device.';
-export const VENUE_MISSING = 'Venue not given yet.';
-export const BUILDING_MISSING = 'Building not saved on this device';
+// The words the screen falls back to when a record is not in the cache. They live in the copy
+// file, like every other word in the app, so a change of tone is one edit.
+export const COURSE_MISSING = COPY.timetable.courseMissing;
+export const VENUE_MISSING = COPY.timetable.venueMissing;
+export const BUILDING_MISSING = COPY.timetable.buildingMissing;
 
 /** Levels that have at least one live entry, lowest first. Only these are offered in the picker. */
 export function levelsWithEntries(entries: readonly TimetableEntry[]): number[] {
@@ -35,6 +50,76 @@ export function chooseLevel(levels: readonly number[], remembered: number | null
 
 export function entriesForLevel(entries: readonly TimetableEntry[], level: number): TimetableEntry[] {
   return liveRows(entries).filter((entry) => entry.level === level);
+}
+
+export type Semester = 1 | 2;
+
+/** The semesters this level runs in, first before second. Only these are offered in the picker. */
+export function semestersWithEntries(
+  entries: readonly TimetableEntry[],
+  level: number,
+): Semester[] {
+  const seen = new Set(entriesForLevel(entries, level).map((entry) => entry.semester));
+  return ([1, 2] as const).filter((semester) => seen.has(semester));
+}
+
+/** The semester the reader picked if it still has classes, otherwise the first one, or null. */
+export function chooseSemester(
+  available: readonly Semester[],
+  picked: Semester | null,
+): Semester | null {
+  if (picked !== null && available.includes(picked)) return picked;
+  return available[0] ?? null;
+}
+
+export function entriesForSemester(
+  entries: readonly TimetableEntry[],
+  level: number,
+  semester: Semester,
+): TimetableEntry[] {
+  return entriesForLevel(entries, level).filter((entry) => entry.semester === semester);
+}
+
+/** One day's classes, earliest first. */
+export function entriesOnDay(entries: readonly TimetableEntry[], day: number): TimetableEntry[] {
+  return liveRows(entries)
+    .filter((entry) => entry.day_of_week === day)
+    .sort(startsBefore);
+}
+
+/** "First semester" / "Second semester", as the picker writes them. */
+export function semesterLabel(semester: Semester): string {
+  return semester === 1 ? COPY.timetable.semesters.first : COPY.timetable.semesters.second;
+}
+
+/** A day of the week the strip shows: the letter row, the date and whether it is today. */
+export interface WeekDay {
+  /** 1 = Monday ... 7 = Sunday, matching day_of_week. */
+  day: number;
+  short: string;
+  date: number;
+  month: string;
+  /** "Tuesday, Oct 27", the heading over that day's classes. */
+  label: string;
+  today: boolean;
+}
+
+/** Monday to Sunday of the week that holds `now`, in the device's own time zone. */
+export function weekDays(now: Date): WeekDay[] {
+  const today = todayDayNumber(now) || 1;
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - (today - 1));
+  return SHORT_DAYS.map((short, index) => {
+    const date = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + index);
+    const month = MONTHS[date.getMonth()];
+    return {
+      day: index + 1,
+      short,
+      date: date.getDate(),
+      month,
+      label: `${DAY_NAMES[index + 1]}, ${month} ${date.getDate()}`,
+      today: index + 1 === today,
+    };
+  });
 }
 
 // Storage can be missing or blocked (private mode). Every access is guarded.
@@ -70,37 +155,60 @@ function startsBefore(a: TimetableEntry, b: TimetableEntry): number {
   return a.start_time.localeCompare(b.start_time) || a.id.localeCompare(b.id);
 }
 
-export interface DayGroup {
-  day: number;
-  label: string;
-  entries: TimetableEntry[];
+/** "10:00" → "10:00 AM". Anything unexpected is returned as it came. */
+export function formatClock(hhmm: string): string {
+  const match = /^(\d{1,2}):(\d{2})/.exec(hhmm);
+  if (!match) return hhmm;
+  const hours = Number(match[1]);
+  const minutes = match[2];
+  if (!Number.isInteger(hours) || hours > 23) return hhmm;
+  const suffix = hours < 12 ? 'AM' : 'PM';
+  const hour12 = hours % 12 === 0 ? 12 : hours % 12;
+  return `${hour12}:${minutes} ${suffix}`;
 }
 
-/** Entries grouped by day, Monday first, each day sorted by start time. Sunday only if it has entries. */
-export function groupByDay(entries: readonly TimetableEntry[]): DayGroup[] {
-  const byDay = new Map<number, TimetableEntry[]>();
-  for (const entry of liveRows(entries)) {
-    const group = byDay.get(entry.day_of_week) ?? [];
-    group.push(entry);
-    byDay.set(entry.day_of_week, group);
+/** Minutes from midnight, or null when the time is malformed. */
+export function minutesOfDay(hhmm: string): number | null {
+  const match = /^(\d{1,2}):(\d{2})/.exec(hhmm);
+  if (!match) return null;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (!Number.isInteger(hours) || hours > 23 || minutes > 59) return null;
+  return hours * 60 + minutes;
+}
+
+/** The class that has not started yet today, and how long until it does. */
+export interface NextClass {
+  id: string;
+  inMinutes: number;
+}
+
+/**
+ * The next class today, from now onwards. A class that has already started is skipped: the
+ * card is about what is next, and the countdown has to be positive.
+ */
+export function nextToday(entries: readonly TimetableEntry[], now: Date): NextClass | null {
+  const today = todayDayNumber(now);
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+  let best: NextClass | null = null;
+  for (const entry of entriesOnDay(entries, today)) {
+    const start = minutesOfDay(entry.start_time);
+    if (start === null || start <= nowMinutes) continue;
+    const inMinutes = start - nowMinutes;
+    if (best === null || inMinutes < best.inMinutes) best = { id: entry.id, inMinutes };
   }
-  return [...byDay.entries()]
-    .sort(([a], [b]) => a - b)
-    .map(([day, group]) => ({
-      day,
-      label: DAY_NAMES[day] ?? 'Unknown day',
-      entries: group.sort(startsBefore),
-    }));
+  return best;
 }
 
-export function timeRange(entry: Pick<TimetableEntry, 'start_time' | 'end_time'>): string {
-  return `${entry.start_time}–${entry.end_time}`;
-}
-
-/** Course code and title from the cache, or a plain message when the course is not saved. */
-export function courseText(course: Course | undefined): { code: string; title: string } | null {
-  if (!course) return null;
-  return { code: course.code, title: course.title };
+/**
+ * Day of week, 1 = Monday ... 7 = Sunday, for an instant in a time zone. Without a zone it uses
+ * the device's own, so nothing is hardcoded. Returns 0 if the browser gives an unexpected name.
+ */
+export function todayDayNumber(now: Date, timeZone?: string): number {
+  const name = new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone }).format(now);
+  const index = SHORT_DAYS.indexOf(name);
+  return index === -1 ? 0 : index + 1;
 }
 
 /** Venue text. A building name from the cache when linked, else the note, else a plain message. */
@@ -121,20 +229,6 @@ export function buildingsById(
   buildings: readonly Pick<Building, 'id' | 'name'>[],
 ): Map<string, Pick<Building, 'id' | 'name'>> {
   return new Map(buildings.map((building) => [building.id, building]));
-}
-
-/**
- * Day of week, 1 = Monday ... 7 = Sunday, for an instant in a time zone. Without a zone it uses
- * the device's own, so nothing is hardcoded. Returns 0 if the browser gives an unexpected name.
- */
-export function todayDayNumber(now: Date, timeZone?: string): number {
-  const name = new Intl.DateTimeFormat('en-US', { weekday: 'short', timeZone }).format(now);
-  const index = SHORT_DAYS.indexOf(name);
-  return index === -1 ? 0 : index + 1;
-}
-
-export function isToday(group: Pick<DayGroup, 'day'>, now: Date, timeZone?: string): boolean {
-  return group.day === todayDayNumber(now, timeZone);
 }
 
 /** What an empty timetable says. A sync in progress takes priority, as on the other screens. */

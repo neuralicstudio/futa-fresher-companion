@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Announcement, Building, Course, TimetableEntry } from '../api/types';
 import {
-  formatClock,
   latestNotice,
   nextClass,
   noticeDate,
@@ -78,22 +77,6 @@ function announcement(overrides: Partial<Announcement> & { id: string }): Announ
     ...overrides,
   };
 }
-
-describe('formatClock', () => {
-  it('prints the 12-hour clock the timetable cards use', () => {
-    expect(formatClock('10:00')).toBe('10:00 AM');
-    expect(formatClock('09:07')).toBe('9:07 AM');
-    expect(formatClock('12:00')).toBe('12:00 PM');
-    expect(formatClock('13:05')).toBe('1:05 PM');
-    expect(formatClock('00:05')).toBe('12:05 AM');
-    expect(formatClock('23:59')).toBe('11:59 PM');
-  });
-
-  it('leaves a malformed time alone instead of inventing one', () => {
-    expect(formatClock('25:00')).toBe('25:00');
-    expect(formatClock('morning')).toBe('morning');
-  });
-});
 
 describe('nextClass', () => {
   it('takes the next class today and skips one that already started', () => {

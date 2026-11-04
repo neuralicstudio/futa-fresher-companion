@@ -3,7 +3,7 @@ import type { Announcement, Building, Course, TimetableEntry } from '../api/type
 import { formatDay } from './academicsView';
 import { announcementsForDisplay } from './announcementsView';
 import { liveRows } from './departmentView';
-import { buildingsById, venueText } from './timetableView';
+import { buildingsById, formatClock, minutesOfDay, venueText } from './timetableView';
 
 export interface HomeClass {
   id: string;
@@ -31,28 +31,6 @@ const DAY_NAMES: Record<number, string> = {
   6: 'Saturday',
   7: 'Sunday',
 };
-
-/** "10:00" → "10:00 AM". Anything unexpected is returned as it came. */
-export function formatClock(hhmm: string): string {
-  const match = /^(\d{1,2}):(\d{2})/.exec(hhmm);
-  if (!match) return hhmm;
-  const hours = Number(match[1]);
-  const minutes = match[2];
-  if (!Number.isInteger(hours) || hours > 23) return hhmm;
-  const suffix = hours < 12 ? 'AM' : 'PM';
-  const hour12 = hours % 12 === 0 ? 12 : hours % 12;
-  return `${hour12}:${minutes} ${suffix}`;
-}
-
-/** Minutes from midnight, or null when the time is malformed. */
-function minutesOfDay(hhmm: string): number | null {
-  const match = /^(\d{1,2}):(\d{2})/.exec(hhmm);
-  if (!match) return null;
-  const hours = Number(match[1]);
-  const minutes = Number(match[2]);
-  if (!Number.isInteger(hours) || hours > 23 || minutes > 59) return null;
-  return hours * 60 + minutes;
-}
 
 /** 1 = Monday ... 7 = Sunday, matching day_of_week. */
 function dayNumber(now: Date): number {

@@ -1,11 +1,16 @@
 // One pattern for empty, error, offline and not-found notes: a gold icon with two spark dashes,
-// a bold title and one line of help (docs/design/COMPONENTS.md, States).
+// a bold title and one line of help (docs/design/COMPONENTS.md, States). An action, when there
+// is one, sits inside the card under the help, as the mockups draw "Try again" and "Choose
+// department" (screenshots academics-error-390, timetable-noDept-390).
+import type { ReactNode } from 'react';
 import Icon, { type IconName } from './Icon';
 
 interface StateBlockProps {
   icon: IconName;
   title: string;
   body?: string;
+  /** At most one button, under the help. */
+  action?: ReactNode;
   /** A tighter version that sits under a form rather than taking the screen. */
   inline?: boolean;
 }
@@ -18,7 +23,7 @@ function Sparks({ side }: { side: 'l' | 'r' }) {
   );
 }
 
-export default function StateBlock({ icon, title, body, inline = false }: StateBlockProps) {
+export default function StateBlock({ icon, title, body, action, inline = false }: StateBlockProps) {
   return (
     <div className={`state${inline ? ' state--inline' : ''}`} role="note">
       <span className="state__art">
@@ -28,6 +33,7 @@ export default function StateBlock({ icon, title, body, inline = false }: StateB
       </span>
       <p className="state__title">{title}</p>
       {body && <p className="state__body">{body}</p>}
+      {action}
     </div>
   );
 }
