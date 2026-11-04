@@ -142,14 +142,8 @@ export function rememberLevel(storage: Pick<Storage, 'setItem'> | undefined, lev
   }
 }
 
-/** The browser's local storage, or undefined if the browser blocks it. */
-export function browserLocalStorage(): Storage | undefined {
-  try {
-    return globalThis.localStorage;
-  } catch {
-    return undefined;
-  }
-}
+// Kept here for the timetable's callers; the helper itself lives with the other browser APIs.
+export { browserLocalStorage } from './storage';
 
 function startsBefore(a: TimetableEntry, b: TimetableEntry): number {
   return a.start_time.localeCompare(b.start_time) || a.id.localeCompare(b.id);

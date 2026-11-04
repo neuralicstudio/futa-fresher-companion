@@ -5,6 +5,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import Icon, { type IconName } from './Icon';
 import { COPY } from '../copy/pidgin';
+import { useUnreadNotices } from '../lib/useUnreadNotices';
 
 interface Tab {
   to: string;
@@ -54,13 +55,9 @@ const TIMETABLE: Tab = {
   iconActive: 'timetableFill',
 };
 
-interface TabBarProps {
-  /** Shows the gold dot on Notices when there are unread notices. */
-  unread?: boolean;
-}
-
-export default function TabBar({ unread = false }: TabBarProps) {
+export default function TabBar() {
   const { pathname } = useLocation();
+  const unread = useUnreadNotices() > 0;
   // A place detail belongs to the Map section even though its address is /place/:id
   // (screenshot place-390: the Map tab is the gold one).
   const onPlace = pathname === '/place' || pathname.startsWith('/place/');

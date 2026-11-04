@@ -3371,3 +3371,184 @@ button.link {
   justify-self: stretch;
   margin-top: var(--space-xs);
 }
+
+/* ----------------------------------------------------------------- notices */
+/* The latest notices: search over the photo, filter chips, then a card each (notices-390). */
+.page--notices {
+  gap: var(--space-md);
+  padding-top: var(--space-md);
+}
+
+/* The chips sit edge to edge and scroll sideways when five of them do not fit. */
+.filter {
+  display: flex;
+  gap: var(--space-xs);
+  overflow-x: auto;
+  margin: 0 calc(-1 * var(--gutter));
+  padding: var(--space-3xs) var(--gutter);
+  scrollbar-width: none;
+}
+
+.filter::-webkit-scrollbar {
+  display: none;
+}
+
+.filter button {
+  flex: none;
+  min-height: var(--hit);
+  /* The five chips fit one row on a tablet (notices-768); on a phone the row scrolls. */
+  padding: 0 var(--space-sm);
+  border: var(--outline) solid var(--color-outline);
+  border-radius: var(--radius-pill);
+  background: var(--color-card);
+  color: var(--color-text);
+  font: inherit;
+  font-weight: var(--weight-strong);
+  cursor: pointer;
+}
+
+.filter button[aria-pressed='true'] {
+  background: var(--color-gold);
+  border-color: var(--color-gold);
+  color: var(--color-on-gold);
+}
+
+.filter button:focus-visible {
+  outline: var(--rule-bar) solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* The scope chips: University gold, SUG red, School green, Department indigo. */
+.chip--scope-gold {
+  background: var(--color-gold);
+  color: var(--color-on-gold);
+}
+
+.chip--scope-red {
+  background: var(--color-red-chip);
+  color: var(--color-on-red);
+}
+
+.chip--scope-green {
+  background: var(--color-green);
+  color: var(--color-on-green);
+}
+
+.chip--scope-indigo {
+  background: var(--color-indigo);
+  color: var(--color-on-indigo);
+}
+
+.notices {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.card.notice {
+  display: grid;
+  gap: var(--space-xs);
+  align-content: start;
+}
+
+.notice__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-sm);
+  margin: 0;
+}
+
+/* The date takes the right end of the line; "Unread" follows it when the card is new. */
+.notice__date {
+  margin-left: auto;
+  color: var(--color-text-2);
+  font-size: var(--text-sm);
+}
+
+.unread {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  color: var(--color-gold);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-strong);
+}
+
+.unread::before {
+  content: '';
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--color-gold);
+}
+
+.notice__title {
+  margin: 0;
+  font-size: var(--text-lg);
+  /* Wrap at spaces: the global h1/h2/h3 rule breaks words, and a notice title must not. */
+  overflow-wrap: break-word;
+}
+
+.notice__from {
+  display: flex;
+  /* A long source wraps to a second line on a narrow phone: the megaphone stays on the first. */
+  align-items: flex-start;
+  gap: var(--space-xs);
+  margin: 0;
+  color: var(--color-gold);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-strong);
+}
+
+.notice__from > svg {
+  flex: none;
+  /* Centres the 16px icon on the first 14px line. */
+  margin-top: 1px;
+}
+
+.notice__body {
+  margin: 0;
+  color: var(--color-text-2);
+  overflow-wrap: anywhere;
+}
+
+/* Three lines while closed; the whole text when the student asks for it. */
+.clamp3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* The one control on a card: the gold "View full details" line, a 44px tap target. */
+.notice__more {
+  display: inline-flex;
+  justify-self: start;
+  align-items: center;
+  gap: var(--space-xs);
+  min-height: var(--hit);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-gold);
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-strong);
+  cursor: pointer;
+}
+
+.notice__more > svg {
+  transition: rotate var(--dur-micro) var(--ease-out);
+}
+
+.notice__more[aria-expanded='true'] > svg {
+  rotate: -90deg;
+}
+
+.notice__more:focus-visible {
+  outline: var(--rule-bar) solid var(--color-focus);
+  outline-offset: 2px;
+}
