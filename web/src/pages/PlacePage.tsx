@@ -9,10 +9,10 @@ import AppHeader from '../components/AppHeader';
 import Footer from '../components/Footer';
 import Hero from '../components/Hero';
 import Icon, { type IconName } from '../components/Icon';
+import Scene from '../components/Scene';
 import StateBlock from '../components/StateBlock';
 import CampusMap from '../components/map/CampusMap';
 import PlaceRow from '../components/map/PlaceRow';
-import PlaceScene from '../components/map/PlaceScene';
 import { COPY } from '../copy/pidgin';
 import type { Building } from '../api/types';
 import { formatUpdated } from '../lib/academicsView';
@@ -66,7 +66,7 @@ export default function PlacePage() {
       <Hero
         size={building ? 'std' : 'short'}
         photo={photo}
-        scene={<PlaceScene />}
+        scene={<Scene />}
         kicker={building ? COPY.place.kicker : undefined}
         title={title}
         header={

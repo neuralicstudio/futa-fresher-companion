@@ -166,7 +166,7 @@ describe('Place detail', () => {
     expect(html).toContain('card--empty-photo');
     expect(html).toContain('Photo dey come');
     expect(html).toContain('Anybody get correct photo of this place?');
-    expect(html).toContain('place-scene');
+    expect(html).toContain('class="scene');
     // The hero falls back to the drawing; the rows below still show their own pictures.
     expect(html).not.toContain('library-l.webp');
     expect(html).not.toContain('Photo: MediaMOF');
@@ -178,7 +178,7 @@ describe('Place detail', () => {
     expect(html).toContain('This place no dey saved on this phone');
     expect(html).toContain('Connect to data once, and Sabi go save the list.');
     expect(html).toContain('hero--short');
-    expect(html).toContain('place-scene');
+    expect(html).toContain('class="scene');
     expect(html).toContain('Back to map');
     expect(html).not.toContain('Nearby');
   });

@@ -37,9 +37,9 @@ function retrySync() {
 
 /**
  * Screens that carry their own header inside the hero, so App must not draw a second one.
- * Welcome, Home, Campus Map, Place detail, log in and sign-up all show their own top row over
- * the photo (screenshots `welcome-390`, `home-390`, `map-390`, `place-390`, `login-390`,
- * `register-390`).
+ * Welcome, Home, Campus Map, Place detail, Academics, log in and sign-up all show their own top
+ * row over the photo (screenshots `welcome-390`, `home-390`, `map-390`, `place-390`,
+ * `academics-390`, `login-390`, `register-390`).
  */
 function showsHeader(pathname: string): boolean {
   return (
@@ -47,6 +47,7 @@ function showsHeader(pathname: string): boolean {
     pathname !== '/welcome' &&
     pathname !== '/map' &&
     !pathname.startsWith('/place/') &&
+    pathname !== '/academics' &&
     pathname !== '/login' &&
     pathname !== '/register'
   );
@@ -71,12 +72,13 @@ export default function App() {
   // taps "Oya, make we start!" the route changes and this turns back on.
   const firstSync = showFirstSyncScreen(sync) && pathname !== '/welcome';
   // The sync screen carries its own logo row inside the hero and no tabs (screenshot sync-390).
-  // Home, Campus Map and Place detail also draw their own hero, page and footer, so the shell
-  // adds no padding (home-390, map-390, place-390).
+  // Home, Campus Map, Place detail and Academics also draw their own hero, page and footer, so
+  // the shell adds no padding (home-390, map-390, place-390, academics-390).
   const bare =
     firstSync ||
     pathname === '/' ||
     pathname === '/map' ||
+    pathname === '/academics' ||
     pathname.startsWith('/place/') ||
     !showsTabBar(pathname, false);
   // Welcome, log in and sign-up stand alone: no sync banner over their hero.

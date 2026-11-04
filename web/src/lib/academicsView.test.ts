@@ -1,8 +1,15 @@
 import { describe, expect, it } from 'vitest';
+import type { Department, Faculty } from '../api/types';
 import {
+  departmentsIn,
+  departmentsLabel,
   emptyMessage,
+  filterSchools,
   formatUpdated,
   SAVING_MESSAGE,
+  schoolIcon,
+  schoolsLabel,
+  schoolScene,
   sortByName,
   verificationLabel,
 } from './academicsView';
@@ -85,5 +92,132 @@ describe('emptyMessage', () => {
 
   it('says what is missing during a sync that is not the first one', () => {
     expect(emptyMessage({ running: true, firstRun: false }, notSaved)).toBe(notSaved);
+  });
+});
+
+// ---------------------------------------------------------------- the schools grid
+
+function faculty(id: string, name: string, short_name: string | null = null): Faculty {
+  return {
+    id,
+    name,
+    short_name,
+    verification: { status: 'unverified', source: 'campustimesng.com' },
+    updated_at: '2026-10-25T09:00:00+01:00',
+  };
+}
+
+function department(id: string, facultyId: string, name: string, short_name: string | null = null): Department {
+  return {
+    id,
+    faculty_id: facultyId,
+    name,
+    short_name,
+    verification: { status: 'unverified', source: 'campustimesng.com' },
+    updated_at: '2026-10-25T09:00:00+01:00',
+  };
+}
+
+describe('schoolIcon', () => {
+  it('gives each school the symbol its subject suggests', () => {
+    expect(schoolIcon('School of Computing')).toBe('desktop');
+    expect(schoolIcon('School of Basic Medical Sciences')).toBe('stethoscope');
+    expect(schoolIcon('School of Agriculture and Agricultural Technology')).toBe('plant');
+    expect(schoolIcon('School of Environmental Technology')).toBe('leaf');
+    expect(schoolIcon('School of Earth and Mineral Sciences')).toBe('compass');
+  });
+
+  it('falls back to the plain school building for a name it does not know', () => {
+    expect(schoolIcon('School of Something New')).toBe('bank');
+  });
+});
+
+describe('schoolScene', () => {
+  it('gives the drawn picture for a school with no photo', () => {
+    expect(schoolScene('School of Basic Medical Sciences')).toEqual({ variant: 'gate', flip: false });
+    expect(schoolScene('School of Agriculture and Agricultural Technology')).toEqual({
+      variant: 'path',
+      flip: true,
+    });
+  });
+
+  it('always answers with a scene, even for a name it does not know', () => {
+    expect(schoolScene('School of Something New')).toEqual({ variant: 'block', flip: false });
+  });
+});
+
+describe('departmentsLabel', () => {
+  it('reads in the singular for one department, the plural for more', () => {
+    expect(departmentsLabel(1)).toBe('1 Department');
+    expect(departmentsLabel(4)).toBe('4 Departments');
+  });
+});
+
+describe('departmentsIn', () => {
+  it('counts only the departments that belong to the school', () => {
+    const departments = [
+      department('d1', 'f1', 'Computer Science'),
+      department('d2', 'f1', 'Cyber Security'),
+      department('d3', 'f2', 'Anatomy'),
+    ];
+
+    expect(departmentsIn('f1', departments)).toBe(2);
+    expect(departmentsIn('f2', departments)).toBe(1);
+    expect(departmentsIn('f3', departments)).toBe(0);
+  });
+});
+
+describe('schoolsLabel', () => {
+  it('says how many schools are on screen', () => {
+    expect(schoolsLabel(6)).toBe('6 Schools');
+  });
+});
+
+describe('filterSchools', () => {
+  const schools = [
+    faculty('f1', 'School of Computing', 'SOC'),
+    faculty('f2', 'School of Basic Medical Sciences', 'SBMS'),
+    faculty('f3', 'School of Agriculture and Agricultural Technology', 'SAAT'),
+  ];
+  const departments = [
+    department('d1', 'f1', 'Computer Science', 'CSC'),
+    department('d2', 'f1', 'Software Engineering', 'SEN'),
+    department('d3', 'f2', 'Anatomy', 'ANA'),
+    department('d4', 'f3', 'Fisheries and Aquaculture Technology', 'FAT'),
+  ];
+
+  it('keeps every school when there is nothing to search for', () => {
+    expect(filterSchools(schools, departments, '')).toEqual(schools);
+    expect(filterSchools(schools, departments, '   ')).toEqual(schools);
+  });
+
+  it('matches a school by its own name, whatever the case', () => {
+    expect(filterSchools(schools, departments, 'computing').map((f) => f.id)).toEqual(['f1']);
+    expect(filterSchools(schools, departments, 'MEDICAL').map((f) => f.id)).toEqual(['f2']);
+  });
+
+  it('matches a school through one of its departments', () => {
+    // A fresher knows the department, not which school runs it.
+    expect(filterSchools(schools, departments, 'computer science').map((f) => f.id)).toEqual(['f1']);
+    expect(filterSchools(schools, departments, 'anatomy').map((f) => f.id)).toEqual(['f2']);
+  });
+
+  it('matches a short name, so SOC and SAAT work', () => {
+    expect(filterSchools(schools, departments, 'soc').map((f) => f.id)).toEqual(['f1']);
+    expect(filterSchools(schools, departments, 'saat').map((f) => f.id)).toEqual(['f3']);
+  });
+
+  it('needs every word to match, not just one', () => {
+    expect(filterSchools(schools, departments, 'school medical')).toHaveLength(1);
+    expect(filterSchools(schools, departments, 'computing medical')).toHaveLength(0);
+  });
+
+  it('says nothing is left rather than dropping the query', () => {
+    expect(filterSchools(schools, departments, 'stadium')).toEqual([]);
+  });
+
+  it('does not change the list it is given', () => {
+    filterSchools(schools, departments, 'computing');
+    expect(schools).toHaveLength(3);
   });
 });
