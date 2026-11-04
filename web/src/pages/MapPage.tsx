@@ -4,7 +4,7 @@
 // Everything below the hero comes from the offline cache, so the screen works with no data. The
 // drawing itself is a lazy chunk (`components/map/`), which keeps the map data out of the first
 // load. There is no routing in v1 and no "get directions" anywhere on this screen.
-import { useDeferredValue, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useDeferredValue, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
 import Footer from '../components/Footer';
@@ -12,6 +12,7 @@ import Hero from '../components/Hero';
 import Icon from '../components/Icon';
 import StateBlock from '../components/StateBlock';
 import CampusMap, { type CampusMapHandle } from '../components/map/CampusMap';
+import PlaceRow from '../components/map/PlaceRow';
 import { COPY } from '../copy/pidgin';
 import type { Building } from '../api/types';
 import {
@@ -19,6 +20,7 @@ import {
   CATEGORY_ORDER,
   categoryBlurb,
   categoryName,
+  categoryStyle,
   countLabel,
   filterPlaces,
   placePhoto,
@@ -34,61 +36,6 @@ import { useOnline } from '../lib/useOnline';
 const PHOTO_CREDIT =
   'Photos: Kaizenify (public domain); MediaMOF and Jesu-loba (CC BY-SA 4.0), ' +
   'via Wikimedia Commons.';
-
-/** The pin colour, handed to CSS through a custom property. */
-function catStyle(category: MapCategory): CSSProperties {
-  return { '--c': CATEGORIES[category].color } as CSSProperties;
-}
-
-/** One row of the places list: the picture, the name and its category, then the arrow. */
-function PlaceRow({
-  place,
-  onShow,
-}: {
-  place: MapPlace;
-  onShow: (id: string) => void;
-}) {
-  const photo = placePhoto(place.name);
-  return (
-    <li className="place-row">
-      {photo ? (
-        <img
-          className="place-row__pic"
-          src={photo}
-          alt=""
-          width={144}
-          height={144}
-          loading="lazy"
-          decoding="async"
-        />
-      ) : (
-        <span
-          className="place-row__pic place-row__pic--icon"
-          style={catStyle(place.category)}
-          aria-hidden="true"
-        >
-          <Icon name={CATEGORIES[place.category].icon} size={28} />
-        </span>
-      )}
-      <button
-        className="place-row__body"
-        type="button"
-        onClick={() => onShow(place.id)}
-        aria-label={`${COPY.map.viewOnMap}: ${place.name}`}
-      >
-        <b>{place.name}</b>
-        <small>{categoryName(place.category)}</small>
-      </button>
-      <Link
-        className="go"
-        to={`/place/${place.id}`}
-        aria-label={`${COPY.map.openPlace}: ${place.name}`}
-      >
-        <Icon name="arrowRight" size={20} />
-      </Link>
-    </li>
-  );
-}
 
 /** The card under the map: the place the student picked, with the way to its own screen. */
 function SelectedPlace({
@@ -115,7 +62,7 @@ function SelectedPlace({
       ) : (
         <span
           className="sel__pic sel__pic--icon"
-          style={catStyle(place.category)}
+          style={categoryStyle(place.category)}
           aria-hidden="true"
         >
           <Icon name={category.icon} size={40} />
@@ -152,7 +99,8 @@ export default function MapPage() {
   const { result, retry } = useCachedRows(readBuildings);
   const [params, setParams] = useSearchParams();
   const [category, setCategory] = useState<MapCategory | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // A place page's "View on map" opens `/map?place=<id>`, so the map starts on that place.
+  const [selectedId, setSelectedId] = useState<string | null>(() => params.get('place'));
   const [located, setLocated] = useState(false);
   const online = useOnline();
   const mapRef = useRef<CampusMapHandle>(null);
@@ -276,7 +224,7 @@ export default function MapPage() {
                       ref={index === 0 ? firstCatRef : undefined}
                       className="cat"
                       type="button"
-                      style={catStyle(cat)}
+                      style={categoryStyle(cat)}
                       aria-pressed={category === cat}
                       onClick={() => toggleCategory(cat)}
                     >

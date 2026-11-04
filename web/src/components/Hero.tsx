@@ -6,12 +6,14 @@ import type { ReactNode } from 'react';
 import Student from './Student';
 
 interface HeroProps {
-  /** `tall` is 600px (Welcome), `std` is 430px (the rest). */
-  size?: 'tall' | 'std';
+  /** `tall` is 600px (Welcome), `std` is 430px, `short` is 340px (a place's own screen). */
+  size?: 'tall' | 'std' | 'short';
   /** A file in web/public/photos. Leave it out to use the plain night background. */
   photo?: string;
-  /** The screen's ONE handwritten line. Never used anywhere else. */
-  kicker: string;
+  /** A drawn scene behind the text, for a screen with no photo (docs/design/CREDITS.md). */
+  scene?: ReactNode;
+  /** The screen's ONE handwritten line. Never used anywhere else; a place with no record has none. */
+  kicker?: string;
   title: string;
   /** The last words of the title, in gold. */
   gold?: string;
@@ -30,6 +32,7 @@ interface HeroProps {
 export default function Hero({
   size = 'std',
   photo,
+  scene,
   kicker,
   title,
   gold,
@@ -45,16 +48,22 @@ export default function Hero({
       className={`hero hero--${size}${className ? ` ${className}` : ''}`}
       aria-labelledby="hero-title"
     >
-      {photo && (
+      {photo ? (
         <div className="hero__bg" aria-hidden="true">
           <img src={photo} alt="" />
         </div>
+      ) : (
+        scene && (
+          <div className="hero__bg" aria-hidden="true">
+            {scene}
+          </div>
+        )
       )}
 
       {header}
 
       <div className="hero__body">
-        <p className="hand">{kicker}</p>
+        {kicker && <p className="hand">{kicker}</p>}
         <h1 id="hero-title">
           {title}
           {gold && (

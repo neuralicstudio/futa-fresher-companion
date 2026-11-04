@@ -27,6 +27,8 @@ const W = CAMPUS_MAP.size[0];
 const H = CAMPUS_MAP.size[1];
 /** The closest you can zoom in, in drawing units (about 210 m across). */
 const MIN_WIDTH = 420;
+/** A place page's small map opens closer in, on the place it is about. */
+const MINI_WIDTH = 900;
 /** How far one arrow key moves, as a share of the visible width. */
 const PAN_STEP = 0.1;
 const ZOOM_STEP = 1.35;
@@ -45,28 +47,32 @@ interface CampusMapProps {
   /** The places the pins show, already filtered by the screen. */
   places: MapPlace[];
   selectedId: string | null;
-  onSelect: (id: string) => void;
+  /** The map's own list and card use this. A place page does not, so its pins are not buttons. */
+  onSelect?: (id: string) => void;
   /** Called after "My location" shows the sample dot, so the screen can explain it. */
-  onLocate: () => void;
+  onLocate?: () => void;
+  /** The small, read-only map on a place's own screen: no compass, zoom or location controls. */
+  mini?: boolean;
 }
 
 /** The pin shape: a teardrop whose tip sits on the place. */
 const PIN = 'M0 0C-9-9-14-14-14-20a14 14 0 0 1 28 0C14-14 9-9 0 0z';
 
-/** How wide the first view is: the whole drawing when there is nothing to zoom to. */
-function startWidth(placeCount: number): number {
+/** How wide the first view is: close on a place page, the whole drawing when there is nothing. */
+function startWidth(placeCount: number, mini: boolean): number {
+  if (mini) return MINI_WIDTH;
   return placeCount > 0 ? 1500 : W;
 }
 
 const CampusMap = forwardRef<CampusMapHandle, CampusMapProps>(function CampusMap(
-  { places, selectedId, onSelect, onLocate },
+  { places, selectedId, onSelect, onLocate, mini = false },
   ref,
 ) {
   const hostRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const labelRef = useRef<SVGGElement>(null);
   const meRef = useRef<SVGGElement>(null);
-  const view = useRef({ ...campusCentre(), w: startWidth(places.length) });
+  const view = useRef({ ...campusCentre(), w: startWidth(places.length, mini) });
   const placed = useRef(false);
   const placesRef = useRef(places);
   placesRef.current = places;
@@ -132,7 +138,7 @@ const CampusMap = forwardRef<CampusMapHandle, CampusMapProps>(function CampusMap
       view.current.y = gate.y;
     }
     layout();
-    onLocate();
+    onLocate?.();
   }, [layout, onLocate]);
 
   useImperativeHandle(ref, () => ({ center }), [center]);
@@ -149,12 +155,12 @@ const CampusMap = forwardRef<CampusMapHandle, CampusMapProps>(function CampusMap
       if (start) {
         view.current.x = start.x;
         view.current.y = start.y;
-        view.current.w = startWidth(placesRef.current.length);
+        view.current.w = startWidth(placesRef.current.length, mini);
       }
       placed.current = true;
     }
     layout();
-  }, [layout]);
+  }, [layout, mini]);
 
   // A new selection moves the name tag over that pin.
   useLayoutEffectSafe(() => {
@@ -238,7 +244,7 @@ const CampusMap = forwardRef<CampusMapHandle, CampusMapProps>(function CampusMap
   }
 
   return (
-    <div className="mapcard">
+    <div className={`mapcard${mini ? ' mapcard--small' : ''}`}>
       <div className="mapcard__host" ref={hostRef}>
         <svg
           ref={svgRef}
@@ -271,7 +277,7 @@ const CampusMap = forwardRef<CampusMapHandle, CampusMapProps>(function CampusMap
                   onPointerUp={(event) => {
                     event.stopPropagation();
                     // A drag also ends with a pointerup; only a tap selects.
-                    if (!drag.current) onSelect(place.id);
+                    if (!drag.current) onSelect?.(place.id);
                   }}
                 >
                   <g className="m-pin__s" transform={`scale(${pinScale})`}>
@@ -297,31 +303,36 @@ const CampusMap = forwardRef<CampusMapHandle, CampusMapProps>(function CampusMap
           </g>
         </svg>
 
-        <span className="mapcard__compass" role="img" aria-label={COPY.map.compass}>
-          <svg className="ic" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
-            <path d={ICON_PATHS.compass} />
-          </svg>
-          <b>N</b>
-        </span>
+        {/* A place page's map is a locator, not the tool: it carries no compass, zoom or dot. */}
+        {!mini && (
+          <>
+            <span className="mapcard__compass" role="img" aria-label={COPY.map.compass}>
+              <svg className="ic" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+                <path d={ICON_PATHS.compass} />
+              </svg>
+              <b>N</b>
+            </span>
 
-        <div className="mapcard__zoom">
-          <button
-            className="iconbtn iconbtn--glass"
-            type="button"
-            aria-label={COPY.map.zoomIn}
-            onClick={() => zoom(1 / ZOOM_STEP)}
-          >
-            <Icon name="plus" size={20} />
-          </button>
-          <button
-            className="iconbtn iconbtn--glass"
-            type="button"
-            aria-label={COPY.map.zoomOut}
-            onClick={() => zoom(ZOOM_STEP)}
-          >
-            <Icon name="minus" size={20} />
-          </button>
-        </div>
+            <div className="mapcard__zoom">
+              <button
+                className="iconbtn iconbtn--glass"
+                type="button"
+                aria-label={COPY.map.zoomIn}
+                onClick={() => zoom(1 / ZOOM_STEP)}
+              >
+                <Icon name="plus" size={20} />
+              </button>
+              <button
+                className="iconbtn iconbtn--glass"
+                type="button"
+                aria-label={COPY.map.zoomOut}
+                onClick={() => zoom(ZOOM_STEP)}
+              >
+                <Icon name="minus" size={20} />
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       {/* One row at the foot of the drawing, so the attribution can never sit under the button. */}
@@ -332,10 +343,12 @@ const CampusMap = forwardRef<CampusMapHandle, CampusMapProps>(function CampusMap
             {COPY.map.attributionLink}
           </a>
         </p>
-        <button className="btn btn--glass mapcard__me" type="button" onClick={locate}>
-          <Icon name="crosshairSimple" size={18} />
-          <span>{COPY.map.myLocation}</span>
-        </button>
+        {!mini && (
+          <button className="btn btn--glass mapcard__me" type="button" onClick={locate}>
+            <Icon name="crosshairSimple" size={18} />
+            <span>{COPY.map.myLocation}</span>
+          </button>
+        )}
       </div>
     </div>
   );

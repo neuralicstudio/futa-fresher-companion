@@ -5,6 +5,7 @@
 // The drawings are OpenStreetMap data (© OpenStreetMap contributors, ODbL 1.0). A place's position
 // comes from its coordinates in the offline cache, projected the same way the design's bake tool
 // projects the map itself, so a pin lands on its own building.
+import type { CSSProperties } from 'react';
 import type { Building } from '../api/types';
 import { CAMPUS_MAP } from '../components/map/campusMapData';
 import type { IconName } from '../components/Icon';
@@ -133,23 +134,68 @@ export function toMapPlace(building: Building): MapPlace {
   };
 }
 
+/** The author and licence of a photo, as docs/design/CREDITS.md records them. */
+export interface PhotoCredit {
+  author: string;
+  licence: string;
+}
+
+/** The three MediaMOF pictures share one author and licence. */
+const MEDIAMOF: PhotoCredit = { author: 'MediaMOF', licence: 'CC BY-SA 4.0' };
+
 /**
- * The photo that shows this very place, or nothing (docs/design/CREDITS.md says which building
- * each picture's sign names). A word match is not enough on a list of real places: the library
- * photo is Albert Ilemobade's frontage, so it cannot stand in for SEET or SAAT, and the gate
- * photo is the main gate, which no row is. A place with no photo shows its category icon.
+ * The photo that shows this very place, or nothing (CREDITS.md says which building each
+ * picture's sign names). A word match is not enough on a list of real places: the library photo
+ * is Albert Ilemobade's frontage, so it cannot stand in for SEET or SAAT, and the gate photo is
+ * the main gate, which no row is. A place with no photo shows its category icon.
  */
-const PLACE_PHOTOS: { match: RegExp; file: string }[] = [
-  { match: /^albert ilemobade library$/i, file: '/photos/library-s.webp' },
-  { match: /^school of computing$/i, file: '/photos/computing-s.webp' },
+const PLACE_PHOTOS: { match: RegExp; photo: string; credit: PhotoCredit }[] = [
+  {
+    match: /^albert ilemobade library$/i,
+    photo: 'library',
+    credit: MEDIAMOF,
+  },
+  {
+    match: /^school of computing$/i,
+    photo: 'computing',
+    credit: MEDIAMOF,
+  },
   // "CRC OBAKEKERE" is another site, so only the full name or the bare abbreviation counts.
-  { match: /^(crc|computer resource cent(re|er).*)$/i, file: '/photos/crc-s.webp' },
-  // The sign reads "Centre for Continuing Education, Multi-purpose Hall".
-  { match: /multipurpose hall|continuing education/i, file: '/photos/hall-s.webp' },
+  { match: /^(crc|computer resource cent(re|er).*)$/i, photo: 'crc', credit: MEDIAMOF },
+  {
+    // The sign reads "Centre for Continuing Education, Multi-purpose Hall".
+    match: /multipurpose hall|continuing education/i,
+    photo: 'hall',
+    credit: MEDIAMOF,
+  },
 ];
 
-export function placePhoto(name: string): string | undefined {
-  return PLACE_PHOTOS.find((entry) => entry.match.test(name.trim()))?.file;
+/** `s` is the 384 px row picture, `l` the 768 px hero (CREDITS.md keeps both). */
+export type PhotoSize = 's' | 'l';
+
+export function placePhoto(name: string, size: PhotoSize = 's'): string | undefined {
+  const photo = PLACE_PHOTOS.find((entry) => entry.match.test(name.trim()))?.photo;
+  return photo ? `/photos/${photo}-${size}.webp` : undefined;
+}
+
+/** The author and licence for the photo `placePhoto` gives, as CREDITS.md records them. */
+export function placePhotoCredit(name: string): PhotoCredit | undefined {
+  return PLACE_PHOTOS.find((entry) => entry.match.test(name.trim()))?.credit;
+}
+
+/**
+ * The closest other places on the drawing, nearest first — the three rows under "Nearby"
+ * (screenshot place-390). Distances are in the drawing's units, so they compare like-for-like.
+ */
+export function nearbyPlaces(places: MapPlace[], id: string, count = 3): MapPlace[] {
+  const here = places.find((place) => place.id === id);
+  if (!here) return [];
+  return places
+    .filter((place) => place.id !== id)
+    .map((place) => ({ place, away: Math.hypot(place.x - here.x, place.y - here.y) }))
+    .sort((a, b) => a.away - b.away)
+    .slice(0, count)
+    .map((entry) => entry.place);
 }
 
 /**
@@ -195,4 +241,9 @@ export function categoryBlurb(category: MapCategory): string {
 /** The category's name in words, as the chip and the list label it. */
 export function categoryName(category: MapCategory): string {
   return COPY.map.categories[category];
+}
+
+/** The category's colour, handed to CSS through a custom property (`--c`). */
+export function categoryStyle(category: MapCategory): CSSProperties {
+  return { '--c': CATEGORIES[category].color } as CSSProperties;
 }

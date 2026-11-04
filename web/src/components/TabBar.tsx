@@ -2,7 +2,7 @@
 //
 // Settings and Admin are deliberately NOT tabs (design handoff, "The fixes to the mockups", 1).
 // They open from the profile icon. Adding a sixth tab here is a design change, not a tweak.
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import Icon, { type IconName } from './Icon';
 import { COPY } from '../copy/pidgin';
 
@@ -62,6 +62,11 @@ interface TabBarProps {
 }
 
 export default function TabBar({ unread = false, timetableTo }: TabBarProps) {
+  const { pathname } = useLocation();
+  // A place detail belongs to the Map section even though its address is /place/:id
+  // (screenshot place-390: the Map tab is the gold one).
+  const onPlace = pathname === '/place' || pathname.startsWith('/place/');
+
   // The design's tab order: Home, Map, Academics, Timetable, Notices.
   const tabs: Tab[] = [
     HOME,
@@ -91,20 +96,25 @@ export default function TabBar({ unread = false, timetableTo }: TabBarProps) {
             key={tab.label}
             to={tab.to}
             end={tab.end}
-            className={({ isActive }) => `tab${isActive ? ' is-current' : ''}`}
+            className={({ isActive }) =>
+              `tab${isActive || (tab === MAP && onPlace) ? ' is-current' : ''}`
+            }
           >
-            {({ isActive }) => (
-              <>
-                <Icon name={isActive ? tab.iconActive : tab.icon} className="tab__icon" />
-                <span>{tab.label}</span>
-                {showsUnread && (
-                  <>
-                    <span className="tab__dot" aria-hidden="true" />
-                    <span className="visually-hidden">{COPY.notices.unreadDot}</span>
-                  </>
-                )}
-              </>
-            )}
+            {({ isActive }) => {
+              const current = isActive || (tab === MAP && onPlace);
+              return (
+                <>
+                  <Icon name={current ? tab.iconActive : tab.icon} className="tab__icon" />
+                  <span>{tab.label}</span>
+                  {showsUnread && (
+                    <>
+                      <span className="tab__dot" aria-hidden="true" />
+                      <span className="visually-hidden">{COPY.notices.unreadDot}</span>
+                    </>
+                  )}
+                </>
+              );
+            }}
           </NavLink>
         );
       })}
