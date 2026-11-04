@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { SyncResponse } from '../api/types';
-import { runSync, type PageStore, type SyncProgress, type SyncQuery } from './sync';
+import { emptyCounts, runSync, type PageStore, type SyncProgress, type SyncQuery } from './sync';
 import {
   dismissFirstSync,
   getSyncView,
@@ -49,8 +49,17 @@ function simpleStore(): PageStore & { lastSync: () => string | undefined } {
 
 function view(progress: Partial<SyncProgress>, dismissed = false): SyncView {
   return {
-    progress: { running: false, failed: false, firstRun: false, pages: 0, rows: 0, ...progress },
+    progress: {
+      running: false,
+      failed: false,
+      firstRun: false,
+      pages: 0,
+      rows: 0,
+      counts: emptyCounts(),
+      ...progress,
+    },
     dismissed,
+    finished: false,
   };
 }
 
@@ -60,6 +69,17 @@ describe('showFirstSyncScreen', () => {
     expect(showFirstSyncScreen(view({ running: true, firstRun: true }, true))).toBe(false);
     expect(showFirstSyncScreen(view({ running: false, firstRun: true }))).toBe(false);
     expect(showFirstSyncScreen(view({ running: true, firstRun: false }))).toBe(false);
+  });
+});
+
+describe('the end of a first run', () => {
+  it('keeps the screen up with its done state until the student taps the button', async () => {
+    const store = simpleStore();
+    await runSync({ store, fetchPage: async () => makePage(), onProgress: setSyncProgress });
+
+    expect(getSyncView().progress).toMatchObject({ running: false, failed: false, firstRun: true });
+    expect(getSyncView().finished).toBe(true);
+    expect(showFirstSyncScreen(getSyncView())).toBe(true);
   });
 });
 

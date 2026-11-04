@@ -61,7 +61,8 @@ export default function App() {
   // Welcome owns the first visit, so the sync screen must not jump over it. Once the student
   // taps "Oya, make we start!" the route changes and this turns back on.
   const firstSync = showFirstSyncScreen(sync) && pathname !== '/welcome';
-  const bare = !showsTabBar(pathname, false);
+  // The sync screen carries its own logo row inside the hero and no tabs (screenshot sync-390).
+  const bare = firstSync || !showsTabBar(pathname, false);
   // Welcome, log in and sign-up stand alone: no sync banner over their hero.
   const authScreen =
     pathname === '/welcome' || pathname === '/login' || pathname === '/register';
@@ -77,11 +78,15 @@ export default function App() {
   return (
     <>
       <OfflineBanner />
-      {showsHeader(pathname) && <AppHeader />}
-      {!authScreen && <SyncNotice onRetry={retrySync} />}
+      {showsHeader(pathname) && !firstSync && <AppHeader />}
+      {!authScreen && !firstSync && <SyncNotice onRetry={retrySync} />}
       <main className={bare ? 'main--bare' : undefined}>
         {firstSync ? (
-          <FirstSyncScreen progress={sync.progress} onContinue={dismissFirstSync} />
+          <FirstSyncScreen
+            progress={sync.progress}
+            onContinue={dismissFirstSync}
+            onRetry={retrySync}
+          />
         ) : (
           <Suspense fallback={<p className="muted">Loading…</p>}>
             <Routes>

@@ -5,6 +5,7 @@ import {
   COLLECTIONS,
   CURSOR_KEY,
   LAST_SYNC_KEY,
+  emptyCounts,
   runSync,
   type PageStore,
   type PageWrite,
@@ -255,13 +256,21 @@ describe('runSync', () => {
       onProgress: (progress) => updates.push(progress),
     });
 
-    expect(updates[0]).toEqual({ running: true, failed: false, firstRun: true, pages: 0, rows: 0 });
+    expect(updates[0]).toEqual({
+      running: true,
+      failed: false,
+      firstRun: true,
+      pages: 0,
+      rows: 0,
+      counts: { ...emptyCounts() },
+    });
     expect(updates.at(-1)).toEqual({
       running: false,
       failed: false,
       firstRun: true,
       pages: 2,
       rows: 4,
+      counts: { ...emptyCounts(), faculties: 3 },
     });
   });
 

@@ -1,6 +1,6 @@
 // Sync state for the UI. A tiny module, so App can import it without loading Dexie.
 import { useSyncExternalStore } from 'react';
-import type { SyncProgress } from './sync';
+import { emptyCounts, type SyncProgress } from './sync';
 
 const DISMISS_KEY = 'futa-first-sync-dismissed';
 
@@ -8,10 +8,22 @@ export interface SyncView {
   progress: SyncProgress;
   /** The user chose "Continue without saving" in this browser session. */
   dismissed: boolean;
+  /**
+   * A first run has ended in this session. Keeps the screen up for its "You're set!" or
+   * "Network no strong" state until the student taps the button.
+   */
+  finished: boolean;
 }
 
-const IDLE: SyncProgress = { running: false, failed: false, firstRun: false, pages: 0, rows: 0 };
-let view: SyncView = { progress: IDLE, dismissed: readDismissed() };
+const IDLE: SyncProgress = {
+  running: false,
+  failed: false,
+  firstRun: false,
+  pages: 0,
+  rows: 0,
+  counts: emptyCounts(),
+};
+let view: SyncView = { progress: IDLE, dismissed: readDismissed(), finished: false };
 const listeners = new Set<() => void>();
 
 function readDismissed(): boolean {
@@ -28,7 +40,10 @@ function notify(): void {
 }
 
 export function setSyncProgress(progress: SyncProgress): void {
-  view = { ...view, progress };
+  // The first run's last update turns `running` off: that is when the done or failed state
+  // shows. A later run (a retry, or the usual update) leaves `finished` alone.
+  const justFinished = view.progress.running && view.progress.firstRun && !progress.running;
+  view = { ...view, progress, finished: view.finished || justFinished };
   notify();
 }
 
@@ -43,9 +58,14 @@ export function dismissFirstSync(): void {
   notify();
 }
 
-/** The blocking first-run screen shows only during a first sync the user has not dismissed. */
+/**
+ * The blocking first-run screen shows while a first sync runs, and stays up afterwards with its
+ * done or failed state until the student taps the button. One that was never started (IDLE) or
+ * that is already dismissed shows nothing.
+ */
 export function showFirstSyncScreen(state: SyncView): boolean {
-  return state.progress.running && state.progress.firstRun && !state.dismissed;
+  if (state.dismissed) return false;
+  return (state.progress.running && state.progress.firstRun) || state.finished;
 }
 
 function subscribe(listener: () => void): () => void {
