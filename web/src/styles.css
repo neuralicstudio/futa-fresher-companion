@@ -1699,3 +1699,387 @@ main h1 {
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------------- home
+ * The night gate with the countdown, then the next lecture beside the latest notice, then the
+ * places rail (docs/design/screenshots/home-390.webp).
+ */
+.hero--home h1 {
+  max-width: none;
+  font-size: 1.5rem;
+}
+
+.hero--home .hero__lead {
+  font-size: 1.125rem;
+}
+
+/* The search field over the photo: the icon, the words, then the filter button. */
+.search {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: center;
+  width: 100%;
+  min-height: 3.5rem;
+  margin-top: var(--space-xs);
+  padding: 0 var(--space-xs) 0 var(--space-md);
+  border: var(--outline) solid var(--color-field-edge);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-field) 92%, transparent);
+  color: var(--color-on-photo);
+}
+
+.search:focus-within {
+  outline: var(--rule-bar) solid var(--color-focus);
+  outline-offset: 2px;
+  border-color: var(--color-outline-strong);
+}
+
+.search > svg {
+  flex: none;
+  color: var(--color-muted);
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  height: 3.25rem;
+  border: 0;
+  background: transparent;
+  color: var(--color-on-photo);
+  font: inherit;
+  font-size: var(--text-md);
+  outline: none;
+}
+
+.search input::placeholder {
+  color: var(--color-muted);
+  opacity: 1;
+}
+
+.search .iconbtn--plain {
+  color: var(--color-on-photo);
+}
+
+/* The countdown badge: the gold arc is the ring, the shadow is neutral and offset. */
+.badge-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--badge-ring);
+  height: var(--badge-ring);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-scrim) 70%, transparent);
+  box-shadow: var(--shadow-ring);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--color-on-photo);
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  rotate: -90deg;
+  overflow: visible;
+}
+
+.ring__track {
+  fill: none;
+  stroke: var(--color-ring-track);
+  stroke-width: 3;
+}
+
+.ring__arc {
+  fill: none;
+  stroke: var(--color-gold);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: var(--v) 100;
+  transition: stroke-dasharray var(--dur-long) var(--ease-out);
+}
+
+.badge-ring__in {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  padding-inline: var(--space-xs);
+  line-height: 1.05;
+  text-align: center;
+}
+
+.badge-ring__in > svg {
+  color: var(--color-gold);
+}
+
+.badge-ring__in b {
+  color: var(--color-on-photo);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-display);
+}
+
+.badge-ring__in span {
+  font-size: var(--text-sm);
+}
+
+.badge-ring__in small {
+  max-width: 11ch;
+  color: var(--color-night-muted);
+  font-size: var(--text-xs);
+  line-height: 1.15;
+}
+
+/* Chips label a card without taking a line of their own. */
+.chip {
+  display: inline-flex;
+  gap: var(--space-2xs);
+  align-items: center;
+  max-width: 100%;
+  min-height: 1.75rem;
+  padding: var(--space-2xs) var(--space-sm);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-strong);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.chip--gold-solid {
+  background: var(--color-gold);
+  color: var(--color-on-gold);
+}
+
+.chip--maroon {
+  background: var(--color-chip-maroon);
+  color: var(--color-on-photo);
+}
+
+/* Two cards side by side on a phone, one above the other when they stop fitting. */
+.duo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr));
+  gap: var(--space-sm);
+}
+
+.card--hl {
+  border-color: var(--color-gold);
+}
+
+.card--hl-soft {
+  border-color: var(--color-outline-strong);
+}
+
+.card.next,
+.card.notice-card {
+  display: grid;
+  gap: var(--space-xs);
+  align-content: start;
+}
+
+.next__code {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: center;
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.next__icon {
+  display: inline-flex;
+  color: var(--color-gold);
+}
+
+.next__title {
+  margin: 0;
+  color: var(--color-text-2);
+}
+
+.next .go,
+.notice-card .go {
+  justify-self: end;
+}
+
+.notice-card__row {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: flex-start;
+}
+
+.notice-card__row > svg {
+  flex: none;
+  margin-top: var(--space-3xs);
+  color: var(--color-gold);
+}
+
+.notice-card__title {
+  margin: 0;
+  font-size: var(--text-lg);
+  /* Wrap at spaces: the global h1/h2/h3 rule breaks words, and a notice title must not. */
+  overflow-wrap: break-word;
+}
+
+.notice-card__body {
+  margin: 0;
+  color: var(--color-text-2);
+}
+
+/* The round arrow at the end of a card. */
+.go {
+  display: inline-grid;
+  place-items: center;
+  width: var(--hit);
+  height: var(--hit);
+  flex: none;
+  border: var(--outline) solid var(--color-outline-strong);
+  border-radius: var(--radius-pill);
+  background: var(--color-maroon);
+  color: var(--color-gold);
+  text-decoration: none;
+  transition:
+    background-color var(--dur-micro) var(--ease-out),
+    translate var(--dur-short) var(--ease-out);
+}
+
+.go:hover {
+  background: var(--color-maroon-2);
+  translate: 2px 0;
+}
+
+/* A headed block: "Popular places" and its See all link. */
+.section {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.section__head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section__head h2 {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: center;
+  margin: 0;
+  font-size: var(--text-xl);
+}
+
+.section__head h2 > svg {
+  flex: none;
+  color: var(--color-gold);
+}
+
+.link {
+  display: inline-flex;
+  gap: var(--space-2xs);
+  align-items: center;
+  min-height: var(--hit);
+  color: var(--color-gold);
+  font-weight: var(--weight-strong);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.num-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  margin-right: var(--space-xs);
+  padding: 0 var(--space-2xs);
+  border-radius: var(--radius-pill);
+  background: var(--color-gold);
+  color: var(--color-on-gold);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-display);
+}
+
+/* The places rail scrolls sideways on its own; the page never does. */
+.rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(10rem, 46%);
+  gap: var(--space-sm);
+  margin: 0 calc(-1 * var(--gutter));
+  padding: var(--space-3xs) var(--gutter) var(--space-xs);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  list-style: none;
+}
+
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+.place-card {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+  border: var(--outline) solid var(--color-outline);
+  border-radius: var(--radius-card);
+  background: var(--color-card);
+  color: var(--color-text-2);
+  scroll-snap-align: start;
+}
+
+.place-card__pic {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: var(--color-card-2);
+}
+
+.place-card__pic--icon {
+  display: grid;
+  place-items: center;
+  color: var(--color-gold);
+}
+
+.place-card__info {
+  display: grid;
+  gap: var(--space-3xs);
+  padding: var(--space-sm);
+  padding-right: calc(var(--hit) + var(--space-xs));
+}
+
+.place-card__info b {
+  display: flex;
+  align-items: center;
+  font-size: var(--text-sm);
+}
+
+.place-card__info small {
+  color: var(--color-muted);
+}
+
+.place-card .go {
+  position: absolute;
+  right: var(--space-xs);
+  bottom: var(--space-xs);
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+/* Home draws its own page, so the footer reserves the room the shell usually adds for the bar. */
+.foot--tabs {
+  padding-bottom: calc(var(--tabbar) + var(--space-xl) + env(safe-area-inset-bottom));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ring__arc {
+    transition: none;
+  }
+
+  .go:hover {
+    translate: none;
+  }
+}
