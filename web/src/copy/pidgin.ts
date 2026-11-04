@@ -121,6 +121,12 @@ export const COPY = {
     mapLabel: 'Campus map. Use the list below if you prefer.',
     resultsTitle: 'Places',
     resultsCount: '{n} places',
+    // Singular of the line above, and the empty-cache title. Both are additions to COPY.md's map
+    // block, which has no singular and no "nothing saved yet" state; fold them in next time the
+    // design's copy is touched.
+    resultsCountOne: '{n} place',
+    noPlacesTitle: 'No place dey saved yet',
+    noCategoryTitle: 'No place for this category yet',
     viewOnMap: 'View on map',
     openPlace: 'See details',
     noPhoto: 'Photo dey come',
@@ -131,6 +137,8 @@ export const COPY = {
     attributionLink: 'Licence: ODbL',
     routingSoon: 'Directions no dey yet. For now, use the map and the landmarks.',
     sourceLine: 'Source: OpenStreetMap, not yet checked by FUTA',
+    // The dot on the map is a sample position, said plainly. Also an addition to COPY.md.
+    locationSample: 'Sample position shown.',
   },
 
   place: {

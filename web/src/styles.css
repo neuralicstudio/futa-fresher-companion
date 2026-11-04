@@ -2083,3 +2083,375 @@ main h1 {
     translate: none;
   }
 }
+
+/* ---------------------------------------------------------------- campus map
+ * The quick categories, the drawn OpenStreetMap campus, the selected place and the full list
+ * (docs/design/screenshots/map-390.webp, map-768.webp). Nothing here is routing.
+ */
+.cats {
+  display: grid;
+  /* Three chips a row on a 390 phone, five on a tablet — the counts in map-390 and map-768. */
+  grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  scroll-margin-block: var(--space-xl);
+}
+
+.cat {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: var(--space-2xs);
+  width: 100%;
+  min-height: 5.5rem;
+  padding: var(--space-xs);
+  border: var(--outline) solid var(--color-outline);
+  border-radius: var(--radius-md);
+  background: var(--color-card);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-strong);
+  line-height: 1.15;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    background-color var(--dur-micro) var(--ease-out),
+    border-color var(--dur-micro) var(--ease-out);
+}
+
+.cat:hover {
+  border-color: var(--color-outline-strong);
+}
+
+.cat[aria-pressed='true'] {
+  border-color: var(--color-gold);
+  background: color-mix(in srgb, var(--c) 18%, var(--color-card));
+}
+
+.cat:focus-visible {
+  outline: var(--rule-bar) solid var(--color-focus);
+  outline-offset: var(--space-2xs);
+}
+
+.cat__icon {
+  display: inline-flex;
+  color: var(--c, var(--color-gold));
+}
+
+.mapcard {
+  position: relative;
+  overflow: hidden;
+  border: var(--outline) solid var(--color-outline);
+  border-radius: var(--radius-card);
+  background: var(--color-map-ground);
+  color: var(--color-text-2);
+}
+
+.mapcard__host {
+  position: relative;
+  height: 20rem;
+}
+
+.campus-map {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: grab;
+}
+
+.campus-map.is-drag {
+  cursor: grabbing;
+}
+
+.campus-map:focus-visible {
+  outline: var(--rule-bar) solid var(--color-focus);
+  outline-offset: calc(var(--rule-bar) * -1);
+}
+
+.mapcard__compass {
+  position: absolute;
+  left: var(--space-sm);
+  top: var(--space-sm);
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: var(--outline) solid var(--color-outline);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-scrim) 78%, transparent);
+  color: var(--color-on-photo);
+}
+
+.mapcard__compass .ic {
+  position: absolute;
+  top: 0.25rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--color-red);
+}
+
+.mapcard__compass b {
+  margin-top: 0.7rem;
+  color: var(--color-on-photo);
+  font-size: var(--text-sm);
+}
+
+.mapcard__zoom {
+  position: absolute;
+  right: var(--space-sm);
+  top: var(--space-sm);
+  display: grid;
+  gap: var(--space-xs);
+}
+
+/* The foot of the drawing: the attribution on the left, "My location" on the right. A flex row
+ * rather than two absolutely-placed boxes, so a long attribution can never slide under the
+ * button (it did on a 320px phone). */
+.mapcard__foot {
+  position: absolute;
+  left: var(--space-xs);
+  right: var(--space-xs);
+  bottom: var(--space-xs);
+  display: flex;
+  gap: var(--space-xs);
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.mapcard__me {
+  flex: none;
+}
+
+.mapcard__attr {
+  min-width: 0;
+  margin: 0;
+  padding: calc(var(--space-2xs) + var(--space-3xs)) var(--space-sm);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--color-scrim) 86%, transparent);
+  color: var(--color-night-muted);
+  font-size: var(--text-sm);
+  line-height: 1.3;
+}
+
+.mapcard__attr a {
+  /* A 24px target for a thumb, without moving the text around it (WCAG 2.5.8). */
+  display: inline-block;
+  padding-block: 3px;
+  margin-block: -3px;
+  color: var(--color-gold);
+}
+
+/* The drawing itself: ground, then grass, wood, water, pitches, lanes, roads and buildings. */
+.m-ground {
+  fill: var(--color-map-ground);
+}
+
+.m-grass {
+  fill: var(--color-map-grass);
+}
+
+.m-wood {
+  fill: var(--color-map-wood);
+}
+
+.m-water {
+  fill: var(--color-map-water);
+}
+
+.m-pitch {
+  fill: var(--color-map-pitch);
+}
+
+.m-lane {
+  fill: none;
+  stroke: var(--color-map-lane);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.m-road {
+  fill: none;
+  stroke: var(--color-map-road);
+  stroke-width: 16;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.m-building {
+  fill: var(--color-map-building);
+  stroke: var(--color-map-building-edge);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.m-pin {
+  cursor: pointer;
+}
+
+.m-pin__body {
+  stroke: var(--color-on-photo);
+  stroke-width: 1.5;
+  paint-order: stroke;
+}
+
+.m-pin.is-selected .m-pin__body {
+  stroke: var(--color-gold);
+  stroke-width: 3;
+}
+
+.m-pin__icon {
+  fill: var(--color-on-photo);
+  pointer-events: none;
+}
+
+.m-label rect {
+  fill: var(--color-on-photo);
+}
+
+.m-label text {
+  fill: var(--color-on-gold);
+  font: var(--weight-strong) 15px var(--font-body);
+}
+
+.m-me__dot {
+  fill: var(--color-map-me);
+  stroke: var(--color-on-photo);
+  stroke-width: 3;
+}
+
+.m-me__pulse {
+  fill: var(--color-map-me);
+  opacity: 0.25;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pulse 2.2s var(--ease-out) infinite;
+}
+
+/* The selected place: a picture (or its category icon), then the words and the two ways out. */
+.card.sel {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.sel__pic {
+  display: block;
+  width: 100%;
+  /* The markup carries width and height attributes so the card does not jump while the photo
+   * loads; without this the height attribute would win and the picture would stand 3:4. */
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--color-card-2);
+}
+
+.sel__pic--icon {
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--c) 22%, var(--color-card));
+  color: var(--c);
+}
+
+.sel__body {
+  display: grid;
+  gap: var(--space-xs);
+  justify-items: start;
+}
+
+.sel__body h3 {
+  margin: 0;
+  font-size: var(--text-xl);
+  overflow-wrap: anywhere;
+}
+
+.sel__blurb {
+  margin: 0;
+  color: var(--color-text-2);
+}
+
+.place-list {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.place-row {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+  gap: var(--space-sm);
+  align-items: center;
+  padding: var(--space-xs);
+  border: var(--outline) solid var(--color-outline);
+  border-radius: var(--radius-md);
+  background: var(--color-card);
+}
+
+.place-row__pic {
+  display: block;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--color-card-2);
+}
+
+.place-row__pic--icon {
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--c) 22%, var(--color-card));
+  color: var(--c);
+}
+
+.place-row__body {
+  display: grid;
+  gap: var(--space-3xs);
+  min-width: 0;
+  min-height: var(--hit);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.place-row__body b {
+  overflow-wrap: anywhere;
+}
+
+.place-row__body small {
+  color: var(--color-muted);
+}
+
+.place-row__body:focus-visible {
+  outline: var(--rule-bar) solid var(--color-focus);
+  outline-offset: var(--space-2xs);
+  border-radius: var(--radius-sm);
+}
+
+/* The map's own glass buttons, over the drawing. */
+.btn--glass {
+  border-color: var(--color-outline);
+  background: color-mix(in srgb, var(--color-scrim) 78%, transparent);
+  color: var(--color-on-photo);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.iconbtn--glass {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .m-me__pulse {
+    animation: none;
+  }
+}
