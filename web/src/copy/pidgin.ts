@@ -243,6 +243,7 @@ export const COPY = {
     unread: 'Unread',
     newest: 'New',
     viewDetails: 'View full details',
+    showLess: 'Show less',
     attachment: 'Attachment',
     emptyTitle: 'No new notices',
     emptyBody: 'You don catch up, fresher. Check back later.',

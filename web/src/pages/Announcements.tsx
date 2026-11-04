@@ -1,36 +1,64 @@
+// Notices: what FUTA, SUG, the student's school and their department have posted (screenshots
+// notices-390, notices-768, notices-empty-390, notices-loading-390, notices-error-390).
+//
+// The text is whatever the admin wrote, shown as text and never as HTML. There is no Verified
+// tick here: the "From ..." line is the trust signal. Everything reads from the offline cache,
+// so the saved notices open with no network. "Unread" is local to this phone (see
+// lib/noticesSeen.ts), because the contract has no read flag.
 import { useEffect, useMemo, useState } from 'react';
-import VerificationNote from '../components/VerificationNote';
+import AppHeader from '../components/AppHeader';
+import Footer from '../components/Footer';
+import Hero from '../components/Hero';
+import Icon, { type IconName } from '../components/Icon';
+import StateBlock from '../components/StateBlock';
+import { COPY } from '../copy/pidgin';
+import type { Announcement } from '../api/types';
+import { useAuth } from '../lib/auth';
 import {
-  announcementsEmptyMessage,
   announcementsForDisplay,
-  formatPublished,
+  emptyBody,
+  emptyFilteredText,
+  filterChoices,
+  filterLabel,
   namesById,
-  previewText,
-  scopeLabel,
+  noticeDate,
+  noticesFor,
+  scopeName,
+  scopeTone,
+  sourceLine,
+  type NoticeFilter,
+  type NoticeScope,
 } from '../lib/announcementsView';
+import { SEEN_EVENT, loadSeenIds, rememberSeen, unreadIds } from '../lib/noticesSeen';
 import { readAnnouncementsScreen } from '../lib/offline';
 import { useCachedRows } from '../lib/useCachedRows';
+import { useOnline } from '../lib/useOnline';
 
-function useOnline(): boolean {
-  const [online, setOnline] = useState(() => navigator.onLine);
-  useEffect(() => {
-    const up = () => setOnline(true);
-    const down = () => setOnline(false);
-    window.addEventListener('online', up);
-    window.addEventListener('offline', down);
-    return () => {
-      window.removeEventListener('online', up);
-      window.removeEventListener('offline', down);
-    };
-  }, []);
-  return online;
-}
+const PHOTO_CREDIT =
+  'Photos: Kaizenify (public domain); MediaMOF and Jesu-loba (CC BY-SA 4.0), ' +
+  'via Wikimedia Commons.';
 
-// Reads only the offline cache. Text is rendered as text: no HTML is ever interpreted.
+// The design gives each scope its own icon inside the chip.
+const SCOPE_ICONS: Record<NoticeScope, IconName> = {
+  university: 'megaphone',
+  sug: 'bellRinging',
+  faculty: 'buildings',
+  department: 'bookOpenText',
+};
+
 export default function Announcements() {
   const { result, retry, progress } = useCachedRows(readAnnouncementsScreen);
   const online = useOnline();
-  const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
+  const auth = useAuth();
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState<NoticeFilter>('all');
+  // The ids this phone had already shown when the screen opened. The labels below come from this
+  // snapshot, so a card stays marked "Unread" for the visit that revealed it.
+  const [seen] = useState(() => loadSeenIds());
+
+  const signedIn = auth.status === 'signed-in';
+  const facultyId = (signedIn && auth.user?.faculty_id) || null;
+  const departmentId = (signedIn && auth.user?.department_id) || null;
 
   const view = useMemo(() => {
     if (result.state !== 'ready') return null;
@@ -42,71 +70,239 @@ export default function Announcements() {
     };
   }, [result]);
 
-  function toggle(id: string) {
-    setExpanded((current) => {
-      const next = new Set(current);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }
+  const choices = filterChoices(facultyId, departmentId);
+  const activeFilter = choices.includes(filter) ? filter : 'all';
+
+  const shown = useMemo(() => {
+    if (!view) return [];
+    return noticesFor(
+      view.items,
+      { filter: activeFilter, query, facultyId, departmentId },
+      view.facultyNames,
+      view.departmentNames,
+    );
+  }, [view, activeFilter, query, facultyId, departmentId]);
+
+  const unread = useMemo(() => (view ? unreadIds(view.items, seen) : new Set<string>()), [view, seen]);
+
+  // The screen has now drawn these cards, so they stop being new. The tab bar drops its dot.
+  useEffect(() => {
+    if (!shown.length) return;
+    if (rememberSeen(shown.map((item) => item.id))) {
+      window.dispatchEvent(new Event(SEEN_EVENT));
+    }
+  }, [shown]);
 
   return (
     <>
-      <h1>Announcements</h1>
+      <Hero
+        size="std"
+        photo="/photos/library-l.webp"
+        kicker={COPY.notices.kicker}
+        title={COPY.notices.title}
+        gold={COPY.notices.titleGold}
+        lead={COPY.notices.lead}
+        header={<AppHeader variant="hero" pill />}
+      >
+        <form className="search" role="search" onSubmit={(event) => event.preventDefault()}>
+          <label className="visually-hidden" htmlFor="notices-q">
+            {COPY.notices.search}
+          </label>
+          <Icon name="search" size={22} />
+          <input
+            id="notices-q"
+            type="search"
+            autoComplete="off"
+            enterKeyHint="search"
+            placeholder={COPY.notices.search}
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </form>
+      </Hero>
 
-      {result.state === 'loading' && (
-        <p role="status" className="muted">
-          Loading announcements…
-        </p>
-      )}
+      <div className="page page--notices">
+        {result.state !== 'error' && (
+          <div
+            className="filter"
+            role="group"
+            aria-label={`${COPY.notices.title} ${COPY.notices.titleGold}`}
+          >
+            {choices.map((choice) => (
+              <button
+                key={choice}
+                type="button"
+                aria-pressed={choice === activeFilter}
+                onClick={() => setFilter(choice)}
+              >
+                {filterLabel(choice)}
+              </button>
+            ))}
+          </div>
+        )}
 
-      {result.state === 'error' && (
-        <div role="alert">
-          <p>Could not read the saved announcements on this device.</p>
-          <button type="button" onClick={retry}>
-            Try again
-          </button>
-        </div>
-      )}
+        {result.state === 'loading' && (
+          <>
+            <p className="muted" role="status">
+              {COPY.notices.loading}
+            </p>
+            <NoticesLoading />
+          </>
+        )}
 
-      {view && view.items.length === 0 && (
-        <p className="muted" role="status">
-          {announcementsEmptyMessage(progress, online)}
-        </p>
-      )}
+        {result.state === 'error' && (
+          <StateBlock
+            icon="warningCircle"
+            title={COPY.notices.errorTitle}
+            body={COPY.notices.errorBody}
+            action={
+              <button type="button" className="btn btn--outline" onClick={retry}>
+                <Icon name="arrowsClockwise" size={18} />
+                {COPY.notices.retry}
+              </button>
+            }
+          />
+        )}
 
-      {view && view.items.length > 0 && (
-        <ul className="items">
-          {view.items.map((item) => {
-            const isOpen = expanded.has(item.id);
-            const bodyId = `announcement-body-${item.id}`;
-            return (
-              <li key={item.id}>
-                <h2 className="announcement-title">
-                  <button
-                    type="button"
-                    className="announcement-toggle"
-                    aria-expanded={isOpen}
-                    aria-controls={bodyId}
-                    onClick={() => toggle(item.id)}
-                  >
-                    {item.title}
-                  </button>
-                </h2>
-                <p className="muted">
-                  {scopeLabel(item, view.facultyNames, view.departmentNames)} ·{' '}
-                  {formatPublished(item.published_at)}
-                </p>
-                <p id={bodyId} className="announcement-body">
-                  {isOpen ? item.body : previewText(item.body)}
-                </p>
-                <VerificationNote verification={item.verification} updatedAt={item.updated_at} />
-              </li>
-            );
-          })}
-        </ul>
-      )}
+        {view && shown.length > 0 && (
+          <ul className="notices" role="list">
+            {shown.map((item, index) => (
+              <NoticeCard
+                key={item.id}
+                item={item}
+                lead={index === 0}
+                unread={unread.has(item.id)}
+                facultyNames={view.facultyNames}
+                departmentNames={view.departmentNames}
+              />
+            ))}
+          </ul>
+        )}
+
+        {view && shown.length === 0 &&
+          (query.trim() ? (
+            <NoMatch />
+          ) : (
+            <NothingHere
+              filter={activeFilter}
+              empty={emptyBody(progress, online)}
+              facultyNames={view.facultyNames}
+              departmentNames={view.departmentNames}
+              facultyId={facultyId}
+              departmentId={departmentId}
+            />
+          ))}
+      </div>
+
+      <Footer className="foot--tabs" photoCredit={PHOTO_CREDIT} />
     </>
   );
+}
+
+interface NoticeCardProps {
+  item: Announcement;
+  /** The newest card on screen is outlined in gold. */
+  lead: boolean;
+  unread: boolean;
+  facultyNames: ReadonlyMap<string, string>;
+  departmentNames: ReadonlyMap<string, string>;
+}
+
+function NoticeCard({ item, lead, unread, facultyNames, departmentNames }: NoticeCardProps) {
+  const [open, setOpen] = useState(false);
+  const bodyId = `notice-body-${item.id}`;
+  const date = noticeDate(item.published_at);
+
+  return (
+    <li>
+      <article
+        className={`card notice${lead ? ' card--hl' : ''}${unread ? ' is-unread' : ''}`}
+      >
+        <p className="notice__top">
+          <span className={`chip chip--scope-${scopeTone(item.scope)}`}>
+            <Icon name={SCOPE_ICONS[item.scope]} size={16} />
+            {scopeName(item.scope)}
+          </span>
+          {date && <span className="notice__date">{date}</span>}
+          {unread && <span className="unread">{COPY.notices.unread}</span>}
+        </p>
+
+        <h2 className="notice__title">{item.title}</h2>
+
+        <p className="notice__from">
+          <Icon name="megaphone" size={16} />
+          {sourceLine(item, facultyNames, departmentNames)}
+        </p>
+
+        {/* Three lines while closed, the whole text once the student asks for it. */}
+        <p id={bodyId} className={`notice__body${open ? '' : ' clamp3'}`}>
+          {item.body}
+        </p>
+
+        <button
+          type="button"
+          className="notice__more"
+          aria-expanded={open}
+          aria-controls={bodyId}
+          onClick={() => setOpen((current) => !current)}
+        >
+          <span>{open ? COPY.notices.showLess : COPY.notices.viewDetails}</span>
+          <Icon name="arrowRight" size={16} />
+        </button>
+      </article>
+    </li>
+  );
+}
+
+/** The shape of three notices while the cache is read, rather than a spinner. */
+function NoticesLoading() {
+  return (
+    <div className="skeleton" aria-hidden="true">
+      {[0, 1, 2].map((row) => (
+        <div className="skeleton__row" key={row}>
+          <span className="skeleton__bar skeleton__bar--short" />
+          <span className="skeleton__bar skeleton__bar--title" />
+          <span className="skeleton__bar" />
+          <span className="skeleton__bar" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function NoMatch() {
+  return (
+    <StateBlock icon="search" title={COPY.states.noMatchTitle} body={COPY.states.noMatchBody} />
+  );
+}
+
+interface NothingHereProps {
+  filter: NoticeFilter;
+  /** The body for the all-notices case, which depends on sync and connection. */
+  empty: string;
+  facultyNames: ReadonlyMap<string, string>;
+  departmentNames: ReadonlyMap<string, string>;
+  facultyId: string | null;
+  departmentId: string | null;
+}
+
+/** No notice at all, or none in the chip the student picked. */
+function NothingHere({
+  filter,
+  empty,
+  facultyNames,
+  departmentNames,
+  facultyId,
+  departmentId,
+}: NothingHereProps) {
+  if (filter !== 'all') {
+    return (
+      <StateBlock
+        icon="bell"
+        title={emptyFilteredText(filter, facultyNames, departmentNames, facultyId, departmentId)}
+      />
+    );
+  }
+
+  return <StateBlock icon="bell" title={COPY.notices.emptyTitle} body={empty} />;
 }
