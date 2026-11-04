@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '../api/client';
-import { friendlyError, passwordLength, validateLogin, validateRegister } from './authView';
+import {
+  friendlyError,
+  passwordLength,
+  passwordStrength,
+  validateLogin,
+  validateRegister,
+} from './authView';
 
 describe('validateLogin', () => {
   it('accepts a valid email and a password', () => {
@@ -132,5 +138,26 @@ describe('friendlyError', () => {
     expect(friendlyError(new ApiError(500, 'Internal Server Error'), true)).toBe(
       'Something went wrong. Try again.',
     );
+  });
+});
+
+describe('passwordStrength', () => {
+  it('is empty at 0 for an empty field', () => {
+    expect(passwordStrength('')).toBe(0);
+  });
+
+  it('gives any typed password at least one segment', () => {
+    expect(passwordStrength('abc')).toBe(1);
+  });
+
+  it('adds a segment for length, mixed case, a number and a symbol', () => {
+    expect(passwordStrength('abcdefgh')).toBe(1);
+    expect(passwordStrength('Abcdefgh')).toBe(2);
+    expect(passwordStrength('Abcdefg1')).toBe(3);
+    expect(passwordStrength('Abcdefg1!')).toBe(4);
+  });
+
+  it('counts characters, not UTF-16 units, so eight emoji are long enough', () => {
+    expect(passwordStrength('😀'.repeat(8))).toBe(2);
   });
 });
