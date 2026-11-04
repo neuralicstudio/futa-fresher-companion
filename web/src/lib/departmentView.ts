@@ -4,8 +4,6 @@ import { emptyMessage } from './academicsView';
 
 const ORDER = new Intl.Collator('en', { sensitivity: 'base', numeric: true });
 
-export const COURSES_EMPTY = 'Courses for this department have not been added yet.';
-export const LECTURERS_EMPTY = 'Lecturers for this department have not been added yet.';
 export const DEPARTMENT_NOT_FOUND = 'This department is not saved on this device.';
 
 /** Drops soft-deleted rows. Synced rows normally arrive without them, so this is a safety net. */
@@ -52,6 +50,26 @@ export function sortLecturers(lecturers: readonly Lecturer[]): Lecturer[] {
 /** A lecturer's name with the title in front, when there is one. */
 export function lecturerDisplayName(lecturer: Pick<Lecturer, 'title' | 'full_name'>): string {
   return [lecturer.title, lecturer.full_name].filter(Boolean).join(' ');
+}
+
+function sameName(a: string, b: string): boolean {
+  const clean = (value: string) => value.trim().toLowerCase().replace(/\s+/g, ' ');
+  return clean(a) === clean(b);
+}
+
+/**
+ * Whether this lecturer is the department's head. The HOD is recorded on the department as a
+ * name, so it is matched against the lecturer's name with or without the title in front.
+ */
+export function isHod(
+  lecturer: Pick<Lecturer, 'full_name' | 'title'>,
+  hodName: string | null | undefined,
+): boolean {
+  if (!hodName) return false;
+  return (
+    sameName(lecturer.full_name, hodName) ||
+    sameName(lecturerDisplayName(lecturer), hodName)
+  );
 }
 
 /**

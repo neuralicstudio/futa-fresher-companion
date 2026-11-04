@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { Course, Department, Lecturer } from '../api/types';
 import {
-  COURSES_EMPTY,
   DEPARTMENT_NOT_FOUND,
   groupCoursesByLevel,
-  LECTURERS_EMPTY,
+  isHod,
   lecturerDisplayName,
   levelHeading,
   liveRows,
@@ -14,6 +13,7 @@ import {
   unitsText,
 } from './departmentView';
 import { SAVING_MESSAGE } from './academicsView';
+import { COPY } from '../copy/pidgin';
 
 const FACULTY = '11111111-1111-4111-8111-111111111111';
 const OTHER_FACULTY = '22222222-2222-4222-8222-222222222222';
@@ -180,21 +180,21 @@ describe('liveRows', () => {
 
 describe('empty states', () => {
   it('says courses have not been added when nothing is cached', () => {
-    expect(sectionEmptyMessage({ running: false, firstRun: false }, COURSES_EMPTY)).toBe(
-      'Courses for this department have not been added yet.',
-    );
+    expect(
+      sectionEmptyMessage({ running: false, firstRun: false }, COPY.academics.coursesEmpty),
+    ).toBe(COPY.academics.coursesEmpty);
   });
 
   it('says lecturers have not been added when nothing is cached', () => {
-    expect(sectionEmptyMessage({ running: false, firstRun: false }, LECTURERS_EMPTY)).toBe(
-      'Lecturers for this department have not been added yet.',
-    );
+    expect(
+      sectionEmptyMessage({ running: false, firstRun: false }, COPY.academics.lecturersEmpty),
+    ).toBe(COPY.academics.lecturersEmpty);
   });
 
   it('says the list is coming while the first sync runs', () => {
-    expect(sectionEmptyMessage({ running: true, firstRun: true }, COURSES_EMPTY)).toBe(
-      SAVING_MESSAGE,
-    );
+    expect(
+      sectionEmptyMessage({ running: true, firstRun: true }, COPY.academics.coursesEmpty),
+    ).toBe(SAVING_MESSAGE);
   });
 });
 
@@ -218,5 +218,39 @@ describe('not found', () => {
 
   it('returns the department when it is live and in the right school', () => {
     expect(resolveDepartment(department(), FACULTY)?.name).toBe('Computer Science');
+  });
+});
+
+describe('isHod', () => {
+  it('marks the lecturer whose name the department records as its head', () => {
+    const head = lecturer({ id: 'l1', full_name: 'Adaeze Okafor' });
+
+    expect(isHod(head, 'Adaeze Okafor')).toBe(true);
+  });
+
+  it('matches even when the title is in front on one side only', () => {
+    const head = lecturer({ id: 'l1', full_name: 'Adaeze Okafor', title: 'Prof.' });
+
+    expect(isHod(head, 'Adaeze Okafor')).toBe(true);
+    expect(isHod(head, 'Prof. Adaeze Okafor')).toBe(true);
+  });
+
+  it('ignores case and extra spacing', () => {
+    const head = lecturer({ id: 'l1', full_name: 'Adaeze  Okafor' });
+
+    expect(isHod(head, '  adaeze okafor ')).toBe(true);
+  });
+
+  it('marks nobody when the department has no head recorded', () => {
+    const person = lecturer({ id: 'l1', full_name: 'Adaeze Okafor' });
+
+    expect(isHod(person, null)).toBe(false);
+    expect(isHod(person, '')).toBe(false);
+  });
+
+  it('does not mark a different lecturer', () => {
+    const person = lecturer({ id: 'l1', full_name: 'Bola Adeyemi' });
+
+    expect(isHod(person, 'Adaeze Okafor')).toBe(false);
   });
 });
