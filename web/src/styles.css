@@ -3111,3 +3111,263 @@ button.link {
   font: inherit;
   cursor: pointer;
 }
+
+/* ---------------------------------------------------------------- timetable */
+/* The week's classes: two pickers, the day strip, then a day at a time (timetable-390). */
+.page--timetable {
+  gap: var(--space-md);
+  padding-top: var(--space-md);
+}
+
+/* Level and Semester side by side, one above the other when they stop fitting. */
+.pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+  gap: var(--space-xs);
+}
+
+/* A picker drawn as a pill: the label sits inside, above the value, with an icon each side. */
+.select-box {
+  position: relative;
+  display: block;
+  min-height: 3.5rem;
+  color: var(--color-text);
+}
+
+.select-box > .ic {
+  position: absolute;
+  top: 50%;
+  translate: 0 -50%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.select-box > .ic:first-child {
+  left: var(--space-sm);
+}
+
+.select-box > .ic:last-child {
+  right: var(--space-sm);
+}
+
+.select-box__main {
+  display: block;
+}
+
+.select-box label {
+  position: absolute;
+  z-index: 1;
+  left: 2.75rem;
+  top: var(--space-xs);
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+  line-height: 1.2;
+  pointer-events: none;
+}
+
+.select-box select {
+  appearance: none;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 1.55rem 2.25rem 0.35rem 2.75rem;
+  text-overflow: ellipsis;
+  border-radius: var(--radius-pill);
+  border: var(--outline) solid var(--color-field-edge);
+  background: var(--color-field);
+  color: var(--color-text);
+  font-weight: var(--weight-strong);
+  cursor: pointer;
+}
+
+.select-box select:focus-visible {
+  outline: var(--rule-bar) solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.select-box select option {
+  color: var(--color-text);
+  background: var(--color-card);
+}
+
+/* The week runs edge to edge and scrolls sideways on a narrow phone. */
+.days {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(3.5rem, calc((100% - 4 * var(--space-xs)) / 4.6));
+  gap: var(--space-xs);
+  overflow-x: auto;
+  margin: 0 calc(-1 * var(--gutter));
+  padding: var(--space-3xs) var(--gutter);
+  list-style: none;
+  scrollbar-width: none;
+}
+
+.days::-webkit-scrollbar {
+  display: none;
+}
+
+.day {
+  width: 100%;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  min-height: 3.5rem;
+  padding: var(--space-xs);
+  border-radius: var(--radius-md);
+  border: var(--outline) solid var(--color-outline);
+  background: var(--color-card);
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.day small {
+  color: var(--color-muted);
+}
+
+/* Today's dot sits after its name, unless today is also the day on screen. */
+.day[aria-current='date'] b::after {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-left: var(--space-2xs);
+  border-radius: 50%;
+  background: var(--color-gold);
+  vertical-align: middle;
+}
+
+.day[aria-pressed='true'] {
+  background: var(--color-gold);
+  border-color: var(--color-gold);
+  color: var(--color-on-gold);
+}
+
+.day[aria-pressed='true'] b,
+.day[aria-pressed='true'] small {
+  color: var(--color-on-gold);
+}
+
+.day[aria-pressed='true'] b::after {
+  content: none;
+}
+
+.day-view {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.day-block {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.day-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  margin: 0;
+  font-size: var(--text-xl);
+}
+
+.day-head .ic {
+  color: var(--color-gold);
+}
+
+.day-head b {
+  font-weight: var(--weight-display);
+}
+
+.classes {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.class {
+  display: grid;
+  gap: var(--space-2xs);
+}
+
+.class__time {
+  display: flex;
+  gap: var(--space-xs);
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0;
+  color: var(--color-text-2);
+}
+
+.class__time .ic {
+  color: var(--color-gold);
+}
+
+.class__code {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.class__title {
+  margin: 0;
+  color: var(--color-text-2);
+  overflow-wrap: anywhere;
+}
+
+.class__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-lg);
+  margin: 0;
+  color: var(--color-text-2);
+  font-size: var(--text-sm);
+}
+
+.class__meta span {
+  display: inline-flex;
+  gap: var(--space-xs);
+  align-items: center;
+}
+
+.class__meta .ic {
+  color: var(--color-gold);
+}
+
+/* A day with nothing on it. The icon sits beside the words, not above them. */
+.card--empty-day,
+.card--note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3xs) var(--space-md);
+  align-items: center;
+}
+
+.card--empty-day > .ic,
+.card--note > .ic {
+  color: var(--color-gold);
+}
+
+.card--empty-day b,
+.card--note b {
+  display: block;
+}
+
+.card--empty-day p,
+.card--note p {
+  margin: var(--space-2xs) 0 0;
+  color: var(--color-text-2);
+}
+
+.card--note p {
+  color: var(--color-muted);
+}
+
+/* The one action a note card offers takes its own line, under the words. */
+.card--note > .btn {
+  grid-column: 1 / -1;
+  justify-self: stretch;
+  margin-top: var(--space-xs);
+}

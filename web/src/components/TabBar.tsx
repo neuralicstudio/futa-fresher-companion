@@ -2,7 +2,7 @@
 //
 // Settings and Admin are deliberately NOT tabs (design handoff, "The fixes to the mockups", 1).
 // They open from the profile icon. Adding a sixth tab here is a design change, not a tweak.
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import Icon, { type IconName } from './Icon';
 import { COPY } from '../copy/pidgin';
 
@@ -43,12 +43,12 @@ const NOTICES: Tab = {
 };
 
 /**
- * A timetable belongs to a department, so this tab only has its own address once the app knows
- * the student's department. Until the profile carries one (step 4) it opens the academics list
- * and must NOT claim to be the current tab, or it would light up beside Academics.
+ * The timetable now has its own address (`/timetable`), where it shows the signed-in student's
+ * department. A department's timetable keeps its deeper address, so this tab stays current on
+ * either, the way Map stays current on a place's screen.
  */
 const TIMETABLE: Tab = {
-  to: '/academics',
+  to: '/timetable',
   label: COPY.shell.tabs.timetable,
   icon: 'timetable',
   iconActive: 'timetableFill',
@@ -57,51 +57,40 @@ const TIMETABLE: Tab = {
 interface TabBarProps {
   /** Shows the gold dot on Notices when there are unread notices. */
   unread?: boolean;
-  /** The student's own timetable, once the profile knows their department. */
-  timetableTo?: string;
 }
 
-export default function TabBar({ unread = false, timetableTo }: TabBarProps) {
+export default function TabBar({ unread = false }: TabBarProps) {
   const { pathname } = useLocation();
   // A place detail belongs to the Map section even though its address is /place/:id
   // (screenshot place-390: the Map tab is the gold one).
   const onPlace = pathname === '/place' || pathname.startsWith('/place/');
+  const onTimetable = pathname === '/timetable' || pathname.endsWith('/timetable');
+
+  // A timetable deep link under /academics is still the Timetable tab, not Academics, so only
+  // one tab is gold at a time.
+  function isCurrent(tab: Tab, isActive: boolean): boolean {
+    if (tab === TIMETABLE) return onTimetable;
+    if (onTimetable) return false;
+    return isActive || (tab === MAP && onPlace);
+  }
 
   // The design's tab order: Home, Map, Academics, Timetable, Notices.
-  const tabs: Tab[] = [
-    HOME,
-    MAP,
-    ACADEMICS,
-    timetableTo ? { ...TIMETABLE, to: timetableTo } : TIMETABLE,
-    NOTICES,
-  ];
+  const tabs: Tab[] = [HOME, MAP, ACADEMICS, TIMETABLE, NOTICES];
 
   return (
     <nav className="tabbar" aria-label={COPY.shell.nav}>
       {tabs.map((tab) => {
         const showsUnread = tab === NOTICES && unread;
 
-        // No department yet: a plain link, so it never reports itself as the current page.
-        if (tab === TIMETABLE) {
-          return (
-            <Link key={tab.label} to={tab.to} className="tab">
-              <Icon name={tab.icon} className="tab__icon" />
-              <span>{tab.label}</span>
-            </Link>
-          );
-        }
-
         return (
           <NavLink
             key={tab.label}
             to={tab.to}
             end={tab.end}
-            className={({ isActive }) =>
-              `tab${isActive || (tab === MAP && onPlace) ? ' is-current' : ''}`
-            }
+            className={({ isActive }) => `tab${isCurrent(tab, isActive) ? ' is-current' : ''}`}
           >
             {({ isActive }) => {
-              const current = isActive || (tab === MAP && onPlace);
+              const current = isCurrent(tab, isActive);
               return (
                 <>
                   <Icon name={current ? tab.iconActive : tab.icon} className="tab__icon" />
