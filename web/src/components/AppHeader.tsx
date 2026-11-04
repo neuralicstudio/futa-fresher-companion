@@ -19,12 +19,18 @@ interface AppHeaderProps {
   showProfile?: boolean;
   /** The lockup on a dark pill, as on Welcome. */
   pill?: boolean;
+  /**
+   * A way back instead of the logo lockup (screenshot place-390: "← Back to map"). The profile
+   * button and its sheet stay, because this is still another screen in the app.
+   */
+  back?: { to: string; label: string };
 }
 
 export default function AppHeader({
   variant = 'bar',
   showProfile = true,
   pill = false,
+  back,
 }: AppHeaderProps) {
   const auth = useAuth();
   const navigate = useNavigate();
@@ -41,17 +47,24 @@ export default function AppHeader({
   return (
     <>
       <header className={`app-header app-header--${variant}`}>
-        <Link
-          className={`app-header__brand${pill ? ' is-pill' : ''}`}
-          to="/"
-          aria-label={`${COPY.app.name}, ${COPY.shell.tabs.home}`}
-        >
-          <Logo className="app-header__mark" />
-          <span className="app-header__word">
-            <b>{COPY.app.name}</b>
-            <small>{COPY.app.tagline}</small>
-          </span>
-        </Link>
+        {back ? (
+          <Link className="app-header__back" to={back.to}>
+            <Icon name="arrowLeft" size={22} />
+            <span>{back.label}</span>
+          </Link>
+        ) : (
+          <Link
+            className={`app-header__brand${pill ? ' is-pill' : ''}`}
+            to="/"
+            aria-label={`${COPY.app.name}, ${COPY.shell.tabs.home}`}
+          >
+            <Logo className="app-header__mark" />
+            <span className="app-header__word">
+              <b>{COPY.app.name}</b>
+              <small>{COPY.app.tagline}</small>
+            </span>
+          </Link>
+        )}
 
         {showProfile && (
           <button

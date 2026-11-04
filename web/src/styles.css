@@ -463,16 +463,23 @@ main h1 {
   font-weight: var(--weight-strong);
 }
 
+/* A list of labelled facts: the label stays quiet, the value carries the weight (place-390). */
 .facts {
-  margin: var(--space-xs) 0;
+  display: grid;
+  grid-template-columns: fit-content(40%) minmax(0, 1fr);
+  gap: var(--space-xs) var(--space-md);
+  margin: 0;
 }
 
 .facts dt {
-  font-weight: var(--weight-strong);
+  color: var(--color-muted);
 }
 
 .facts dd {
-  margin: 0 0 var(--space-xs) 0;
+  margin: 0;
+  color: var(--color-text);
+  font-weight: var(--weight-strong);
+  text-wrap: balance;
   overflow-wrap: anywhere;
 }
 
@@ -623,6 +630,25 @@ main h1 {
   height: 2.5rem;
 }
 
+/* "← Back to map": a way out of a detail screen, in place of the logo (place-390). */
+.app-header__back {
+  display: inline-flex;
+  gap: var(--space-xs);
+  align-items: center;
+  min-height: var(--hit);
+  color: var(--color-text);
+  font-weight: var(--weight-strong);
+  text-decoration: none;
+}
+
+.app-header--hero .app-header__back {
+  color: var(--color-on-photo);
+}
+
+.app-header__back:hover span {
+  text-decoration: underline;
+}
+
 /* ---------------------------------------------------------------- the hero */
 .hero {
   position: relative;
@@ -641,6 +667,15 @@ main h1 {
 
 .hero--std {
   min-height: 430px;
+}
+
+/* A place's own screen opens short: the name and its category are the whole top (place-390). */
+.hero--short {
+  min-height: 340px;
+}
+
+.hero--short .hand {
+  font-size: var(--hand-md);
 }
 
 .hero__bg {
@@ -1476,6 +1511,22 @@ main h1 {
   background: var(--color-card-2);
 }
 
+/* "Photo dey come": the gold picture icon beside the ask, not above it (place-noPhoto-390). */
+.card--empty-photo {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-3xs) var(--space-md);
+  align-items: center;
+}
+
+.card--empty-photo > .ic {
+  color: var(--color-gold);
+}
+
+.card--empty-photo h2 {
+  font-size: var(--text-md);
+}
+
 .card--success {
   border-color: color-mix(in srgb, var(--color-green) 55%, transparent);
   background: var(--color-success-fill);
@@ -2154,6 +2205,11 @@ main h1 {
   height: 20rem;
 }
 
+/* The locator under a place's facts: shorter, because the page already has a hero. */
+.mapcard--small .mapcard__host {
+  height: 14rem;
+}
+
 .campus-map {
   display: block;
   width: 100%;
@@ -2436,6 +2492,32 @@ main h1 {
   border-radius: var(--radius-sm);
 }
 
+/* "Nearby": the whole row is one link, so there is not a second target to the same place. */
+.place-row--link {
+  display: block;
+  padding: 0;
+}
+
+.place-row__link {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+  gap: var(--space-sm);
+  align-items: center;
+  padding: var(--space-xs);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.place-row__link:hover {
+  background: color-mix(in srgb, var(--color-gold) 8%, var(--color-card));
+}
+
+.place-row__link:focus-visible {
+  outline: var(--rule-bar) solid var(--color-focus);
+  outline-offset: var(--space-3xs);
+}
+
 /* The map's own glass buttons, over the drawing. */
 .btn--glass {
   border-color: var(--color-outline);
@@ -2453,5 +2535,106 @@ main h1 {
 @media (prefers-reduced-motion: reduce) {
   .m-me__pulse {
     animation: none;
+  }
+}
+
+/* ---------------------------------------------------------------- place detail */
+/* The page under a place's hero: the photo ask, the facts, the locator, the neighbours. */
+.page--place {
+  padding-top: var(--space-sm);
+}
+
+/* The drawn night behind a place with no photo, and behind "we no see am" (place-noPhoto-390). */
+.place-scene {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.place-about {
+  display: grid;
+  gap: var(--space-xs);
+  align-content: start;
+}
+
+/* The record's trust mark: a green check, a dashed "not yet", or an amber warning (place-390). */
+.seal-wrap {
+  display: grid;
+  gap: var(--space-3xs);
+}
+
+.seal-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-sm);
+  align-items: center;
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.seal {
+  display: inline-flex;
+  gap: var(--space-2xs);
+  align-items: center;
+  min-height: 1.75rem;
+  padding: var(--space-2xs) var(--space-sm) var(--space-2xs) var(--space-xs);
+  border-radius: var(--radius-pill);
+  font-weight: var(--weight-strong);
+}
+
+.seal--verified {
+  background: var(--color-green);
+  color: var(--color-on-green);
+}
+
+.seal--unverified {
+  border: var(--rule-hair) dashed var(--color-muted);
+  color: var(--color-muted);
+}
+
+.seal--outdated {
+  background: var(--color-amber);
+  color: var(--color-on-amber);
+}
+
+.seal-line__date {
+  color: var(--color-muted);
+}
+
+/* Where the record came from, one tap away so the line itself never crowds the seal. */
+.source summary {
+  display: inline-flex;
+  gap: var(--space-2xs);
+  align-items: center;
+  min-height: var(--hit);
+  color: var(--color-gold);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-strong);
+  list-style: none;
+  cursor: pointer;
+}
+
+.source summary::-webkit-details-marker {
+  display: none;
+}
+
+.source summary .ic {
+  transition: rotate var(--dur-short) var(--ease-out);
+}
+
+.source[open] summary .ic {
+  rotate: 90deg;
+}
+
+.source p {
+  padding-bottom: var(--space-xs);
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+  overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .source summary .ic {
+    transition: none;
   }
 }

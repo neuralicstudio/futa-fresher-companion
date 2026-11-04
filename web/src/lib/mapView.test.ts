@@ -6,7 +6,9 @@ import {
   categoryOf,
   countLabel,
   filterPlaces,
+  nearbyPlaces,
   placePhoto,
+  placePhotoCredit,
   projectPoint,
   sortPlaces,
   toMapPlace,
@@ -213,5 +215,70 @@ describe('placePhoto', () => {
     expect(placePhoto('CRC OBAKEKERE')).toBeUndefined();
     expect(placePhoto('ABIOLAHALL1')).toBeUndefined();
     expect(placePhoto('School of Computing (SOC)')).toBeUndefined();
+  });
+
+  it('gives a place its own screen the wide copy of the same picture', () => {
+    expect(placePhoto('Albert Ilemobade Library', 'l')).toBe('/photos/library-l.webp');
+    expect(placePhoto('School of Computing', 'l')).toBe('/photos/computing-l.webp');
+    expect(placePhoto('CRC', 'l')).toBe('/photos/crc-l.webp');
+    expect(placePhoto('FUTA MULTIPURPOSE HALL', 'l')).toBe('/photos/hall-l.webp');
+    expect(placePhoto('SAAT Library', 'l')).toBeUndefined();
+  });
+});
+
+describe('placePhotoCredit', () => {
+  it('credits the author and licence CREDITS.md records for that picture', () => {
+    expect(placePhotoCredit('Albert Ilemobade Library')).toEqual({
+      author: 'MediaMOF',
+      licence: 'CC BY-SA 4.0',
+    });
+    expect(placePhotoCredit('FUTA MULTIPURPOSE HALL')).toEqual({
+      author: 'MediaMOF',
+      licence: 'CC BY-SA 4.0',
+    });
+  });
+
+  it('credits nothing when there is no photo to credit', () => {
+    expect(placePhotoCredit('SEET Library')).toBeUndefined();
+    expect(placePhotoCredit('CRC OBAKEKERE')).toBeUndefined();
+  });
+});
+
+describe('nearbyPlaces', () => {
+  const place = (id: string, x: number, y: number): MapPlace => ({
+    id,
+    name: id,
+    category: 'building',
+    type: 'other',
+    x,
+    y,
+    verified: false,
+  });
+
+  const PLACES = [
+    place('here', 100, 100),
+    place('far', 900, 900),
+    place('next-door', 120, 110),
+    place('down-road', 400, 100),
+    place('up-road', 100, 300),
+  ];
+
+  it('gives the three closest other places, nearest first', () => {
+    expect(nearbyPlaces(PLACES, 'here').map((item) => item.id)).toEqual([
+      'next-door',
+      'up-road',
+      'down-road',
+    ]);
+  });
+
+  it('never includes the place itself, and stops at the count it is given', () => {
+    const nearby = nearbyPlaces(PLACES, 'here', 2);
+
+    expect(nearby.map((item) => item.id)).toEqual(['next-door', 'up-road']);
+    expect(nearby).not.toContainEqual(expect.objectContaining({ id: 'here' }));
+  });
+
+  it('says nothing when the place is not on the drawing', () => {
+    expect(nearbyPlaces(PLACES, 'gone')).toEqual([]);
   });
 });
