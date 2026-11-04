@@ -1,12 +1,14 @@
-import { lazy, Suspense, useEffect } from 'react';
-import { Link, Route, Routes, useNavigate } from 'react-router-dom';
+import { lazy, Suspense, useEffect, useState } from 'react';
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import AppHeader from './components/AppHeader';
 import FirstSyncScreen from './components/FirstSyncScreen';
 import OfflineBanner from './components/OfflineBanner';
+import ProfileSheet from './components/ProfileSheet';
 import SyncNotice from './components/SyncNotice';
+import TabBar from './components/TabBar';
 import { dismissFirstSync, showFirstSyncScreen, useSyncView } from './lib/syncStatus';
 import Home from './pages/Home';
 import { useAuth } from './lib/auth';
-import { isAdminRole } from './lib/composerView';
 
 // Heavy / rarely used screens are lazy-loaded to protect the first-load budget.
 // The Academics screens read the offline cache (Dexie), so they load on demand too.
@@ -32,11 +34,24 @@ function retrySync() {
     .catch(() => {});
 }
 
+/**
+ * The five-tab bar belongs to the main sections only. Log in, sign-up, the admin screens and
+ * the first-sync screen each stand on their own (design handoff, screenshots `login-390`,
+ * `sync-390`, `admin-390`).
+ */
+function showsTabBar(pathname: string, firstSync: boolean): boolean {
+  if (firstSync) return false;
+  if (pathname.startsWith('/admin')) return false;
+  return pathname !== '/login' && pathname !== '/register';
+}
+
 export default function App() {
   const sync = useSyncView();
   const firstSync = showFirstSyncScreen(sync);
   const auth = useAuth();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const [profileOpen, setProfileOpen] = useState(false);
 
   useEffect(() => {
     // Prime the offline cache in the background. Fails silently when offline / API not ready.
@@ -46,30 +61,21 @@ export default function App() {
     return () => window.removeEventListener('online', retrySync);
   }, []);
 
+  // A route change closes the sheet, so it never floats over a screen it did not open from.
+  useEffect(() => {
+    setProfileOpen(false);
+  }, [pathname]);
+
+  const signedIn = auth.status === 'signed-in';
+
   return (
     <>
       <OfflineBanner />
-      <nav>
-        <Link to="/">Home</Link>
-        <Link to="/map">Map</Link>
-        <Link to="/academics">Academics</Link>
-        <Link to="/announcements">Announcements</Link>
-        {isAdminRole(auth.user?.role) && <Link to="/admin">Admin</Link>}
-        {auth.status === 'signed-in' ? (
-          <button
-            type="button"
-            className="nav-button"
-            onClick={() => {
-              auth.signOut();
-              navigate('/');
-            }}
-          >
-            Log out
-          </button>
-        ) : (
-          <Link to="/login">Log in</Link>
-        )}
-      </nav>
+      <AppHeader
+        signedIn={signedIn}
+        name={auth.user?.full_name}
+        onOpenProfile={() => setProfileOpen(true)}
+      />
       <SyncNotice onRetry={retrySync} />
       <main>
         {firstSync ? (
@@ -99,6 +105,19 @@ export default function App() {
           </Suspense>
         )}
       </main>
+
+      {showsTabBar(pathname, firstSync) && <TabBar />}
+
+      <ProfileSheet
+        open={profileOpen}
+        onClose={() => setProfileOpen(false)}
+        user={auth.user}
+        signedIn={signedIn}
+        onSignOut={() => {
+          auth.signOut();
+          navigate('/');
+        }}
+      />
     </>
   );
 }
