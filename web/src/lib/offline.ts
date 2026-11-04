@@ -201,3 +201,21 @@ export async function readCachedAnnouncements(): Promise<Announcement[]> {
   const rows = (await db.announcements.toArray()) as Announcement[];
   return notExpired(rows, Date.now());
 }
+
+/** Every saved building. Home's popular places pick from this list. Cache only. */
+export async function readBuildings(): Promise<Building[]> {
+  return (await db.buildings.toArray()) as Building[];
+}
+
+/**
+ * Everything Home shows, from the cache only. The timetable is read only when the signed-in
+ * student has a department, so a guest never triggers a look-up that cannot succeed.
+ */
+export async function readHomeScreen(departmentId: string | null) {
+  const [announcements, buildings, timetable] = await Promise.all([
+    readCachedAnnouncements(),
+    readBuildings(),
+    departmentId ? readTimetableScreen(departmentId) : Promise.resolve(null),
+  ]);
+  return { announcements, buildings, timetable };
+}

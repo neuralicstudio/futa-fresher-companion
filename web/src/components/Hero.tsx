@@ -18,6 +18,8 @@ interface HeroProps {
   lead?: string;
   /** The logo row, so it sits over the photo instead of above it. */
   header?: ReactNode;
+  /** A badge over the photo, on the right: Home's countdown. */
+  badge?: ReactNode;
   /** The drawn student in the bottom-right corner, as on the auth screens. */
   student?: 'wave' | 'phone';
   /** The call to action and any line under the lead. */
@@ -33,6 +35,7 @@ export default function Hero({
   gold,
   lead,
   header,
+  badge,
   student,
   children,
   className,
@@ -64,6 +67,8 @@ export default function Hero({
         {lead && <p className="hero__lead">{lead}</p>}
         {children}
       </div>
+
+      {badge && <div className="hero__badge">{badge}</div>}
 
       {student && (
         <div className="hero__badge">

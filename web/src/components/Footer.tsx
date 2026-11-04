@@ -9,6 +9,8 @@ import { COPY } from '../copy/pidgin';
 interface FooterProps {
   /** The credit line for the photo above, when the screen shows one. */
   photoCredit?: string;
+  /** Extra space at the bottom for a screen that draws its own page (Home's tab bar room). */
+  className?: string;
 }
 
 function Waves() {
@@ -28,9 +30,9 @@ function Waves() {
   );
 }
 
-export default function Footer({ photoCredit }: FooterProps) {
+export default function Footer({ photoCredit, className }: FooterProps) {
   return (
-    <footer className="foot">
+    <footer className={`foot${className ? ` ${className}` : ''}`}>
       <Waves />
       <p className="foot__line">
         <Logo className="logo--xs" />
