@@ -243,7 +243,6 @@ export const COPY = {
     unread: 'Unread',
     newest: 'New',
     viewDetails: 'View full details',
-    showLess: 'Show less',
     attachment: 'Attachment',
     emptyTitle: 'No new notices',
     emptyBody: 'You don catch up, fresher. Check back later.',
@@ -267,6 +266,13 @@ export const COPY = {
     sourceTitle: 'Where this come from',
     sourceHelp: 'Sabi shows who posted a notice. The words are exactly what the admin wrote.',
     share: 'Share',
+    // The facts row under the body is two columns, so the labels stand alone here. COPY.md
+    // ships the joined lines ("For: {audience}", "Expires {date}"); the words are the same.
+    forLabel: 'For',
+    expiresLabel: 'Expires',
+    everyone: 'Everyone',
+    copied: 'Link copied. Share am anywhere.',
+    shareFailed: 'No fit share am. Copy the address from your browser.',
     notFoundTitle: 'This notice no dey saved on this phone',
     notFoundBody: 'E fit don expire or the admin remove am.',
   },

@@ -3448,6 +3448,7 @@ button.link {
 }
 
 .card.notice {
+  position: relative;
   display: grid;
   gap: var(--space-xs);
   align-content: start;
@@ -3524,31 +3525,161 @@ button.link {
 }
 
 /* The one control on a card: the gold "View full details" line, a 44px tap target. */
+/* The design's title link is the card: its stretched hit area covers the whole of it, so a tap
+   anywhere opens the notice, and the chevron and the row below are what say so. */
+.notice__title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.notice__title a:hover {
+  text-decoration: underline;
+}
+
+.notice__title a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-card);
+}
+
+/* The ring goes round the card, not just the words, because the card is the target. */
+.notice__title a:focus-visible {
+  outline: none;
+}
+
+.notice__title a:focus-visible::after {
+  outline: var(--rule-bar) solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 .notice__more {
   display: inline-flex;
   justify-self: start;
   align-items: center;
   gap: var(--space-xs);
-  min-height: var(--hit);
-  padding: 0;
-  border: 0;
-  background: none;
+  margin: 0;
   color: var(--color-gold);
-  font: inherit;
   font-size: var(--text-sm);
   font-weight: var(--weight-strong);
-  cursor: pointer;
 }
 
-.notice__more > svg {
-  transition: rotate var(--dur-micro) var(--ease-out);
+/* The design's chevron at the right of a card. It points at the link below, so it is not a
+   control and does not take a tap. */
+.notice__go {
+  position: absolute;
+  right: var(--space-md);
+  top: 50%;
+  translate: 0 -50%;
+  color: var(--color-text-2);
+  pointer-events: none;
 }
 
-.notice__more[aria-expanded='true'] > svg {
-  rotate: -90deg;
+/* ------------------------------------------------------------ notice detail */
+/* One notice, whole: a plain bar, the gold gist line, the card, where it came from, and the
+   two ways out (notice-390, notice-768, notice-notFound-390). */
+.page--notice {
+  gap: var(--space-lg);
+  padding-top: var(--space-xs);
 }
 
-.notice__more:focus-visible {
-  outline: var(--rule-bar) solid var(--color-focus);
-  outline-offset: 2px;
+.page--notice .hand {
+  font-size: var(--hand-md);
+}
+
+/* "← Back to notices   Notice": the back link and the screen's name share the bar. */
+.app-header__leader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+/* The way back stays one line, so a 320 phone does not fold it in two. */
+.app-header__leader .app-header__back span {
+  white-space: nowrap;
+}
+
+/* On the narrowest phones the words would push the screen's name into the profile button, so
+   the arrow stands alone and the words stay for a screen reader. */
+@media (max-width: 380px) {
+  /* The arrow alone is still a full-size tap. */
+  .app-header__leader .app-header__back {
+    min-width: var(--hit);
+  }
+
+  .app-header__leader .app-header__back span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    border: 0;
+  }
+}
+
+.app-header__title {
+  margin: 0;
+  font-size: var(--text-2xl);
+  white-space: nowrap;
+}
+
+.card.notice-full {
+  display: grid;
+  gap: var(--space-sm);
+  align-content: start;
+}
+
+.notice-full__title {
+  margin: 0;
+  font-size: var(--text-2xl);
+  /* Wrap at spaces: a notice title is words, not one long code. */
+  overflow-wrap: break-word;
+}
+
+/* "Where this come from": a heading and one line of help. */
+.notice-source {
+  display: grid;
+  gap: var(--space-2xs);
+}
+
+.notice-source h3,
+.notice-source p {
+  margin: 0;
+}
+
+/* The admin's text, exactly: blank lines make paragraphs, single newlines stay. */
+.prose {
+  max-width: var(--measure);
+  color: var(--color-text-2);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+
+.prose p {
+  margin: 0;
+}
+
+.prose p + p {
+  margin-top: var(--space-sm);
+}
+
+/* Share and Back sit side by side at their own width, as the design draws them, and stack on a
+   phone too narrow for both (notice-390, notice-768). */
+.notice-actions .btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* "Link copied.": only there when the share could not use the phone's own sheet. */
+.notice__note {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.notice__note:empty {
+  display: none;
 }

@@ -6,11 +6,13 @@
 // so the saved notices open with no network. "Unread" is local to this phone (see
 // lib/noticesSeen.ts), because the contract has no read flag.
 import { useEffect, useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import AppHeader from '../components/AppHeader';
 import Footer from '../components/Footer';
 import Hero from '../components/Hero';
-import Icon, { type IconName } from '../components/Icon';
+import Icon from '../components/Icon';
 import StateBlock from '../components/StateBlock';
+import ScopeChip from '../components/notice/ScopeChip';
 import { COPY } from '../copy/pidgin';
 import type { Announcement } from '../api/types';
 import { useAuth } from '../lib/auth';
@@ -23,11 +25,8 @@ import {
   namesById,
   noticeDate,
   noticesFor,
-  scopeName,
-  scopeTone,
   sourceLine,
   type NoticeFilter,
-  type NoticeScope,
 } from '../lib/announcementsView';
 import { SEEN_EVENT, loadSeenIds, rememberSeen, unreadIds } from '../lib/noticesSeen';
 import { readAnnouncementsScreen } from '../lib/offline';
@@ -37,14 +36,6 @@ import { useOnline } from '../lib/useOnline';
 const PHOTO_CREDIT =
   'Photos: Kaizenify (public domain); MediaMOF and Jesu-loba (CC BY-SA 4.0), ' +
   'via Wikimedia Commons.';
-
-// The design gives each scope its own icon inside the chip.
-const SCOPE_ICONS: Record<NoticeScope, IconName> = {
-  university: 'megaphone',
-  sug: 'bellRinging',
-  faculty: 'buildings',
-  department: 'bookOpenText',
-};
 
 export default function Announcements() {
   const { result, retry, progress } = useCachedRows(readAnnouncementsScreen);
@@ -209,8 +200,6 @@ interface NoticeCardProps {
 }
 
 function NoticeCard({ item, lead, unread, facultyNames, departmentNames }: NoticeCardProps) {
-  const [open, setOpen] = useState(false);
-  const bodyId = `notice-body-${item.id}`;
   const date = noticeDate(item.published_at);
 
   return (
@@ -219,36 +208,32 @@ function NoticeCard({ item, lead, unread, facultyNames, departmentNames }: Notic
         className={`card notice${lead ? ' card--hl' : ''}${unread ? ' is-unread' : ''}`}
       >
         <p className="notice__top">
-          <span className={`chip chip--scope-${scopeTone(item.scope)}`}>
-            <Icon name={SCOPE_ICONS[item.scope]} size={16} />
-            {scopeName(item.scope)}
-          </span>
+          <ScopeChip scope={item.scope} />
           {date && <span className="notice__date">{date}</span>}
           {unread && <span className="unread">{COPY.notices.unread}</span>}
         </p>
 
-        <h2 className="notice__title">{item.title}</h2>
+        {/* The title is the link, and its stretched hit area is the whole card (the design's
+            `.stretch`), so a tap anywhere opens the notice. The chevron and the row below
+            point at it; neither takes the tap. */}
+        <h2 className="notice__title">
+          <Link className="stretch" to={`/announcements/${item.id}`}>
+            {item.title}
+          </Link>
+        </h2>
 
         <p className="notice__from">
           <Icon name="megaphone" size={16} />
           {sourceLine(item, facultyNames, departmentNames)}
         </p>
 
-        {/* Three lines while closed, the whole text once the student asks for it. */}
-        <p id={bodyId} className={`notice__body${open ? '' : ' clamp3'}`}>
-          {item.body}
-        </p>
+        <p className="notice__body clamp3">{item.body}</p>
 
-        <button
-          type="button"
-          className="notice__more"
-          aria-expanded={open}
-          aria-controls={bodyId}
-          onClick={() => setOpen((current) => !current)}
-        >
-          <span>{open ? COPY.notices.showLess : COPY.notices.viewDetails}</span>
+        <p className="notice__more">
+          <span>{COPY.notices.viewDetails}</span>
           <Icon name="arrowRight" size={16} />
-        </button>
+        </p>
+        <Icon name="caretRight" size={20} className="notice__go" />
       </article>
     </li>
   );

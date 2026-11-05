@@ -24,6 +24,11 @@ interface AppHeaderProps {
    * button and its sheet stay, because this is still another screen in the app.
    */
   back?: { to: string; label: string };
+  /**
+   * The screen's name beside the back link, as the notice screen draws "← Back to notices
+   * Notice" (notice-390). It is the screen's h1, so the page below starts at h2.
+   */
+  title?: string;
 }
 
 export default function AppHeader({
@@ -31,6 +36,7 @@ export default function AppHeader({
   showProfile = true,
   pill = false,
   back,
+  title,
 }: AppHeaderProps) {
   const auth = useAuth();
   const navigate = useNavigate();
@@ -48,10 +54,13 @@ export default function AppHeader({
     <>
       <header className={`app-header app-header--${variant}`}>
         {back ? (
-          <Link className="app-header__back" to={back.to}>
-            <Icon name="arrowLeft" size={22} />
-            <span>{back.label}</span>
-          </Link>
+          <div className="app-header__leader">
+            <Link className="app-header__back" to={back.to}>
+              <Icon name="arrowLeft" size={22} />
+              <span>{back.label}</span>
+            </Link>
+            {title && <h1 className="app-header__title">{title}</h1>}
+          </div>
         ) : (
           <Link
             className={`app-header__brand${pill ? ' is-pill' : ''}`}

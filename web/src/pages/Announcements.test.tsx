@@ -164,6 +164,8 @@ describe('Notices', () => {
     expect(html).toContain('This is to inform all students');
     expect(html).toContain('clamp3');
     expect(html).toContain(COPY.notices.viewDetails);
+    expect(html).toContain('href="/announcements/a-calendar"');
+    expect(html).toContain('notice__go');
     expect(html).toContain('chip--scope-gold');
     expect(html).toContain('chip--scope-red');
     expect(html).toContain('chip--scope-indigo');
