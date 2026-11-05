@@ -27,6 +27,7 @@ const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 // Reads the offline cache, so it loads on demand too.
 const Announcements = lazy(() => import('./pages/Announcements'));
+const NoticeDetail = lazy(() => import('./pages/NoticeDetail'));
 
 // The offline store (Dexie) is loaded on demand, so it stays out of the first load.
 function retrySync() {
@@ -50,7 +51,7 @@ function showsHeader(pathname: string): boolean {
     pathname !== '/academics' &&
     pathname !== '/timetable' &&
     !pathname.endsWith('/timetable') &&
-    pathname !== '/announcements' &&
+    !pathname.startsWith('/announcements') &&
     pathname !== '/login' &&
     pathname !== '/register'
   );
@@ -85,7 +86,7 @@ export default function App() {
     pathname === '/academics' ||
     pathname === '/timetable' ||
     pathname.endsWith('/timetable') ||
-    pathname === '/announcements' ||
+    pathname.startsWith('/announcements') ||
     pathname.startsWith('/place/') ||
     !showsTabBar(pathname, false);
   // Welcome, log in and sign-up stand alone: no sync banner over their hero.
@@ -134,6 +135,7 @@ export default function App() {
                 element={<Timetable />}
               />
               <Route path="/announcements" element={<Announcements />} />
+              <Route path="/announcements/:id" element={<NoticeDetail />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/admin" element={<Admin />} />

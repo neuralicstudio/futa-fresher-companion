@@ -202,6 +202,20 @@ export async function readCachedAnnouncements(): Promise<Announcement[]> {
   return notExpired(rows, Date.now());
 }
 
+/**
+ * One notice, from the cache only, with the school and department names its source line may
+ * need. A notice that has expired reads as missing: the link said "notice", not "old notice".
+ */
+export async function readNoticeScreen(id: string) {
+  const [row, faculties, departments] = await Promise.all([
+    db.announcements.get(id),
+    readFaculties(),
+    readAllDepartments(),
+  ]);
+  const announcement = row ? (notExpired([row as Announcement], Date.now())[0] ?? null) : null;
+  return { announcement, faculties, departments };
+}
+
 /** Every saved building. Home's popular places pick from this list. Cache only. */
 export async function readBuildings(): Promise<Building[]> {
   return (await db.buildings.toArray()) as Building[];
