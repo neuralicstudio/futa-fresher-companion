@@ -1,4 +1,4 @@
-// Every word on the admin screens (Admin centre, Verify data) is in this one file.
+// Every word on the admin screens (Admin centre, Publish notice, Verify data) is in this one file.
 // The wording is docs/design/COPY.md (light Pidgin). Keys marked NEW are not in COPY.md yet:
 // the design owner should add them there. Screens read strings only from here.
 import type { AnnouncementScope, UserRole, VerifiableEntityType } from '../api/types';
@@ -20,12 +20,71 @@ export const COPY = {
     title: 'Admin centre',
     lead: 'Manage notices, verify data, keep FUTA info sharp.',
     roleLine: '{role}, {scope}',
+    // The bar's way back is the design's one word (screenshots publish-390).
+    backShort: 'Back',
     publishTitle: 'Publish notice',
     publishBody: 'Share important updates with your people.',
     verifyTitle: 'Verify data',
     verifyBody: 'Help keep FUTA info accurate.',
     back: 'Back to Admin centre',
     tilesLabel: 'Admin tools',
+  },
+  publish: {
+    kicker: 'Quick gist, make it clear.',
+    title: 'Publish a Notice',
+    lead: 'Post a notice and let the right people see am. No wahala.',
+    fieldTitle: 'Title',
+    // COPY.md shows "200" and "500"; the contract is the source of truth, so the limit is filled.
+    fieldTitleHint: '{n} / {max}',
+    fieldMessage: 'Message',
+    fieldMessageHint: '{n} / {max}',
+    fieldSendTo: 'Send to',
+    sendTo: {
+      university: 'Everyone',
+      sug: 'SUG',
+      faculty: 'My school',
+      department: 'My department',
+    } satisfies Record<AnnouncementScope, string>,
+    sendToLocked: 'You fit post to {scope} only.',
+    fieldSource: 'Source shown to students',
+    fieldSourceHint: 'Students go see "From {source}" on the notice.',
+    // NEW: the design writes "Computer Science department" in the source box (publish-390).
+    sourceDepartment: '{name} department',
+    fieldExpires: 'Expires (optional)',
+    fieldExpiresHint: 'Your phone time. Leave am empty for no expiry.',
+    preview: 'Preview',
+    previewTo: 'To: {audience}',
+    publish: 'Publish notice',
+    publishing: 'Dey publish',
+    published: 'Notice published successfully!',
+    publishedBody: 'Students go get this one see am now.',
+    publishedAgain: 'Publish another',
+    plainText: 'Plain text only. E dey go live straight away.',
+    errTitle: 'Give the notice a title, at least 3 letters.',
+    errMessage: 'Write the message.',
+    errSend: 'You no fit post to this scope.',
+    errSession: 'Your session don end. Log in again to publish.',
+    errBusy: 'The service dey busy. Try again in 30 seconds.',
+    errOffline: 'You dey offline. Connect to data to publish.',
+    // NEW
+    yourDepartment: 'your department',
+    sendToLockedSchool: 'You fit post to your school or a department inside your school only.',
+    sourceFallback: 'Your {kind}',
+    required: 'Required',
+    errTitleLong: 'The title too long. Use {max} characters or less.',
+    errMessageLong: 'The message too long. Use {max} characters or less.',
+    errTarget: 'Choose a {kind}.',
+    errExpiry: 'Enter a valid date and time.',
+    errExpiryPast: 'The expiry must be in the future.',
+    errNoFaculty:
+      'Your account no get school set, so you no fit publish here. Ask a super admin.',
+    errNoDepartment:
+      'Your account no get department set, so you no fit publish here. Ask a super admin.',
+    errBusyIn: 'The service dey busy. Try again in {n} seconds.',
+    pickerLoading: 'Dey load…',
+    pickerChoose: 'Choose a {kind}',
+    listError: 'We no fit read the list on this phone.',
+    listEmpty: 'No saved list on this phone yet. Connect to the internet and let the app sync first.',
   },
   roles: {
     department_admin: 'Department admin',

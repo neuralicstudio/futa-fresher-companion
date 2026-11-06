@@ -38,6 +38,12 @@ function signedInAs(role: UserRole, extra: Partial<User> = {}) {
   auth.user = { id: 'u1', full_name: 'A', email: 'a@b.co', role, ...extra };
 }
 
+/** One "Send to" segment, as the server render writes it. */
+function segment(html: string, label: string): string {
+  const match = html.match(new RegExp(`<button[^>]*>((?!</button>).)*${label}</button>`, 's'));
+  return match?.[0] ?? '';
+}
+
 beforeEach(() => {
   auth.status = 'signed-out';
   auth.user = null;
@@ -63,45 +69,90 @@ describe('the Publish notice page gate', () => {
     expect(page()).toContain('Admins only');
   });
 
-  it('shows nothing to act on while the profile is loading or missing', () => {
+  it('keeps the shell while the profile loads, and shows no form', () => {
     auth.status = 'loading';
-    expect(page()).not.toContain('<form');
+    const html = page();
+    expect(html).toContain('role="status"');
+    expect(html).not.toContain('<form');
+  });
+
+  it('asks a signed-in account with no profile to reload, and shows no form', () => {
     auth.status = 'signed-in';
-    expect(page()).not.toContain('<form');
+    const html = page();
+    expect(html).toContain('We no fit load your account');
+    expect(html).not.toContain('<form');
   });
 });
 
 describe('the composer for admins', () => {
-  it('gives a super admin all four scopes', () => {
+  it('gives a super admin all four segments, none locked', () => {
     signedInAs('super_admin');
     const html = page();
     expect(html).toContain('<form');
-    for (const label of ['Whole university', 'SUG', 'One faculty', 'One department']) {
-      expect(html).toContain(`>${label}</option>`);
+    for (const label of ['Everyone', 'SUG', 'My school', 'My department']) {
+      expect(segment(html, label)).toContain('aria-disabled="false"');
     }
+    expect(html).not.toContain('is-locked');
   });
 
-  it('gives SUG only the SUG scope', () => {
+  it('starts a super admin on Everyone, with no target picker', () => {
+    signedInAs('super_admin');
+    const html = page();
+    expect(segment(html, 'Everyone')).toContain('aria-pressed="true"');
+    expect(html).not.toContain('id="pub-target"');
+    expect(html).toContain('To: Everyone');
+  });
+
+  it('gives SUG its own segment and shows the other three locked', () => {
     signedInAs('sug');
     const html = page();
-    expect(html).toContain('>SUG</option>');
-    expect(html).not.toContain('Whole university');
-    expect(html).not.toContain('One faculty');
-    expect(html).not.toContain('ann-target');
+    expect(segment(html, 'SUG')).toContain('aria-pressed="true"');
+    expect(segment(html, 'SUG')).toContain('aria-disabled="false"');
+    for (const label of ['Everyone', 'My school', 'My department']) {
+      const locked = segment(html, label);
+      expect(locked).toContain('aria-disabled="true"');
+      expect(locked).toContain('is-locked');
+    }
+    expect(html).toContain('You fit post to SUG only.');
+    expect(html).not.toContain('id="pub-target"');
   });
 
   it('locks a department admin to their own department', () => {
     signedInAs('department_admin', { department_id: 'd1' });
     const html = page();
-    expect(html).not.toContain('One faculty');
-    expect(html).toMatch(/<select id="ann-target"[^>]*disabled/);
-    expect(html).toContain('>Biology</option>');
+    expect(segment(html, 'My department')).toContain('aria-pressed="true"');
+    expect(segment(html, 'Everyone')).toContain('aria-disabled="true"');
+    expect(segment(html, 'My school')).toContain('aria-disabled="true"');
+    expect(html).toContain('You fit post to your department only.');
+    // The picker is locked, so it is not drawn at all; the source still names the department.
+    expect(html).not.toContain('id="pub-target"');
+    expect(html).toContain('<span class="field__value" aria-labelledby="pub-source-label">Biology department</span>');
+    expect(html).toContain('To: My department');
   });
 
-  it('shows a live character count for title and body', () => {
+  it('lets a faculty admin post to their school or a department inside it', () => {
+    signedInAs('faculty_admin', { faculty_id: 'f1' });
+    const html = page();
+    expect(segment(html, 'My school')).toContain('aria-pressed="true"');
+    expect(segment(html, 'My department')).toContain('aria-disabled="false"');
+    expect(segment(html, 'Everyone')).toContain('aria-disabled="true"');
+    expect(html).not.toContain('>SUG<');
+    expect(html).toContain('You fit post to your school or a department inside your school only.');
+    expect(html).toContain('>Science</span>');
+  });
+
+  it('shows the contract limits in the live counts', () => {
     signedInAs('super_admin');
     const html = page();
-    expect(html).toContain('0 / 200 characters');
-    expect(html).toContain('0 / 4000 characters');
+    expect(html).toContain('0 / 200');
+    expect(html).toContain('0 / 4000');
+  });
+
+  it('names the audience and the date in the preview', () => {
+    signedInAs('super_admin');
+    const html = page();
+    expect(html).toContain('Preview');
+    expect(html).toContain('To: Everyone');
+    expect(html).toContain('Publish notice');
   });
 });

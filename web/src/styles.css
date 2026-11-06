@@ -3619,6 +3619,14 @@ button.link {
   white-space: nowrap;
 }
 
+/* A two-word title ("Publish a Notice") beside the way back just fits a 390 phone; one size
+   down keeps it clear of the profile button (publish-390). */
+@media (max-width: 420px) {
+  .app-header__title {
+    font-size: 1.625rem;
+  }
+}
+
 /* A long name ("Photo credits") would run under the profile button on the narrowest phones:
    one size down, and clip rather than overflow much below 320. */
 @media (max-width: 380px) {

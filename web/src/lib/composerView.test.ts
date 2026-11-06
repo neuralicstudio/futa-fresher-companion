@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ApiError } from '../api/client';
 import type { Department, Faculty, User, UserRole } from '../api/types';
+import { COPY } from './adminCopy';
 import {
   adminGate,
   ADMIN_ROLES,
@@ -9,6 +10,9 @@ import {
   expiryToIso,
   publishError,
   scopesForRole,
+  sendToHint,
+  sendToOptions,
+  sourceName,
   targetPicker,
   validateAnnouncement,
   type ComposerValues,
@@ -83,6 +87,87 @@ describe('scopesForRole', () => {
   it('gives students and class reps nothing', () => {
     expect(scopesForRole('student')).toEqual([]);
     expect(scopesForRole('class_rep')).toEqual([]);
+  });
+});
+
+describe('sendToOptions', () => {
+  it('gives a super admin all four segments, enabled', () => {
+    expect(sendToOptions('super_admin')).toEqual([
+      { scope: 'university', label: 'Everyone', enabled: true },
+      { scope: 'sug', label: 'SUG', enabled: true },
+      { scope: 'faculty', label: 'My school', enabled: true },
+      { scope: 'department', label: 'My department', enabled: true },
+    ]);
+  });
+
+  it('keeps the segments a role cannot use, locked, in the same order', () => {
+    expect(sendToOptions('department_admin')).toEqual([
+      { scope: 'university', label: 'Everyone', enabled: false },
+      { scope: 'faculty', label: 'My school', enabled: false },
+      { scope: 'department', label: 'My department', enabled: true },
+    ]);
+    expect(sendToOptions('faculty_admin').map((o) => [o.scope, o.enabled])).toEqual([
+      ['university', false],
+      ['faculty', true],
+      ['department', true],
+    ]);
+  });
+
+  it('shows SUG only to a role that may post it', () => {
+    for (const role of ['sug', 'super_admin'] as const) {
+      expect(sendToOptions(role).some((o) => o.scope === 'sug')).toBe(true);
+    }
+    for (const role of ['faculty_admin', 'department_admin', 'student'] as const) {
+      expect(sendToOptions(role).some((o) => o.scope === 'sug')).toBe(false);
+    }
+    expect(sendToOptions('sug')).toEqual([
+      { scope: 'university', label: 'Everyone', enabled: false },
+      { scope: 'sug', label: 'SUG', enabled: true },
+      { scope: 'faculty', label: 'My school', enabled: false },
+      { scope: 'department', label: 'My department', enabled: false },
+    ]);
+    expect(sendToOptions('student')).toEqual([
+      { scope: 'university', label: 'Everyone', enabled: false },
+      { scope: 'faculty', label: 'My school', enabled: false },
+      { scope: 'department', label: 'My department', enabled: false },
+    ]);
+  });
+});
+
+describe('sendToHint', () => {
+  it('names the one scope a scoped admin may use', () => {
+    expect(sendToHint('department_admin')).toBe(
+      'You fit post to your department only.',
+    );
+    expect(sendToHint('sug')).toBe('You fit post to SUG only.');
+  });
+
+  it('explains a faculty admin may still pick a department inside their school', () => {
+    expect(sendToHint('faculty_admin')).toBe(
+      'You fit post to your school or a department inside your school only.',
+    );
+  });
+
+  it('says nothing when nothing is locked', () => {
+    expect(sendToHint('super_admin')).toBeNull();
+    expect(sendToHint('student')).toBeNull();
+  });
+});
+
+describe('sourceName', () => {
+  it('is the chosen school, and the chosen department with its kind', () => {
+    expect(sourceName('faculty', F1, faculties, departments)).toBe('Science');
+    expect(sourceName('department', D1, faculties, departments)).toBe('Biology department');
+  });
+
+  it('is University and SUG for those scopes, whatever the id says', () => {
+    expect(sourceName('university', '', faculties, departments)).toBe('University');
+    expect(sourceName('sug', '', faculties, departments)).toBe('SUG');
+  });
+
+  it('falls back to a plain name when the cache has no match', () => {
+    expect(sourceName('faculty', '', faculties, departments)).toBe('Your school');
+    expect(sourceName('department', 'gone', faculties, departments)).toBe('Your department');
   });
 });
 
@@ -221,7 +306,7 @@ describe('publishError', () => {
   it('maps 401, 403, 422 and 503', () => {
     expect(publishError(new ApiError(401, 'x'), true)).toMatch(/Log in again/);
     expect(publishError(new ApiError(403, 'You cannot publish for this scope'), true)).toBe(
-      'You cannot publish for this scope.',
+      COPY.publish.errSend,
     );
     expect(publishError(new ApiError(422, 'x'), true)).toMatch(/not valid/);
     expect(publishError(new ApiError(503, 'x', 5), true)).toMatch(/5 seconds/);
