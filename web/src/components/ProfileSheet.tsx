@@ -99,6 +99,15 @@ export default function ProfileSheet({
             </Link>
           )}
 
+          <Link className="sheet__row" to="/settings" onClick={onClose}>
+            <Icon name="gear" size={22} />
+            <span>
+              <b>{COPY.profile.settings}</b>
+              <small>{COPY.profile.settingsSub}</small>
+            </span>
+            <Icon name="caretRight" size={18} />
+          </Link>
+
           {signedIn ? (
             <button
               type="button"

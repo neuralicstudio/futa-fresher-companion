@@ -233,3 +233,19 @@ export async function readHomeScreen(departmentId: string | null) {
   ]);
   return { announcements, buildings, timetable };
 }
+
+/**
+ * What Settings needs from the cache: when the data was last saved, and the name of the
+ * signed-in student's department for their profile card. Both are optional; a guest has no
+ * department, and a phone that has never synced has no saved time.
+ */
+export async function readSettingsScreen(departmentId: string | null) {
+  const [saved, department] = await Promise.all([
+    db.meta.get(LAST_SYNC_KEY),
+    departmentId ? db.departments.get(departmentId) : Promise.resolve(undefined),
+  ]);
+  return {
+    lastSaved: saved?.value ?? null,
+    departmentName: (department as Department | undefined)?.name ?? null,
+  };
+}
