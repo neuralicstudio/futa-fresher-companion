@@ -3648,6 +3648,16 @@ button.link {
   }
 }
 
+/* A screen whose name is a phrase, not a label, folds onto a second line rather than being cut
+   off (role-390, role-768, where "Role and permissions" is two lines on every width). */
+.app-header__title--wrap {
+  min-width: 0;
+  white-space: normal;
+  line-height: 1.15;
+  overflow: visible;
+  text-overflow: clip;
+}
+
 .card.notice-full {
   display: grid;
   gap: var(--space-sm);

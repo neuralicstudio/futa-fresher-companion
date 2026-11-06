@@ -79,6 +79,7 @@ describe('the Admin centre', () => {
     expect(html).toContain('>Department admin</b>, Biology');
     expect(html).toContain('href="/admin/publish"');
     expect(html).toContain('href="/admin/verify"');
+    expect(html).toContain('href="/admin/role"');
   });
 
   it('wears the app shell: the tree hero, the page, the footer and its credits link', () => {

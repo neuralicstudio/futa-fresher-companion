@@ -501,3 +501,149 @@
 .page--verify .verify-done .a-btn--block {
   margin-top: 0;
 }
+
+/* ---------------------------------------------------------------- Your role */
+/* The bar, the handwritten line, the role card, the powers, the gold note and the hint
+   (screenshots role-390, role-768). */
+.page--role {
+  gap: var(--space-md);
+  padding-top: var(--space-sm);
+}
+
+.page--role .hand {
+  font-size: var(--hand-md);
+}
+
+.page--role .lead-text {
+  color: var(--color-text-2);
+  font-size: var(--text-md);
+}
+
+.page--role .admin-ui {
+  display: grid;
+  gap: var(--space-md);
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  background: none;
+}
+
+/* Who you are: the mark, the name and its scope, and the role's own name on the right. */
+.admin-ui .a-me {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+}
+
+.admin-ui .a-me__ic {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 3.5rem;
+  height: 3.5rem;
+  border: 1.5px solid var(--color-outline);
+  border-radius: 50%;
+  color: var(--color-gold);
+}
+
+.admin-ui .a-me__body {
+  flex: 1 1 4.5rem;
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.admin-ui .a-me__body b {
+  font-size: 1.0625rem;
+  overflow-wrap: anywhere;
+}
+
+.admin-ui .a-pill {
+  flex: none;
+  padding: 6px 12px;
+  border: 1.5px solid var(--color-outline);
+  border-radius: 999px;
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* What you fit publish to: one line per scope, with the answer at the end. */
+.admin-ui .a-power {
+  display: grid;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+}
+
+.admin-ui .a-power__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.admin-ui .a-checks {
+  display: grid;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-ui .a-checks li {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-sm);
+  min-height: 2.75rem;
+  color: var(--color-text);
+}
+
+.admin-ui .a-checks .is-yes .a-icon {
+  color: var(--color-green);
+}
+
+.admin-ui .a-checks .is-no {
+  color: var(--color-text-2);
+}
+
+.admin-ui .a-checks .is-no .a-icon {
+  color: var(--color-muted);
+}
+
+.admin-ui .a-checks small {
+  color: var(--color-muted);
+  text-align: right;
+}
+
+/* The gold card that says which role this account holds, and what it is for. */
+.admin-ui .a-card--hl {
+  border-color: var(--color-gold);
+  background: linear-gradient(160deg, #240b1b 0%, #170711 100%);
+}
+
+.admin-ui .a-role-note {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-sm);
+  align-items: start;
+  padding: var(--space-md);
+  color: var(--color-gold);
+}
+
+.admin-ui .a-role-note small {
+  color: var(--color-text-2);
+}
+
+.admin-ui .a-role-note b {
+  display: block;
+  font-size: 1.0625rem;
+}
+
+.admin-ui .a-role-note p {
+  color: var(--color-text-2);
+}
+
+.page--role .hint {
+  text-align: center;
+}

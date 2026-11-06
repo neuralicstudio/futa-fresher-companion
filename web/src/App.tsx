@@ -18,6 +18,7 @@ const PlacePage = lazy(() => import('./pages/PlacePage'));
 const Admin = lazy(() => import('./pages/Admin'));
 const AdminPublish = lazy(() => import('./pages/AdminPublish'));
 const AdminVerify = lazy(() => import('./pages/AdminVerify'));
+const AdminRole = lazy(() => import('./pages/AdminRole'));
 const Academics = lazy(() => import('./pages/Academics'));
 const FacultyDepartments = lazy(() => import('./pages/FacultyDepartments'));
 const DepartmentDetail = lazy(() => import('./pages/DepartmentDetail'));
@@ -48,6 +49,14 @@ function retrySync() {
  * `notices-390`, `settings-390`, `credits-390`, `admin-390`, `publish-390`, `verify-390`,
  * `login-390`, `register-390`).
  */
+/**
+ * Screens that carry their own header inside the hero, so App must not draw a second one.
+ * Welcome, Home, Campus Map, Place detail, Academics, Timetable, Notices, Settings, Credits, every
+ * admin screen and log in and sign-up all show their own top row over the photo (screenshots
+ * `welcome-390`, `home-390`, `map-390`, `place-390`, `academics-390`, `timetable-390`,
+ * `notices-390`, `settings-390`, `credits-390`, `admin-390`, `publish-390`, `verify-390`,
+ * `role-390`, `login-390`, `register-390`).
+ */
 function showsHeader(pathname: string): boolean {
   return (
     pathname !== '/' &&
@@ -60,9 +69,7 @@ function showsHeader(pathname: string): boolean {
     !pathname.startsWith('/announcements') &&
     pathname !== '/settings' &&
     pathname !== '/credits' &&
-    pathname !== '/admin' &&
-    pathname !== '/admin/publish' &&
-    pathname !== '/admin/verify' &&
+    !pathname.startsWith('/admin') &&
     pathname !== '/login' &&
     pathname !== '/register'
   );
@@ -70,20 +77,12 @@ function showsHeader(pathname: string): boolean {
 
 /**
  * The five-tab bar belongs to the main sections and to the admin screens, which the prototype
- * keeps in the same shell (screenshots `admin-390`, `publish-390`, `verify-390`). Welcome, log in,
- * sign-up, the credits page and the first-sync screen each stand on their own (screenshots
- * `welcome-390`, `login-390`, `sync-390`, `credits-390`).
+ * keeps in the same shell (screenshots `admin-390`, `publish-390`, `verify-390`, `role-390`).
+ * Welcome, log in, sign-up, the credits page and the first-sync screen each stand on their own
+ * (screenshots `welcome-390`, `login-390`, `sync-390`, `credits-390`).
  */
 function showsTabBar(pathname: string, firstSync: boolean): boolean {
   if (firstSync) return false;
-  if (
-    pathname.startsWith('/admin') &&
-    pathname !== '/admin' &&
-    pathname !== '/admin/publish' &&
-    pathname !== '/admin/verify'
-  ) {
-    return false;
-  }
   return (
     pathname !== '/welcome' &&
     pathname !== '/login' &&
@@ -100,10 +99,10 @@ export default function App() {
   // taps "Oya, make we start!" the route changes and this turns back on.
   const firstSync = showFirstSyncScreen(sync) && pathname !== '/welcome';
   // The sync screen carries its own logo row inside the hero and no tabs (screenshot sync-390).
-  // Home, Campus Map, Place detail, Academics, Timetable, Notices, Settings, Credits, the Admin
-  // centre, Publish and Verify also draw their own header, page and footer, so the shell adds no
-  // padding (home-390, map-390, place-390, academics-390, timetable-390, notices-390, settings-390,
-  // credits-390, admin-390, publish-390, verify-390).
+  // Home, Campus Map, Place detail, Academics, Timetable, Notices, Settings, Credits and every
+  // admin screen also draw their own header, page and footer, so the shell adds no padding
+  // (home-390, map-390, place-390, academics-390, timetable-390, notices-390, settings-390,
+  // credits-390, admin-390, publish-390, verify-390, role-390).
   const bare =
     firstSync ||
     pathname === '/' ||
@@ -115,9 +114,7 @@ export default function App() {
     pathname.startsWith('/place/') ||
     pathname === '/settings' ||
     pathname === '/credits' ||
-    pathname === '/admin' ||
-    pathname === '/admin/publish' ||
-    pathname === '/admin/verify' ||
+    pathname.startsWith('/admin') ||
     !showsTabBar(pathname, false);
   // Welcome, log in and sign-up stand alone: no sync banner over their hero.
   const authScreen =
@@ -173,6 +170,7 @@ export default function App() {
               <Route path="/admin" element={<Admin />} />
               <Route path="/admin/publish" element={<AdminPublish />} />
               <Route path="/admin/verify" element={<AdminVerify />} />
+              <Route path="/admin/role" element={<AdminRole />} />
             </Routes>
           </Suspense>
         )}

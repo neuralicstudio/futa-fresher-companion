@@ -32,6 +32,11 @@ interface AppHeaderProps {
    * Notice" (notice-390). It is the screen's h1, so the page below starts at h2.
    */
   title?: string;
+  /**
+   * Let a long name fold onto a second line instead of being cut off (role-390, role-768). Short
+   * names stay on one line, which is what every other screen's mockup draws.
+   */
+  wrapTitle?: boolean;
 }
 
 export default function AppHeader({
@@ -40,6 +45,7 @@ export default function AppHeader({
   pill = false,
   back,
   title,
+  wrapTitle = false,
 }: AppHeaderProps) {
   const auth = useAuth();
   const navigate = useNavigate();
@@ -69,7 +75,11 @@ export default function AppHeader({
                 <span>{back.label}</span>
               </Link>
             )}
-            {title && <h1 className="app-header__title">{title}</h1>}
+            {title && (
+              <h1 className={`app-header__title${wrapTitle ? ' app-header__title--wrap' : ''}`}>
+                {title}
+              </h1>
+            )}
           </div>
         ) : (
           <Link
