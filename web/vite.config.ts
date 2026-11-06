@@ -3,8 +3,11 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { fillAppName, manifest } from './brand';
 import { isAnnouncementsRequest, isCacheablePublicApi } from './sw-matchers';
+import pkg from './package.json';
 
 export default defineConfig({
+  // The About row shows the real version, from package.json, so it cannot drift.
+  define: { __APP_VERSION__: JSON.stringify(pkg.version) },
   plugins: [
     react(),
     // Puts the app name from src/appName.ts into index.html.

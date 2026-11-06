@@ -3683,3 +3683,175 @@ button.link {
 .notice__note:empty {
   display: none;
 }
+
+/* ---------------------------------------------------------------- settings */
+/* One place for the app's own housekeeping: who you are, what is saved, and the way out
+   (settings-390, settings-768, settings-offline-390). */
+.page--settings {
+  gap: var(--space-md);
+  padding-top: var(--space-sm);
+}
+
+/* The hero carries the handwritten line and the lead only. The screen's name is still the h1,
+   for a screen reader, but the mockup has no second big heading over the profile card. */
+.hero--settings h1 {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The profile card: a guest is a link to log in; a signed-in student sees their own name and
+   department. The whole guest card is the target (settings-390). */
+.card--profile {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-md);
+  align-items: center;
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.profile__avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 4.25rem;
+  height: 4.25rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-gold);
+  color: var(--color-on-gold);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-display);
+  letter-spacing: 0.02em;
+}
+
+.profile__main {
+  display: grid;
+  gap: var(--space-3xs);
+  min-width: 0;
+}
+
+.profile__main b {
+  font-size: var(--text-lg);
+  overflow-wrap: anywhere;
+}
+
+.profile__main small {
+  color: var(--color-muted);
+}
+
+.card--profile > .srow__go {
+  color: var(--color-muted);
+}
+
+/* A row inside a card: symbol, words, and an optional value or chevron. */
+.srow {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-sm);
+  align-items: center;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: var(--space-xs) 0;
+  border: 0;
+  background: none;
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+}
+
+.srow--btn {
+  cursor: pointer;
+}
+
+.srow--btn:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.srow--btn:focus-visible {
+  outline: var(--rule-bar) solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.card > .srow + .srow {
+  border-top: var(--rule-hair) solid var(--color-rule);
+}
+
+.srow__ic {
+  width: var(--icon-lg);
+  height: var(--icon-lg);
+  color: var(--color-gold);
+}
+
+.srow__main {
+  display: grid;
+  gap: var(--space-3xs);
+  min-width: 0;
+}
+
+.srow__main b {
+  overflow-wrap: anywhere;
+}
+
+.srow__main small {
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.srow__val {
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.srow__go {
+  color: var(--color-muted);
+}
+
+.srow--danger .srow__ic,
+.srow--danger b {
+  color: var(--color-red);
+}
+
+.card--danger-soft {
+  border-color: color-mix(in srgb, var(--color-red) 45%, transparent);
+}
+
+/* How much room this origin uses. The browser's figure, drawn against its own quota. */
+.bar {
+  display: block;
+  height: 0.5rem;
+  margin: var(--space-3xs) 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-strength-off);
+  overflow: hidden;
+}
+
+.bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-green);
+}
+
+/* At 200% text the value would squeeze the line under the bar, so it moves below the words. */
+@media (max-width: 360px) {
+  .srow--storage {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .srow--storage .srow__val {
+    grid-column: 2;
+    text-align: left;
+  }
+}
