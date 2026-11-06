@@ -27,7 +27,7 @@ export default function AdminGate({ children }: { children: (user: User) => Reac
           title={COPY.gate.loginTitle}
           body={COPY.gate.loginBody}
           action={
-            <Link className="a-btn a-btn--outline" to="/login">
+            <Link className="a-btn a-btn--gold" to="/login">
               {COPY.gate.loginLink}
             </Link>
           }

@@ -74,9 +74,21 @@ describe('the Admin centre', () => {
     const html = page();
 
     expect(html).toContain('Admin centre');
-    expect(html).toContain('Department admin, Biology');
+    expect(html).toContain('class="role-bar"');
+    // The role is bold, the scope follows it in the same line.
+    expect(html).toContain('>Department admin</b>, Biology');
     expect(html).toContain('href="/admin/publish"');
     expect(html).toContain('href="/admin/verify"');
+  });
+
+  it('wears the app shell: the tree hero, the page, the footer and its credits link', () => {
+    signedInAs('department_admin', { department_id: 'd1' });
+    const html = page();
+
+    expect(html).toContain('tree-l.webp');
+    expect(html).toContain('class="page page--admin"');
+    expect(html).toContain('class="foot foot--tabs"');
+    expect(html).toContain('href="/credits"');
   });
 
   it('shows the number waiting on the Verify data tile', () => {
@@ -91,9 +103,9 @@ describe('the Admin centre', () => {
   it('shows no number when nothing is waiting or it is not known', () => {
     signedInAs('super_admin');
     queue.total = 0;
-    expect(page()).not.toContain('class="a-badge"');
+    expect(page()).not.toContain('class="tile__count"');
     queue.total = null;
-    expect(page()).not.toContain('class="a-badge"');
+    expect(page()).not.toContain('class="tile__count"');
   });
 
   it('caps a big number', () => {

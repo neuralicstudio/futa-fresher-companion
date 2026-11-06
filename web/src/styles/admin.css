@@ -21,8 +21,8 @@
   --color-focus: #ffd96b;
   --a-card: linear-gradient(160deg, #240b1b 0%, #14050f 100%);
 
-  /* Fill the width of <main> (it has 16px padding) and the screen below the nav. */
-  margin: -16px;
+  /* The admin routes are bare (the shell adds no padding), so the wrapper supplies its own. */
+  margin: 0;
   padding: 16px 16px 48px;
   min-height: calc(100vh - 48px);
   background: var(--color-bg);
@@ -63,26 +63,112 @@
 .admin-ui .a-back--button { margin-bottom: 8px; }
 .admin-ui .a-section { font-size: 1.375rem; margin-bottom: 16px; }
 
-/* Tiles */
-.admin-ui .a-tiles {
-  list-style: none; margin: 0; padding: 0; display: grid; gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 10.5rem), 1fr));
+/* ---------------------------------------------------------------- Admin home */
+/* The admin screens keep the app's shell (hero, page, footer, tab bar). Only the role bar and
+   the tools are new, and they are drawn at the design's sizes (screenshot admin-390, admin-768). */
+.page--admin {
+  gap: var(--space-md);
+  padding-top: var(--space-sm);
 }
-.admin-ui a.a-tile {
-  display: grid; gap: 8px; align-content: start; height: 100%; min-height: 44px; padding: 16px;
-  background: var(--a-card); border: 1.5px solid var(--color-outline); border-radius: 22px;
-  color: var(--color-text); text-decoration: none; box-shadow: 0 10px 30px -14px rgba(0, 0, 0, 0.7);
+
+/* The gate wraps whatever an admin page renders. Inside a page it must not bring its own
+   shell: the page already has one. */
+.page--admin .admin-ui {
+  display: grid;
+  gap: var(--space-md);
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  background: none;
 }
-.admin-ui .a-tile__icon {
-  position: relative; display: inline-grid; place-items: center; width: 56px; height: 56px;
-  border-radius: 50%; background: var(--color-card-2); color: var(--color-gold);
+
+.role-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  min-height: 3.5rem;
+  padding: var(--space-xs) var(--space-md);
+  border: var(--outline) solid var(--color-outline);
+  border-radius: var(--radius-pill);
+  background: var(--color-field);
+  color: var(--color-text);
 }
-.admin-ui .a-tile__title { font-weight: 600; font-size: 1.0625rem; overflow-wrap: anywhere; }
-.admin-ui .a-tile__body { color: var(--color-muted); font-size: 0.875rem; overflow-wrap: anywhere; }
-.admin-ui .a-badge {
-  position: absolute; top: -6px; right: -10px; min-width: 24px; height: 24px; padding: 0 6px;
-  display: inline-grid; place-items: center; border-radius: 999px; font-style: normal;
-  font-size: 0.75rem; font-weight: 700; background: var(--color-gold); color: var(--color-on-gold);
+
+.role-bar .a-icon {
+  flex: none;
+  color: var(--color-gold);
+}
+
+.tiles {
+  display: grid;
+  gap: var(--space-sm);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tile {
+  position: relative;
+  display: grid;
+  gap: var(--space-xs);
+  align-content: start;
+  min-height: 12.5rem;
+  padding: var(--space-md);
+  border: var(--outline) solid var(--color-outline);
+  border-radius: var(--radius-card);
+  background: var(--grad-card);
+  color: var(--color-text-2);
+  text-decoration: none;
+}
+
+.tile:hover {
+  border-color: var(--color-outline-strong);
+}
+
+.tile b {
+  color: var(--color-text);
+  font-size: var(--text-xl);
+  line-height: 1.1;
+}
+
+.tile small {
+  color: var(--color-muted);
+}
+
+.tile__ic {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
+  border: var(--outline) solid var(--color-outline);
+  border-radius: 50%;
+  background: var(--color-bg-raised);
+  color: var(--color-gold);
+}
+
+/* The arrow sits in the corner, out of the reading order: the whole card is the link. */
+.tile .go {
+  position: absolute;
+  right: var(--space-sm);
+  bottom: var(--space-sm);
+}
+
+.tile__count {
+  position: absolute;
+  right: -0.5rem;
+  top: -0.5rem;
+  display: grid;
+  place-items: center;
+  min-width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--radius-pill);
+  background: var(--color-gold);
+  color: var(--color-on-gold);
+  font-size: var(--text-sm);
+  font-style: normal;
+  font-weight: var(--weight-display);
 }
 
 /* Filters */
@@ -129,18 +215,30 @@
 .admin-ui .a-btn--outline { background: transparent; color: var(--color-gold); border-color: var(--color-gold); }
 .admin-ui .a-btn:disabled { opacity: 0.65; cursor: wait; }
 
-/* States */
-.admin-ui .a-state { display: grid; justify-items: center; gap: 8px; text-align: center; padding: 32px 16px; }
-.admin-ui .a-state__icon {
-  display: inline-grid; place-items: center; width: 64px; height: 64px; border-radius: 50%;
-  background: var(--color-card-2); border: 1.5px solid var(--color-outline); color: var(--color-gold);
+/* States: the one pattern from the design handoff (COMPONENTS.md, States), on a card. */
+.admin-ui .a-state {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-lg) var(--space-md);
+  border: var(--outline) solid var(--color-outline);
+  border-radius: var(--radius-card);
+  background: var(--grad-card);
+  text-align: center;
 }
-.admin-ui .a-state--error .a-state__icon { color: var(--color-red); }
-.admin-ui .a-state--win { background: var(--color-success-fill); border-radius: 22px; margin-bottom: 16px; }
-.admin-ui .a-state--win .a-state__icon { color: var(--color-green); border-color: var(--color-green); }
-.admin-ui .a-state__title { font-size: 1.375rem; }
+.admin-ui .a-state__art {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  padding: var(--space-xs) var(--space-lg);
+  color: var(--color-gold);
+}
+.admin-ui .a-state--error .a-state__art { color: var(--color-red); }
+.admin-ui .a-state--win { background: var(--color-success-fill); }
+.admin-ui .a-state--win .a-state__art { color: var(--color-green); }
+.admin-ui .a-state__title { font-size: var(--text-xl); font-weight: var(--weight-display); }
 .admin-ui .a-state__body { color: var(--color-text-2); max-width: 32rem; }
-.admin-ui .a-state .a-btn { margin-top: 12px; }
+.admin-ui .a-state .a-btn { margin-top: var(--space-xs); }
 .admin-ui .a-notice {
   margin-bottom: 16px; padding: 12px 16px; border-radius: 16px; background: var(--color-card-2);
   border: 1px solid var(--color-rule); color: var(--color-text);
