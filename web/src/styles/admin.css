@@ -171,6 +171,173 @@
   font-weight: var(--weight-display);
 }
 
+/* ---------------------------------------------------------------- Publish notice */
+/* Same shell as the Admin centre. The route is bare, so the page draws its own padding, and
+   the composer inside it is flush with the page (screenshots publish-390, publish-768). */
+.page--publish {
+  gap: var(--space-md);
+  padding-top: var(--space-sm);
+}
+
+.page--publish .hand {
+  font-size: var(--hand-md);
+}
+
+.page--publish .lead-text {
+  color: var(--color-text-2);
+  font-size: var(--text-md);
+}
+
+.page--publish .admin-ui {
+  display: grid;
+  gap: var(--space-md);
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  background: none;
+}
+
+/* The form runs the width of the page at every size (publish-768 keeps a 520px column). */
+.page--publish .form {
+  max-width: none;
+}
+
+/* A box with its label and field stacked, and the count at the bottom right. */
+.admin-ui .field__box--plain {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.admin-ui .field__value {
+  color: var(--color-text);
+  font-weight: var(--weight-strong);
+  overflow-wrap: anywhere;
+}
+
+.admin-ui .field__main .label {
+  color: var(--color-text);
+  font-weight: var(--weight-strong);
+}
+
+.admin-ui .field__main .req {
+  color: var(--color-gold);
+  font-style: normal;
+}
+
+.admin-ui .count {
+  align-self: end;
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.admin-ui .field textarea {
+  min-height: 7rem;
+  padding-top: var(--space-2xs);
+  line-height: var(--leading-snug);
+}
+
+/* Send to: the segmented control. A choice the role cannot use stays visible with its lock. */
+.admin-ui .seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+  padding: var(--space-2xs);
+  border: var(--outline) solid var(--color-outline);
+  border-radius: var(--radius-md);
+  background: var(--color-card);
+}
+
+.admin-ui .seg button {
+  flex: 1;
+  min-width: 8rem;
+  min-height: 2.75rem;
+  padding: 0 var(--space-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2xs);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-weight: var(--weight-strong);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.admin-ui .seg button[aria-pressed='true'] {
+  background: var(--color-gold);
+  color: var(--color-on-gold);
+}
+
+.admin-ui .seg button[aria-pressed='true']:active {
+  background: var(--color-gold-2);
+}
+
+.admin-ui .seg button.is-locked {
+  color: var(--color-muted);
+  cursor: not-allowed;
+}
+
+/* Preview: the notice as a student will see it, with the audience and the date. */
+.page--publish .preview {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.page--publish .preview h2 {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-strong);
+}
+
+.page--publish .preview__row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-sm);
+}
+
+.page--publish .preview__row > div {
+  min-width: 0;
+}
+
+.page--publish .preview__ic {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  border: var(--outline) solid var(--color-outline);
+  border-radius: var(--radius-sm);
+  color: var(--color-gold);
+}
+
+.page--publish .preview p {
+  line-height: var(--leading-snug);
+}
+
+.page--publish .preview small {
+  color: var(--color-muted);
+}
+
+/* The published card and its one ghost way out. */
+.page--publish .card--success .a-icon {
+  color: var(--color-green);
+}
+
+.page--publish .btn--ghost {
+  min-height: var(--hit);
+  padding: 0 var(--space-xs);
+  background: transparent;
+  color: var(--color-gold);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* The mockup draws the one big button with the same gradient as the admin buttons. */
+.page--publish .btn--gold {
+  background: linear-gradient(180deg, #fcc13c, #e5a91b);
+}
+
 /* Filters */
 .admin-ui .a-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
 .admin-ui .a-filter {

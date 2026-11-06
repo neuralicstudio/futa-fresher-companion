@@ -9,6 +9,7 @@ import type {
   UserRole,
 } from '../api/types';
 import { sortByName } from './academicsView';
+import { COPY, fill } from './adminCopy';
 import type { AuthStatus } from './auth';
 import { friendlyError, type FieldErrors } from './authView';
 
@@ -39,13 +40,6 @@ export function adminGate(status: AuthStatus, user: User | null): AdminGate {
   return isAdminRole(user.role) ? 'allowed' : 'forbidden';
 }
 
-export const SCOPE_LABELS: Record<AnnouncementScope, string> = {
-  university: 'Whole university',
-  sug: 'SUG',
-  faculty: 'One faculty',
-  department: 'One department',
-};
-
 // The same rules as the server's publish check. The server still decides; this only keeps
 // the form from offering a choice that would be refused.
 export function scopesForRole(role: UserRole): AnnouncementScope[] {
@@ -60,6 +54,74 @@ export function scopesForRole(role: UserRole): AnnouncementScope[] {
       return ['department'];
     default:
       return [];
+  }
+}
+
+/** One "Send to" choice. A choice the role may not use is shown locked, not hidden. */
+export interface SendToOption {
+  scope: AnnouncementScope;
+  label: string;
+  enabled: boolean;
+}
+
+/**
+ * The "Send to" segments, in the design's order. Everyone, My school and My department are
+ * always shown; SUG only appears for a role that may post it. A role that cannot use a
+ * segment sees it locked, so the rule is visible instead of mysterious.
+ */
+export function sendToOptions(role: UserRole): SendToOption[] {
+  const allowed = scopesForRole(role);
+  const order: AnnouncementScope[] = ['university', 'sug', 'faculty', 'department'];
+  return order
+    .filter((scope) => scope !== 'sug' || allowed.includes('sug'))
+    .map((scope) => ({
+      scope,
+      label: COPY.publish.sendTo[scope],
+      enabled: allowed.includes(scope),
+    }));
+}
+
+/** The line under the segments. Null when nothing is locked (a super admin). */
+export function sendToHint(role: UserRole): string | null {
+  switch (role) {
+    case 'department_admin':
+      return fill(COPY.publish.sendToLocked, { scope: COPY.publish.yourDepartment });
+    case 'sug':
+      return fill(COPY.publish.sendToLocked, { scope: COPY.publish.sendTo.sug });
+    case 'faculty_admin':
+      return COPY.publish.sendToLockedSchool;
+    default:
+      return null;
+  }
+}
+
+/**
+ * What a student will read after "From": the name of the chosen scope. The server stores no
+ * source on create, and the notice screen falls back to this same name, so the composer tells
+ * the truth instead of inventing one.
+ */
+export function sourceName(
+  scope: AnnouncementScope,
+  targetId: string,
+  faculties: readonly { id: string; name: string }[],
+  departments: readonly { id: string; name: string }[],
+): string {
+  switch (scope) {
+    case 'faculty':
+      return (
+        faculties.find((faculty) => faculty.id === targetId)?.name ??
+        fill(COPY.publish.sourceFallback, { kind: 'school' })
+      );
+    case 'department': {
+      const name = departments.find((department) => department.id === targetId)?.name;
+      return name
+        ? fill(COPY.publish.sourceDepartment, { name })
+        : fill(COPY.publish.sourceFallback, { kind: 'department' });
+    }
+    case 'sug':
+      return COPY.scopes.sug;
+    default:
+      return COPY.scopes.university;
   }
 }
 
@@ -88,7 +150,7 @@ export function targetPicker(
   departments: readonly Department[],
 ): TargetPicker | null {
   if (scope === 'faculty') {
-    const base = { field: 'faculty_id' as const, label: 'Faculty' };
+    const base = { field: 'faculty_id' as const, label: 'School' };
     if (user.role === 'super_admin') {
       return { ...base, options: sortByName(faculties), locked: false, selectedId: '' };
     }
@@ -120,9 +182,8 @@ export function targetPicker(
   return null;
 }
 
-const NO_FACULTY = 'Your account has no faculty set, so you cannot publish here. Ask a super admin.';
-const NO_DEPARTMENT =
-  'Your account has no department set, so you cannot publish here. Ask a super admin.';
+const NO_FACULTY = COPY.publish.errNoFaculty;
+const NO_DEPARTMENT = COPY.publish.errNoDepartment;
 
 /** Characters the way the server counts them (code points), so the limits match. */
 export function charCount(text: string): number {
@@ -166,26 +227,30 @@ export function validateAnnouncement(
   const errors: FieldErrors<ComposerField> = {};
 
   const titleLength = charCount(values.title);
-  if (titleLength < TITLE_MIN) errors.title = `The title needs at least ${TITLE_MIN} characters.`;
-  else if (titleLength > TITLE_MAX) errors.title = `The title can be at most ${TITLE_MAX} characters.`;
+  if (titleLength < TITLE_MIN) errors.title = COPY.publish.errTitle;
+  else if (titleLength > TITLE_MAX)
+    errors.title = fill(COPY.publish.errTitleLong, { max: TITLE_MAX });
 
   const bodyLength = charCount(values.body);
-  if (bodyLength < BODY_MIN) errors.body = 'Write the announcement.';
-  else if (bodyLength > BODY_MAX) errors.body = `The text can be at most ${BODY_MAX} characters.`;
+  if (bodyLength < BODY_MIN) errors.body = COPY.publish.errMessage;
+  else if (bodyLength > BODY_MAX)
+    errors.body = fill(COPY.publish.errMessageLong, { max: BODY_MAX });
 
   if (!scopesForRole(role).includes(values.scope)) {
-    errors.scope = 'Your role cannot publish for this scope.';
+    errors.scope = COPY.publish.errSend;
   } else if (
     (values.scope === 'faculty' || values.scope === 'department') &&
     !values.targetId
   ) {
-    errors.target = `Choose a ${values.scope}.`;
+    errors.target = fill(COPY.publish.errTarget, {
+      kind: values.scope === 'faculty' ? 'school' : 'department',
+    });
   }
 
   if (values.expires) {
     const iso = expiryToIso(values.expires);
-    if (!iso) errors.expires = 'Enter a valid date and time.';
-    else if (Date.parse(iso) <= now) errors.expires = 'The expiry must be in the future.';
+    if (!iso) errors.expires = COPY.publish.errExpiry;
+    else if (Date.parse(iso) <= now) errors.expires = COPY.publish.errExpiryPast;
   }
 
   return errors;
@@ -209,9 +274,15 @@ export function buildAnnouncement(values: ComposerValues): AnnouncementCreate {
  * that), so its text is only a fallback. Everything else shares the wording used elsewhere.
  */
 export function publishError(error: unknown, online: boolean): string {
-  if (online && error instanceof ApiError) {
-    if (error.status === 401) return 'Your session has ended. Log in again to publish.';
-    if (error.status === 403) return 'You cannot publish for this scope.';
+  if (!online) return COPY.publish.errOffline;
+  if (error instanceof ApiError) {
+    if (error.status === 401) return COPY.publish.errSession;
+    if (error.status === 403) return COPY.publish.errSend;
+    if (error.status === 503) {
+      return error.retryAfter
+        ? fill(COPY.publish.errBusyIn, { n: error.retryAfter })
+        : COPY.publish.errBusy;
+    }
   }
   return friendlyError(error, online);
 }

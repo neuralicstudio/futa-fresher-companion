@@ -45,8 +45,9 @@ function retrySync() {
  * Welcome, Home, Campus Map, Place detail, Academics, Timetable, Notices, Settings, Credits, the
  * Admin centre, log in and sign-up all show their own top row over the photo (screenshots
  * `welcome-390`, `home-390`, `map-390`, `place-390`, `academics-390`, `timetable-390`,
- * `notices-390`, `settings-390`, `credits-390`, `admin-390`, `login-390`, `register-390`).
- * Publish and Verify still use the older layout and keep the shell header until they are rebuilt.
+ * `notices-390`, `settings-390`, `credits-390`, `admin-390`, `publish-390`,
+ * `login-390`, `register-390`). Verify still uses the older layout and keeps the shell header
+ * until its own rebuild.
  */
 function showsHeader(pathname: string): boolean {
   return (
@@ -61,21 +62,24 @@ function showsHeader(pathname: string): boolean {
     pathname !== '/settings' &&
     pathname !== '/credits' &&
     pathname !== '/admin' &&
+    pathname !== '/admin/publish' &&
     pathname !== '/login' &&
     pathname !== '/register'
   );
 }
 
 /**
- * The five-tab bar belongs to the main sections and to the Admin centre, which the prototype
- * keeps in the same shell (screenshot `admin-390`). Publish and Verify keep the older layout
- * without tabs until they are rebuilt. Welcome, log in, sign-up, the credits page and the
+ * The five-tab bar belongs to the main sections and to the admin screens, which the prototype
+ * keeps in the same shell (screenshots `admin-390`, `publish-390`). Verify keeps the older
+ * layout without tabs until it is rebuilt. Welcome, log in, sign-up, the credits page and the
  * first-sync screen each stand on their own (screenshots `welcome-390`, `login-390`, `sync-390`,
  * `credits-390`).
  */
 function showsTabBar(pathname: string, firstSync: boolean): boolean {
   if (firstSync) return false;
-  if (pathname.startsWith('/admin') && pathname !== '/admin') return false;
+  if (pathname.startsWith('/admin') && pathname !== '/admin' && pathname !== '/admin/publish') {
+    return false;
+  }
   return (
     pathname !== '/welcome' &&
     pathname !== '/login' &&
@@ -92,10 +96,10 @@ export default function App() {
   // taps "Oya, make we start!" the route changes and this turns back on.
   const firstSync = showFirstSyncScreen(sync) && pathname !== '/welcome';
   // The sync screen carries its own logo row inside the hero and no tabs (screenshot sync-390).
-  // Home, Campus Map, Place detail, Academics, Timetable, Notices, Settings, Credits and the
-  // Admin centre also draw their own hero, page and footer, so the shell adds no padding
+  // Home, Campus Map, Place detail, Academics, Timetable, Notices, Settings, Credits, the Admin
+  // centre and Publish also draw their own header, page and footer, so the shell adds no padding
   // (home-390, map-390, place-390, academics-390, timetable-390, notices-390, settings-390,
-  // credits-390, admin-390). Publish and Verify join when their own rebuild lands.
+  // credits-390, admin-390, publish-390). Verify joins when its own rebuild lands.
   const bare =
     firstSync ||
     pathname === '/' ||
@@ -108,6 +112,7 @@ export default function App() {
     pathname === '/settings' ||
     pathname === '/credits' ||
     pathname === '/admin' ||
+    pathname === '/admin/publish' ||
     !showsTabBar(pathname, false);
   // Welcome, log in and sign-up stand alone: no sync banner over their hero.
   const authScreen =
