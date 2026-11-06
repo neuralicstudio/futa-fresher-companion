@@ -42,7 +42,7 @@ export default function Welcome() {
         </p>
       </Hero>
 
-      <Footer photoCredit="Photo: Kaizenify, public domain (Wikimedia Commons)." />
+      <Footer />
     </>
   );
 }

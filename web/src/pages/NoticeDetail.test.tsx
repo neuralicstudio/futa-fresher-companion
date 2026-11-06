@@ -208,7 +208,7 @@ describe('Notice detail', () => {
     expect(html).toContain(COPY.notices.retry);
   });
 
-  it('shows the credit for the photos the app uses', () => {
-    expect(render()).toContain('MediaMOF and Jesu-loba');
+  it('sends the reader to the photo credits from the footer', () => {
+    expect(render()).toContain('href="/credits"');
   });
 });

@@ -358,7 +358,7 @@ export default function Register() {
         <p className="hint center">{COPY.register.optional}</p>
       </div>
 
-      <Footer photoCredit="Photo: Omaonu, CC BY-SA 4.0 (Wikimedia Commons)." />
+      <Footer />
     </>
   );
 }

@@ -288,8 +288,8 @@ describe('DepartmentDetail', () => {
     expect(render()).toContain('This department no dey saved on this phone.');
   });
 
-  it('names the photo licence when the school has a photo', () => {
-    expect(render()).toContain('Photos: Kaizenify (public domain)');
+  it('sends the reader to the photo credits, whether or not the school has a photo', () => {
+    expect(render()).toContain('href="/credits"');
 
     cache.value = {
       state: 'ready',
@@ -299,6 +299,6 @@ describe('DepartmentDetail', () => {
       },
     };
 
-    expect(render()).not.toContain('Photos: Kaizenify');
+    expect(render()).toContain('href="/credits"');
   });
 });

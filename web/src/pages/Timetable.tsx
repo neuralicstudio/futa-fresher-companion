@@ -40,10 +40,6 @@ import {
 import { readTimetableScreen } from '../lib/offline';
 import { useCachedRows } from '../lib/useCachedRows';
 
-const PHOTO_CREDIT =
-  'Photos: Kaizenify (public domain); MediaMOF and Jesu-loba (CC BY-SA 4.0), ' +
-  'via Wikimedia Commons.';
-
 /** "Next up, in 12 min", the badge on the class that is about to start. */
 function nextUpLabel(minutes: number): string {
   return `${COPY.timetable.nextUp}, ${COPY.timetable.inMin.replace('{n}', String(minutes))}`;
@@ -85,7 +81,7 @@ export default function Timetable() {
         )}
       </div>
 
-      <Footer className="foot--tabs" photoCredit={PHOTO_CREDIT} />
+      <Footer className="foot--tabs" />
     </>
   );
 }

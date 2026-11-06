@@ -8,7 +8,6 @@ import {
   filterPlaces,
   nearbyPlaces,
   placePhoto,
-  placePhotoCredit,
   projectPoint,
   sortPlaces,
   toMapPlace,
@@ -223,24 +222,6 @@ describe('placePhoto', () => {
     expect(placePhoto('CRC', 'l')).toBe('/photos/crc-l.webp');
     expect(placePhoto('FUTA MULTIPURPOSE HALL', 'l')).toBe('/photos/hall-l.webp');
     expect(placePhoto('SAAT Library', 'l')).toBeUndefined();
-  });
-});
-
-describe('placePhotoCredit', () => {
-  it('credits the author and licence CREDITS.md records for that picture', () => {
-    expect(placePhotoCredit('Albert Ilemobade Library')).toEqual({
-      author: 'MediaMOF',
-      licence: 'CC BY-SA 4.0',
-    });
-    expect(placePhotoCredit('FUTA MULTIPURPOSE HALL')).toEqual({
-      author: 'MediaMOF',
-      licence: 'CC BY-SA 4.0',
-    });
-  });
-
-  it('credits nothing when there is no photo to credit', () => {
-    expect(placePhotoCredit('SEET Library')).toBeUndefined();
-    expect(placePhotoCredit('CRC OBAKEKERE')).toBeUndefined();
   });
 });
 

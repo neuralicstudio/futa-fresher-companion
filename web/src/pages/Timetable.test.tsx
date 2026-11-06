@@ -204,8 +204,8 @@ describe('Timetable', () => {
     expect(html).toContain(COPY.timetable.venueMissing);
   });
 
-  it('shows the credit for the photo over the hero', () => {
-    expect(render()).toContain('MediaMOF and Jesu-loba');
+  it('sends the reader to the photo credits from the footer', () => {
+    expect(render()).toContain('href="/credits"');
   });
 
   it('shows the shape of the screen while the cache is read', () => {

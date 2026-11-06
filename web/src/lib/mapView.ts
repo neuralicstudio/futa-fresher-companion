@@ -134,39 +134,24 @@ export function toMapPlace(building: Building): MapPlace {
   };
 }
 
-/** The author and licence of a photo, as docs/design/CREDITS.md records them. */
-export interface PhotoCredit {
-  author: string;
-  licence: string;
-}
-
-/** The three MediaMOF pictures share one author and licence. */
-const MEDIAMOF: PhotoCredit = { author: 'MediaMOF', licence: 'CC BY-SA 4.0' };
-
 /**
  * The photo that shows this very place, or nothing (CREDITS.md says which building each
  * picture's sign names). A word match is not enough on a list of real places: the library photo
  * is Albert Ilemobade's frontage, so it cannot stand in for SEET or SAAT, and the gate photo is
  * the main gate, which no row is. A place with no photo shows its category icon.
+ *
+ * The author and licence live on the Photo credits screen (`lib/creditsView.ts`), which lists
+ * every photo the app ships.
  */
-const PLACE_PHOTOS: { match: RegExp; photo: string; credit: PhotoCredit }[] = [
-  {
-    match: /^albert ilemobade library$/i,
-    photo: 'library',
-    credit: MEDIAMOF,
-  },
-  {
-    match: /^school of computing$/i,
-    photo: 'computing',
-    credit: MEDIAMOF,
-  },
+const PLACE_PHOTOS: { match: RegExp; photo: string }[] = [
+  { match: /^albert ilemobade library$/i, photo: 'library' },
+  { match: /^school of computing$/i, photo: 'computing' },
   // "CRC OBAKEKERE" is another site, so only the full name or the bare abbreviation counts.
-  { match: /^(crc|computer resource cent(re|er).*)$/i, photo: 'crc', credit: MEDIAMOF },
+  { match: /^(crc|computer resource cent(re|er).*)$/i, photo: 'crc' },
   {
     // The sign reads "Centre for Continuing Education, Multi-purpose Hall".
     match: /multipurpose hall|continuing education/i,
     photo: 'hall',
-    credit: MEDIAMOF,
   },
 ];
 
@@ -176,11 +161,6 @@ export type PhotoSize = 's' | 'l';
 export function placePhoto(name: string, size: PhotoSize = 's'): string | undefined {
   const photo = PLACE_PHOTOS.find((entry) => entry.match.test(name.trim()))?.photo;
   return photo ? `/photos/${photo}-${size}.webp` : undefined;
-}
-
-/** The author and licence for the photo `placePhoto` gives, as CREDITS.md records them. */
-export function placePhotoCredit(name: string): PhotoCredit | undefined {
-  return PLACE_PHOTOS.find((entry) => entry.match.test(name.trim()))?.credit;
 }
 
 /**

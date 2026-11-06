@@ -159,14 +159,14 @@ describe('FacultyDepartments', () => {
     expect(html).not.toContain('head-card');
   });
 
-  it('names the photo licence when it shows a photo', () => {
-    expect(render()).toContain('Photos: Kaizenify (public domain)');
+  it('sends the reader to the photo credits, whether or not it shows a photo', () => {
+    expect(render()).toContain('href="/credits"');
 
     cache.value = {
       state: 'ready',
       value: { faculty: faculty({ name: 'School of Basic Medical Sciences' }), departments: [] },
     };
 
-    expect(render()).not.toContain('Photos: Kaizenify');
+    expect(render()).toContain('href="/credits"');
   });
 });

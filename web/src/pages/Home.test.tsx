@@ -110,7 +110,7 @@ describe('Home with a saved timetable', () => {
     expect(html).not.toContain('Verified');
   });
 
-  it('numbers four places and credits the photos', () => {
+  it('numbers four places, with the way to their credits', () => {
     const html = render();
 
     expect(html).toContain('Main gate');
@@ -119,8 +119,7 @@ describe('Home with a saved timetable', () => {
     expect(html).toContain('Department of Physics');
     expect(html).toContain('>1<');
     expect(html).toContain('>4<');
-    expect(html).toContain('Kaizenify');
-    expect(html).toContain('MediaMOF and Jesu-loba');
+    expect(html).toContain('href="/credits"');
   });
 
   it('links the lecture arrow to the student’s own timetable', () => {

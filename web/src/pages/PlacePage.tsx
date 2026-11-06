@@ -22,7 +22,6 @@ import {
   categoryName,
   nearbyPlaces,
   placePhoto,
-  placePhotoCredit,
   sortPlaces,
   toMapPlace,
 } from '../lib/mapView';
@@ -39,7 +38,6 @@ export default function PlacePage() {
   const place = building ? toMapPlace(building) : null;
 
   const photo = building ? placePhoto(building.name, 'l') : undefined;
-  const credit = building ? placePhotoCredit(building.name) : undefined;
   const nearby = place ? nearbyPlaces(places, place.id) : [];
   // The hero says what the screen is about; the card below only appears when there is a place.
   let title: string = COPY.place.notFoundTitle;
@@ -141,16 +139,7 @@ export default function PlacePage() {
         )}
       </div>
 
-      <Footer
-        className="foot--tabs"
-        photoCredit={
-          credit
-            ? COPY.place.photoCredit
-                .replace('{author}', credit.author)
-                .replace('{licence}', credit.licence)
-            : undefined
-        }
-      />
+      <Footer className="foot--tabs" />
     </>
   );
 }

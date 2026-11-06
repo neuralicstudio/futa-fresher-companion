@@ -26,9 +26,6 @@ import {
 } from '../lib/settingsView';
 import { useCachedRows } from '../lib/useCachedRows';
 
-// The tree photo is Omaonu's, the same credit the log-in and sign-up screens use.
-const PHOTO_CREDIT = 'Photo: Omaonu, CC BY-SA 4.0 (Wikimedia Commons).';
-
 type StorageState =
   | { state: 'unknown' }
   | { state: 'known'; value: string; percent: number };
@@ -244,6 +241,14 @@ function SettingsScreen({ departmentId }: { departmentId: string | null }) {
         </section>
 
         <section className="card" aria-labelledby="settings-about-h">
+          <Link className="srow" to="/credits">
+            <Icon name="camera" size={28} className="srow__ic" />
+            <span className="srow__main">
+              <b>{COPY.settings.creditsTitle}</b>
+              <small>{COPY.settings.creditsBody}</small>
+            </span>
+            <Icon name="caretRight" size={18} className="srow__go" />
+          </Link>
           <Row
             icon="info"
             title={COPY.settings.aboutTitle}
@@ -270,7 +275,7 @@ function SettingsScreen({ departmentId }: { departmentId: string | null }) {
         )}
       </div>
 
-      <Footer className="foot--tabs" photoCredit={PHOTO_CREDIT} />
+      <Footer className="foot--tabs" />
     </>
   );
 }

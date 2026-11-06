@@ -154,10 +154,12 @@ describe('Place detail', () => {
     expect(html).not.toContain('/place/b-lib');
   });
 
-  it('credits the photo it shows, by author and licence', () => {
+  it('gives the photo a way to its credit, in the footer', () => {
     const html = render();
 
-    expect(html).toContain('Photo: MediaMOF, CC BY-SA 4.0');
+    expect(html).toContain('href="/credits"');
+    // The credit itself lives on the Photo credits screen, not under every photo.
+    expect(html).not.toContain('Photo: MediaMOF, CC BY-SA 4.0');
   });
 
   it('asks for a photo, and draws a building, when there is none for this place', () => {

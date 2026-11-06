@@ -277,7 +277,7 @@ describe('Notices', () => {
     expect(html).not.toContain('<img src=x');
   });
 
-  it('shows the credit for the photo over the hero', () => {
-    expect(render()).toContain('MediaMOF and Jesu-loba');
+  it('sends the reader to the photo credits from the footer', () => {
+    expect(render()).toContain('href="/credits"');
   });
 });
