@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode, RefObject } from 'react';
 import AdminIcon from './AdminIcon';
 import type { IconName } from './iconPaths';
 
@@ -18,6 +18,9 @@ export default function StateBlock({
   action,
   error = false,
   live = 'status',
+  win = false,
+  titleId,
+  titleRef,
 }: {
   icon: IconName;
   title: string;
@@ -25,15 +28,30 @@ export default function StateBlock({
   action?: ReactNode;
   error?: boolean;
   live?: 'status' | 'alert';
+  /** The green "it worked" card, with the same sparks. */
+  win?: boolean;
+  /** Lets the screen move focus to the title when the card replaces the form. */
+  titleId?: string;
+  titleRef?: RefObject<HTMLHeadingElement>;
 }) {
   return (
-    <section className={error ? 'a-state a-state--error' : 'a-state'} role={error ? 'alert' : live}>
+    <section
+      className={win ? 'a-state a-state--win' : error ? 'a-state a-state--error' : 'a-state'}
+      role={error ? 'alert' : live}
+    >
       <span className="a-state__art">
         <Sparks side="l" />
         <AdminIcon name={icon} size={40} />
         <Sparks side="r" />
       </span>
-      <h2 className="a-state__title">{title}</h2>
+      <h2
+        className="a-state__title"
+        id={titleId}
+        tabIndex={titleRef ? -1 : undefined}
+        ref={titleRef}
+      >
+        {title}
+      </h2>
       <p className="a-state__body">{body}</p>
       {action}
     </section>

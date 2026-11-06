@@ -649,6 +649,16 @@ main h1 {
   text-decoration: underline;
 }
 
+/* "Back to queue" changes what the screen shows, so it is a button, not a link: same look. */
+button.app-header__back {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: var(--weight-strong);
+  cursor: pointer;
+}
+
 /* ---------------------------------------------------------------- the hero */
 .hero {
   position: relative;

@@ -35,7 +35,7 @@ vi.mock('../lib/useVerifyQueue', () => ({
   }),
 }));
 
-import AdminVerify from './AdminVerify';
+import AdminVerify, { VerifyPanel } from './AdminVerify';
 
 const ZERO: VerifyQueueCounts = {
   faculties: 0,
@@ -83,6 +83,28 @@ function page(): string {
   );
 }
 
+/** One record on its own, without the queue around it. */
+function panel(
+  over: {
+    item?: VerifyQueueItem;
+    scope?: string | null;
+    doneAt?: string | null;
+  } = {},
+): string {
+  return renderToStaticMarkup(
+    <VerifyPanel
+      item={over.item ?? item()}
+      user={{ id: 'u1', full_name: 'Ada Obi', email: 'a@b.co', role: 'super_admin' }}
+      scope={over.scope ?? null}
+      doneAt={over.doneAt ?? null}
+      onVerified={() => {}}
+      onGone={() => {}}
+      onOutdated={() => {}}
+      onBack={() => {}}
+    />,
+  );
+}
+
 function signedInAs(role: UserRole, extra: Partial<User> = {}) {
   auth.status = 'signed-in';
   auth.user = { id: 'u1', full_name: 'Ada Obi', email: 'a@b.co', role, ...extra };
@@ -99,7 +121,9 @@ describe('the Verify Data gate', () => {
     const html = page();
     expect(html).toContain('Log in to continue');
     expect(html).toContain('href="/login"');
-    expect(html).not.toContain('Verify Data');
+    // The bar belongs to the screen, so its name stays while the gate speaks.
+    expect(html).toContain('Verify Data');
+    expect(html).not.toContain('CSC101 Intro');
   });
 
   it('says "Admins only o" to a student, and never shows the queue', () => {
@@ -108,7 +132,7 @@ describe('the Verify Data gate', () => {
     const html = page();
     expect(html).toContain('Admins only o');
     expect(html).not.toContain('CSC101 Intro');
-    expect(html).not.toContain('Verify Data');
+    expect(html).toContain('Verify Data');
   });
 
   it('does not guess when the account details could not be loaded', () => {
@@ -121,7 +145,9 @@ describe('the Verify Data gate', () => {
 
   it('waits while the sign-in is being checked', () => {
     auth.status = 'loading';
-    expect(page()).not.toContain('Verify Data');
+    const html = page();
+    expect(html).toContain('role="status"');
+    expect(html).not.toContain('CSC101 Intro');
   });
 
   it.each(['department_admin', 'faculty_admin', 'sug', 'super_admin'] as const)(
@@ -143,18 +169,30 @@ describe('the queue', () => {
     expect(html).not.toContain('Nothing to verify');
   });
 
-  it('shows a card with name, kind, place, source, date and a Verify button', () => {
+  it('shows a card with name, source, date and a Verify button', () => {
     queue.state = ready([item()]);
     const html = page();
 
     expect(html).toContain('CSC101 Intro');
-    expect(html).toContain('>Course<');
-    expect(html).toContain('Not verified yet');
-    expect(html).toContain('Biology · Science');
+    expect(html).not.toContain('>Course<');
+    expect(html).not.toContain('Not verified yet');
+    expect(html).not.toContain('Biology · Science');
     expect(html).toContain('Source: HOD office');
-    expect(html).toContain('Added 12 Oct 2026');
+    expect(html).toContain('dateTime="2026-10-12T12:00:00Z"');
     expect(html).toContain('aria-label="Verify: CSC101 Intro"');
-    expect(html).toContain('3 waiting');
+    expect(html).not.toContain('3 waiting');
+  });
+
+  it('shows the lead and the kind chips only when there are records', () => {
+    queue.state = ready([item()]);
+    const html = page();
+    expect(html).toContain('New info dey queue');
+    expect(html).toContain('role="group" aria-label="Kind of record"');
+
+    queue.state = ready([], { counts: { ...ZERO }, total: 0 });
+    const empty = page();
+    expect(empty).not.toContain('New info dey queue');
+    expect(empty).not.toContain('Kind of record');
   });
 
   it('leaves out the source line when the record has none', () => {
@@ -254,15 +292,39 @@ describe('the queue', () => {
   });
 });
 
-describe('who sees which words', () => {
-  it('tells a scoped admin what they may verify', () => {
-    signedInAs('department_admin', { department_id: 'd1' });
-    queue.state = ready([item()]);
-    expect(page()).toContain('You fit verify only records wey belong to Biology.');
+describe('the record on its own', () => {
+  it('shows the record, the source box, the scope line and both choices', () => {
+    const html = panel({ scope: 'Biology' });
+    expect(html).toContain('CSC101 Intro');
+    expect(html).toContain('Source: HOD office');
+    expect(html).toContain('Added ');
+    expect(html).toContain('Source you checked');
+    expect(html).toContain('Where you confirm am, in plain words');
+    expect(html).toContain('Mark verified');
+    expect(html).toContain('Mark outdated');
+    expect(html).toContain('You fit verify only records wey belong to Biology.');
   });
 
-  it('does not say it to a super admin', () => {
-    signedInAs('super_admin');
+  it('leaves the scope line out for a super admin', () => {
+    expect(panel()).not.toContain('You fit verify only');
+  });
+
+  it('turns into the verified card with who checked it, and no more choices', () => {
+    const html = panel({ doneAt: '2026-10-27T09:00:00Z' });
+    expect(html).toContain('Verified!');
+    expect(html).toContain('This record don dey live on Sabi');
+    expect(html).toContain('CSC101 Intro');
+    expect(html).toContain('Verified by: Ada Obi');
+    expect(html).toContain('Back to queue');
+    expect(html).not.toContain('Source you checked');
+    expect(html).not.toContain('Mark verified');
+    expect(html).not.toContain('Mark outdated');
+  });
+});
+
+describe('who sees which words', () => {
+  it('leaves the scope line for the record itself, not the queue', () => {
+    signedInAs('department_admin', { department_id: 'd1' });
     queue.state = ready([item()]);
     expect(page()).not.toContain('You fit verify only');
   });
@@ -280,6 +342,6 @@ describe('accessibility basics', () => {
       expect(text || /aria-label="[^"]+"/.test(attributes)).toBeTruthy();
     }
     expect(html).toContain('role="group" aria-label="Kind of record"');
-    expect(html).toContain('<h1>Verify Data</h1>');
+    expect(html).toContain('<h1 class="app-header__title">Verify Data</h1>');
   });
 });

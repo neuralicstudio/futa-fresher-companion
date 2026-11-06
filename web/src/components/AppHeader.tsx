@@ -22,8 +22,11 @@ interface AppHeaderProps {
   /**
    * A way back instead of the logo lockup (screenshot place-390: "← Back to map"). The profile
    * button and its sheet stay, because this is still another screen in the app.
+   *
+   * `onClick` keeps the screen on the same route and only changes what it shows (Verify Data's
+   * "Back to queue" from one record). Without it the way back is a link.
    */
-  back?: { to: string; label: string };
+  back?: { to: string; label: string; onClick?: () => void };
   /**
    * The screen's name beside the back link, as the notice screen draws "← Back to notices
    * Notice" (notice-390). It is the screen's h1, so the page below starts at h2.
@@ -55,10 +58,17 @@ export default function AppHeader({
       <header className={`app-header app-header--${variant}`}>
         {back ? (
           <div className="app-header__leader">
-            <Link className="app-header__back" to={back.to}>
-              <Icon name="arrowLeft" size={22} />
-              <span>{back.label}</span>
-            </Link>
+            {back.onClick ? (
+              <button type="button" className="app-header__back" onClick={back.onClick}>
+                <Icon name="arrowLeft" size={22} />
+                <span>{back.label}</span>
+              </button>
+            ) : (
+              <Link className="app-header__back" to={back.to}>
+                <Icon name="arrowLeft" size={22} />
+                <span>{back.label}</span>
+              </Link>
+            )}
             {title && <h1 className="app-header__title">{title}</h1>}
           </div>
         ) : (

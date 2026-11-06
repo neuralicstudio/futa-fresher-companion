@@ -5,21 +5,23 @@ import { COPY } from './adminCopy';
 import {
   addedLine,
   badgeText,
+  buildOutdatedRequest,
   buildVerifyRequest,
   busyBody,
   checkSource,
   emptyMessage,
   formatDate,
+  formatDateTime,
   initialQueue,
   itemKey,
   KINDS,
+  markOutdated,
   needsRefill,
   placeLine,
   queueProblem,
   queueReducer,
   queueTabs,
   SOURCE_MAX,
-  sourceCount,
   sourceLine,
   updatedLine,
   verifiedByLine,
@@ -215,16 +217,16 @@ describe('the tabs', () => {
 
     expect(tabs.map((t) => [t.kind, t.label, t.count])).toEqual([
       ['all', 'All', 13],
-      ['courses', 'Courses', 12],
       ['buildings', 'Buildings', 1],
+      ['courses', 'Courses', 12],
     ]);
   });
 
-  it('follow the order of the contract', () => {
+  it('follow the order of the design', () => {
     const kinds = queueTabs({ ...ZERO, announcements: 1, faculties: 1, lecturers: 1 }, 3, 'all').map(
       (t) => t.kind,
     );
-    expect(kinds).toEqual(['all', 'faculties', 'lecturers', 'announcements']);
+    expect(kinds).toEqual(['all', 'lecturers', 'faculties', 'announcements']);
   });
 
   it('keep the chosen kind even when it has none left', () => {
@@ -290,15 +292,22 @@ describe('what a card says', () => {
   });
 
   it('shows when it was added, and when it changed later', () => {
-    const changed = item({ updated_at: '2026-10-20T12:00:00Z' });
-    expect(addedLine(changed)).toBe('Added 12 Oct 2026');
-    expect(updatedLine(changed)).toBe('Updated 20 Oct 2026');
-    expect(updatedLine(item())).toBeNull();
+    const added = new Date(2026, 9, 12, 14, 15).toISOString();
+    const changed = item({
+      created_at: added,
+      updated_at: new Date(2026, 9, 20, 9, 5).toISOString(),
+    });
+    expect(addedLine(changed)).toBe('Added 12 Oct 2026, 2:15 pm');
+    expect(updatedLine(changed)).toBe('Updated 20 Oct 2026, 9:05 am');
+    expect(updatedLine(item({ created_at: added, updated_at: added }))).toBeNull();
   });
 
   it('formats dates plainly, and an unreadable date as nothing', () => {
     expect(formatDate('2026-01-05T12:00:00Z')).toBe('5 Jan 2026');
     expect(formatDate('yesterday')).toBe('');
+    const midnight = new Date(2026, 0, 5, 0, 7).toISOString();
+    expect(formatDateTime(midnight)).toBe('5 Jan 2026, 12:07 am');
+    expect(formatDateTime('yesterday')).toBe('');
   });
 
   it('counts and badges', () => {
@@ -340,10 +349,10 @@ describe('the source', () => {
     if (!long.ok) expect(long.error).toContain(String(SOURCE_MAX));
   });
 
-  it('counts characters, not UTF-16 units', () => {
-    expect(sourceCount('')).toBe(`0 / ${SOURCE_MAX} characters`);
-    expect(sourceCount('😀😀')).toBe(`2 / ${SOURCE_MAX} characters`);
+  it('measures characters, not UTF-16 units', () => {
+    expect(checkSource('😀😀')).toEqual({ ok: true, source: '😀😀' });
     expect(checkSource('😀'.repeat(SOURCE_MAX)).ok).toBe(true);
+    expect(checkSource('😀'.repeat(SOURCE_MAX + 1)).ok).toBe(false);
   });
 
   it('goes to the server as a verified request for that record', () => {
@@ -354,6 +363,14 @@ describe('the source', () => {
       source: 'HOD office',
     });
     expect(verifiedByLine('Ada Obi')).toBe('Verified by: Ada Obi');
+  });
+
+  it('goes to the server as outdated, with no source', () => {
+    expect(buildOutdatedRequest(item({ entity_type: 'lecturers', id: 'x1' }))).toEqual({
+      entity_type: 'lecturers',
+      entity_id: 'x1',
+      status: 'outdated',
+    });
   });
 });
 
@@ -503,5 +520,57 @@ describe('pressing "Mark verified"', () => {
     const outcome = await verifyItem(item(), 'HOD office', () => up, send);
 
     expect(outcome).toEqual({ kind: 'failed', problem: { message: COPY.verify.offlineBody } });
+  });
+});
+
+describe('pressing "Mark outdated"', () => {
+  const online = () => true;
+
+  it('never sends while offline', async () => {
+    const send = vi.fn();
+
+    const outcome = await markOutdated(item(), () => false, send);
+
+    expect(outcome).toEqual({
+      kind: 'failed',
+      problem: { message: COPY.verify.offlineBody },
+    });
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it('sends that record as outdated, with no source, and reports it done', async () => {
+    const send = vi.fn().mockResolvedValue(undefined);
+
+    const outcome = await markOutdated(item({ id: 'c9' }), online, send);
+
+    expect(outcome).toEqual({ kind: 'outdated' });
+    expect(send).toHaveBeenCalledOnce();
+    expect(send).toHaveBeenCalledWith({
+      entity_type: 'courses',
+      entity_id: 'c9',
+      status: 'outdated',
+    });
+  });
+
+  it('turns a refusal into a message the screen can show', async () => {
+    const send = vi.fn().mockRejectedValue(new ApiError(403, 'You cannot verify this record'));
+
+    const outcome = await markOutdated(item(), online, send);
+
+    expect(outcome).toEqual({
+      kind: 'failed',
+      problem: {
+        message: COPY.verify.forbiddenVerify,
+        serverMessage: 'You cannot verify this record',
+      },
+    });
+  });
+
+  it('reports a record that is gone, so the card can leave the list', async () => {
+    const send = vi.fn().mockRejectedValue(new ApiError(404, 'Record not found'));
+
+    const outcome = await markOutdated(item(), online, send);
+
+    expect(outcome).toMatchObject({ kind: 'failed', problem: { gone: true } });
   });
 });
