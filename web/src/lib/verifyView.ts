@@ -11,14 +11,15 @@ import type {
 } from '../api/types';
 import { COPY, fill } from './adminCopy';
 
-/** The kinds, in the order of the contract (VerifiableEntityType). Tabs follow this order. */
+/** The kinds, in the order the design lists the chips (COPY.md verify filters), with the rest
+ * after them in contract order. Tabs follow this order. */
 export const KINDS: readonly VerifiableEntityType[] = [
-  'faculties',
-  'departments',
-  'lecturers',
-  'courses',
-  'class_reps',
   'buildings',
+  'departments',
+  'courses',
+  'lecturers',
+  'faculties',
+  'class_reps',
   'timetable_entries',
   'announcements',
 ];
@@ -210,12 +211,26 @@ export function placeLine(item: VerifyQueueItem): string | null {
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+function dateOf(iso: string): Date | null {
+  const time = Date.parse(iso);
+  return Number.isNaN(time) ? null : new Date(time);
+}
+
 /** "12 Oct 2026", in the device's time zone. An unreadable date gives an empty string. */
 export function formatDate(iso: string): string {
-  const time = Date.parse(iso);
-  if (Number.isNaN(time)) return '';
-  const date = new Date(time);
+  const date = dateOf(iso);
+  if (!date) return '';
   return `${date.getDate()} ${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+}
+
+/** "12 Oct 2026, 2:15 pm": the date and the time, as the queue card draws it (verify-390). */
+export function formatDateTime(iso: string): string {
+  const date = dateOf(iso);
+  if (!date) return '';
+  const hours = date.getHours();
+  const hour = hours % 12 || 12;
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${formatDate(iso)}, ${hour}:${minutes} ${hours < 12 ? 'am' : 'pm'}`;
 }
 
 export function sourceLine(item: VerifyQueueItem): string | null {
@@ -224,14 +239,16 @@ export function sourceLine(item: VerifyQueueItem): string | null {
 }
 
 export function addedLine(item: VerifyQueueItem): string {
-  return fill(COPY.verify.added, { date: formatDate(item.created_at) });
+  return fill(COPY.verify.added, { date: formatDateTime(item.created_at) });
 }
 
-/** "Updated 14 Oct 2026", only when the record changed on a later day than it was added. */
+/** "Updated 14 Oct 2026, 2:15 pm", only when the record changed on a later day than it was added. */
 export function updatedLine(item: VerifyQueueItem): string | null {
   const added = formatDate(item.created_at);
   const updated = formatDate(item.updated_at);
-  return updated && updated !== added ? fill(COPY.verify.updated, { date: updated }) : null;
+  return updated && updated !== added
+    ? fill(COPY.verify.updated, { date: formatDateTime(item.updated_at) })
+    : null;
 }
 
 // ----------------------------------------------------------------- verifying
@@ -248,12 +265,13 @@ export function checkSource(raw: string): SourceCheck {
   return { ok: true, source };
 }
 
-export function sourceCount(raw: string): string {
-  return fill(COPY.verify.sourceCount, { n: Array.from(raw).length, max: SOURCE_MAX });
-}
-
 export function buildVerifyRequest(item: VerifyQueueItem, source: string): VerifyRequest {
   return { entity_type: item.entity_type, entity_id: item.id, status: 'verified', source };
+}
+
+/** Outdated needs no source: the record keeps the source it already had. */
+export function buildOutdatedRequest(item: VerifyQueueItem): VerifyRequest {
+  return { entity_type: item.entity_type, entity_id: item.id, status: 'outdated' };
 }
 
 /** The success panel: who verified, and when, from this device. */
@@ -348,4 +366,26 @@ export async function verifyItem(
 
 export function serverSaysLine(message: string): string {
   return fill(COPY.verify.serverSays, { message });
+}
+
+export type OutdatedOutcome =
+  | { kind: 'failed'; problem: VerifyProblem }
+  | { kind: 'outdated' };
+
+/**
+ * Everything that happens when the admin presses "Mark outdated", except the network call itself
+ * (`send`). No source is required; a record that is gone or refused comes back as a problem.
+ */
+export async function markOutdated(
+  item: VerifyQueueItem,
+  online: () => boolean,
+  send: (body: VerifyRequest) => Promise<void>,
+): Promise<OutdatedOutcome> {
+  if (!online()) return { kind: 'failed', problem: verifyProblem(new Error('offline'), false) };
+  try {
+    await send(buildOutdatedRequest(item));
+    return { kind: 'outdated' };
+  } catch (error) {
+    return { kind: 'failed', problem: verifyProblem(error, online()) };
+  }
 }
