@@ -28,9 +28,6 @@ import { readHomeScreen } from '../lib/offline';
 import { entriesForLevel } from '../lib/timetableView';
 import { useCachedRows } from '../lib/useCachedRows';
 
-const PHOTO_CREDIT =
-  'Photos: Kaizenify (public domain); MediaMOF and Jesu-loba (CC BY-SA 4.0), via Wikimedia Commons.';
-
 /** The timetable belongs to a school and a department, so the arrow needs both. */
 function timetablePath(user: User | null): string {
   if (user?.faculty_id && user.department_id) {
@@ -328,7 +325,7 @@ function HomeScreen({ departmentId, level }: { departmentId: string | null; leve
         )}
       </div>
 
-      <Footer className="foot--tabs" photoCredit={PHOTO_CREDIT} />
+      <Footer className="foot--tabs" />
     </>
   );
 }

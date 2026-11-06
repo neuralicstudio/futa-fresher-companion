@@ -29,10 +29,6 @@ import { placePhoto } from '../lib/mapView';
 import { readDepartmentScreen, readFaculty } from '../lib/offline';
 import { useCachedRows } from '../lib/useCachedRows';
 
-const PHOTO_CREDIT =
-  'Photos: Kaizenify (public domain); MediaMOF and Jesu-loba (CC BY-SA 4.0), ' +
-  'via Wikimedia Commons.';
-
 type Tab = 'courses' | 'lecturers' | 'about';
 
 const TABS: { id: Tab; icon: IconName; label: string }[] = [
@@ -345,7 +341,7 @@ function DepartmentPage({ facultyId, departmentId }: { facultyId: string; depart
         </HeadCard>
       </div>
 
-      <Footer photoCredit={photo ? PHOTO_CREDIT : undefined} />
+      <Footer />
     </>
   );
 }

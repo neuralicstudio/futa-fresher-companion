@@ -30,6 +30,8 @@ const Announcements = lazy(() => import('./pages/Announcements'));
 const NoticeDetail = lazy(() => import('./pages/NoticeDetail'));
 // Settings draws its own hero, page and footer, and reads the cache, so it loads on demand.
 const Settings = lazy(() => import('./pages/Settings'));
+// Credits is reached from the footer or Settings, so it loads only when opened.
+const Credits = lazy(() => import('./pages/Credits'));
 
 // The offline store (Dexie) is loaded on demand, so it stays out of the first load.
 function retrySync() {
@@ -40,10 +42,10 @@ function retrySync() {
 
 /**
  * Screens that carry their own header inside the hero, so App must not draw a second one.
- * Welcome, Home, Campus Map, Place detail, Academics, Timetable, Notices, Settings, log in and
- * sign-up all show their own top row over the photo (screenshots `welcome-390`, `home-390`,
- * `map-390`, `place-390`, `academics-390`, `timetable-390`, `notices-390`, `settings-390`,
- * `login-390`, `register-390`).
+ * Welcome, Home, Campus Map, Place detail, Academics, Timetable, Notices, Settings, Credits,
+ * log in and sign-up all show their own top row over the photo (screenshots `welcome-390`,
+ * `home-390`, `map-390`, `place-390`, `academics-390`, `timetable-390`, `notices-390`,
+ * `settings-390`, `credits-390`, `login-390`, `register-390`).
  */
 function showsHeader(pathname: string): boolean {
   return (
@@ -56,6 +58,7 @@ function showsHeader(pathname: string): boolean {
     !pathname.endsWith('/timetable') &&
     !pathname.startsWith('/announcements') &&
     pathname !== '/settings' &&
+    pathname !== '/credits' &&
     pathname !== '/login' &&
     pathname !== '/register'
   );
@@ -69,7 +72,12 @@ function showsHeader(pathname: string): boolean {
 function showsTabBar(pathname: string, firstSync: boolean): boolean {
   if (firstSync) return false;
   if (pathname.startsWith('/admin')) return false;
-  return pathname !== '/welcome' && pathname !== '/login' && pathname !== '/register';
+  return (
+    pathname !== '/welcome' &&
+    pathname !== '/login' &&
+    pathname !== '/register' &&
+    pathname !== '/credits'
+  );
 }
 
 export default function App() {
@@ -80,9 +88,9 @@ export default function App() {
   // taps "Oya, make we start!" the route changes and this turns back on.
   const firstSync = showFirstSyncScreen(sync) && pathname !== '/welcome';
   // The sync screen carries its own logo row inside the hero and no tabs (screenshot sync-390).
-  // Home, Campus Map, Place detail, Academics, Timetable, Notices and Settings also draw their
-  // own hero, page and footer, so the shell adds no padding (home-390, map-390, place-390,
-  // academics-390, timetable-390, notices-390, settings-390).
+  // Home, Campus Map, Place detail, Academics, Timetable, Notices, Settings and Credits also
+  // draw their own hero, page and footer, so the shell adds no padding (home-390, map-390,
+  // place-390, academics-390, timetable-390, notices-390, settings-390, credits-390).
   const bare =
     firstSync ||
     pathname === '/' ||
@@ -93,6 +101,7 @@ export default function App() {
     pathname.startsWith('/announcements') ||
     pathname.startsWith('/place/') ||
     pathname === '/settings' ||
+    pathname === '/credits' ||
     !showsTabBar(pathname, false);
   // Welcome, log in and sign-up stand alone: no sync banner over their hero.
   const authScreen =
@@ -142,6 +151,7 @@ export default function App() {
               <Route path="/announcements" element={<Announcements />} />
               <Route path="/announcements/:id" element={<NoticeDetail />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/credits" element={<Credits />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/admin" element={<Admin />} />

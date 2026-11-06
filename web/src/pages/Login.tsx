@@ -196,7 +196,7 @@ export default function Login() {
         />
       </div>
 
-      <Footer photoCredit="Photo: Omaonu, CC BY-SA 4.0 (Wikimedia Commons)." />
+      <Footer />
     </>
   );
 }

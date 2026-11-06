@@ -1,14 +1,13 @@
 // The footer every screen ends with: the gold wave lines, the friendly sign-off, the "unofficial"
-// line and the photo credits link.
+// line and the way to the photo credits.
 //
-// The credits page arrives in its own step. Until then the footer says the credit for the photo
-// on this screen in plain words, so nothing is used without a source (CREDITS.md).
+// Every large photo is credited on the Photo credits screen, and this link is how a student gets
+// there from any screen (docs/design/COMPONENTS.md, Footer).
+import { Link } from 'react-router-dom';
 import Logo from './Logo';
 import { COPY } from '../copy/pidgin';
 
 interface FooterProps {
-  /** The credit line for the photo above, when the screen shows one. */
-  photoCredit?: string;
   /** Extra space at the bottom for a screen that draws its own page (Home's tab bar room). */
   className?: string;
 }
@@ -30,7 +29,7 @@ function Waves() {
   );
 }
 
-export default function Footer({ photoCredit, className }: FooterProps) {
+export default function Footer({ className }: FooterProps) {
   return (
     <footer className={`foot${className ? ` ${className}` : ''}`}>
       <Waves />
@@ -38,8 +37,9 @@ export default function Footer({ photoCredit, className }: FooterProps) {
         <Logo className="logo--xs" />
         <span>{COPY.app.footer}</span>
       </p>
-      <p className="foot__unofficial">{COPY.app.unofficial}</p>
-      {photoCredit && <p className="foot__credit">{photoCredit}</p>}
+      <p className="foot__unofficial">
+        {COPY.app.unofficial} <Link className="foot__credits" to="/credits">{COPY.credits.title}</Link>
+      </p>
     </footer>
   );
 }

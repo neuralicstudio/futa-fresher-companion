@@ -158,7 +158,12 @@ describe('Settings', () => {
     expect(html).not.toContain(COPY.settings.logout);
   });
 
-  it('credits the tree photo it shows', () => {
-    expect(render()).toContain('Photo: Omaonu, CC BY-SA 4.0 (Wikimedia Commons).');
+  it('sends the reader to the photo credits from the About card and the footer', () => {
+    const html = render();
+
+    expect(html).toContain(COPY.settings.creditsTitle);
+    expect(html).toContain(COPY.settings.creditsBody);
+    // One row in the About card, one link in the footer every screen ends with.
+    expect(html.match(/href="\/credits"/g)).toHaveLength(2);
   });
 });

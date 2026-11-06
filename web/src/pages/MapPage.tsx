@@ -33,10 +33,6 @@ import { readBuildings } from '../lib/offline';
 import { useCachedRows } from '../lib/useCachedRows';
 import { useOnline } from '../lib/useOnline';
 
-const PHOTO_CREDIT =
-  'Photos: Kaizenify (public domain); MediaMOF and Jesu-loba (CC BY-SA 4.0), ' +
-  'via Wikimedia Commons.';
-
 /** The card under the map: the place the student picked, with the way to its own screen. */
 function SelectedPlace({
   place,
@@ -286,7 +282,7 @@ export default function MapPage() {
         )}
       </div>
 
-      <Footer className="foot--tabs" photoCredit={PHOTO_CREDIT} />
+      <Footer className="foot--tabs" />
     </>
   );
 }

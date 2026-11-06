@@ -20,10 +20,6 @@ import { audienceFor, expiresText, paragraphs, postedLine } from '../lib/noticeV
 import { readNoticeScreen } from '../lib/offline';
 import { useCachedRows } from '../lib/useCachedRows';
 
-const PHOTO_CREDIT =
-  'Photos: Kaizenify (public domain); MediaMOF and Jesu-loba (CC BY-SA 4.0), ' +
-  'via Wikimedia Commons.';
-
 /** Re-keyed by id, so moving to another notice starts from loading instead of the old one. */
 export default function NoticeDetail() {
   const { id = '' } = useParams();
@@ -154,7 +150,7 @@ function NoticeScreen({ id }: { id: string }) {
         )}
       </div>
 
-      <Footer className="foot--tabs" photoCredit={PHOTO_CREDIT} />
+      <Footer className="foot--tabs" />
     </>
   );
 }

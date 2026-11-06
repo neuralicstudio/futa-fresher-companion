@@ -33,10 +33,6 @@ import { readAnnouncementsScreen } from '../lib/offline';
 import { useCachedRows } from '../lib/useCachedRows';
 import { useOnline } from '../lib/useOnline';
 
-const PHOTO_CREDIT =
-  'Photos: Kaizenify (public domain); MediaMOF and Jesu-loba (CC BY-SA 4.0), ' +
-  'via Wikimedia Commons.';
-
 export default function Announcements() {
   const { result, retry, progress } = useCachedRows(readAnnouncementsScreen);
   const online = useOnline();
@@ -185,7 +181,7 @@ export default function Announcements() {
           ))}
       </div>
 
-      <Footer className="foot--tabs" photoCredit={PHOTO_CREDIT} />
+      <Footer className="foot--tabs" />
     </>
   );
 }

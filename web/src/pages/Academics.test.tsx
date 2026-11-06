@@ -189,10 +189,10 @@ describe('Academics', () => {
     expect(html).not.toContain('No school dey here yet');
   });
 
-  it('names the photo licence in the footer', () => {
+  it('sends the reader to the photo credits from the footer', () => {
     const html = render();
 
-    expect(html).toContain('Photos: Kaizenify (public domain)');
-    expect(html).toContain('CC BY-SA 4.0');
+    expect(html).toContain('href="/credits"');
+    expect(html).toContain('Photo credits');
   });
 });

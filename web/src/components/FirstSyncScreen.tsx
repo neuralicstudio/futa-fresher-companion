@@ -133,7 +133,7 @@ export default function FirstSyncScreen({ progress, onContinue, onRetry }: First
         </p>
       </div>
 
-      <Footer photoCredit="Photo: Kaizenify, public domain (Wikimedia Commons)." />
+      <Footer />
     </>
   );
 }

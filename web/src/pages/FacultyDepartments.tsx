@@ -17,10 +17,6 @@ import { placePhoto } from '../lib/mapView';
 import { readDepartments, readFaculty } from '../lib/offline';
 import { useCachedRows } from '../lib/useCachedRows';
 
-const PHOTO_CREDIT =
-  'Photos: Kaizenify (public domain); MediaMOF and Jesu-loba (CC BY-SA 4.0), ' +
-  'via Wikimedia Commons.';
-
 export default function FacultyDepartments() {
   const { facultyId = '' } = useParams();
   // Keyed by school, so moving to another school starts from loading, not the old list.
@@ -137,7 +133,7 @@ function SchoolDepartments({ facultyId }: { facultyId: string }) {
         </section>
       </div>
 
-      <Footer photoCredit={photo ? PHOTO_CREDIT : undefined} />
+      <Footer />
     </>
   );
 }

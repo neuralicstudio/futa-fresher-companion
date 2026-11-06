@@ -26,10 +26,6 @@ import { placePhoto } from '../lib/mapView';
 import { readAllDepartments, readFaculties } from '../lib/offline';
 import { useCachedRows } from '../lib/useCachedRows';
 
-const PHOTO_CREDIT =
-  'Photos: Kaizenify (public domain); MediaMOF and Jesu-loba (CC BY-SA 4.0), ' +
-  'via Wikimedia Commons.';
-
 /** One school: its picture, its symbol, its name and how many departments it has. */
 function SchoolCard({ faculty, departments }: { faculty: Faculty; departments: Department[] }) {
   // Only School of Computing has a photo of its own building; the rest carry a drawing.
@@ -184,7 +180,7 @@ export default function Academics() {
         )}
       </div>
 
-      <Footer className="foot--tabs" photoCredit={PHOTO_CREDIT} />
+      <Footer className="foot--tabs" />
     </>
   );
 }
