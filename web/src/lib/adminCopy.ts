@@ -26,6 +26,8 @@ export const COPY = {
     publishBody: 'Share important updates with your people.',
     verifyTitle: 'Verify data',
     verifyBody: 'Help keep FUTA info accurate.',
+    roleTitle: 'Your role',
+    roleBody: '{role}, {scope}',
     back: 'Back to Admin centre',
     tilesLabel: 'Admin tools',
   },
@@ -145,6 +147,33 @@ export const COPY = {
     verifyBusy: 'The server dey busy. Try again small.',
     serverSays: 'Server say: {message}',
     sessionEnded: 'Your session don end. Log in again to verify.',
+  },
+  // Your role (COPY.md "Your role"). The two rows marked NEW name the powers COPY.md did not
+  // have: a department admin's own department, and the SUG's own scope.
+  role: {
+    kicker: 'Know your power',
+    title: 'Role and permissions',
+    lead: 'Here na wetin you fit publish and verify.',
+    yourRole: 'Your role',
+    roleHelp: 'You dey here to support {scope}. Make we do am well!',
+    scopeUnknown: 'your people',
+    // A SUG admin has no school or department: their people are all of FUTA's students.
+    sugScope: 'FUTA students',
+    canTitle: 'What you fit publish to',
+    can: {
+      everyone: 'Everyone (University)',
+      school: 'Your school, full access',
+      departments: 'All departments in your school',
+      department: 'Your department',
+      sug: 'SUG announcements',
+      cannot: 'All schools (not allowed)',
+      // A super admin has no school of its own, so the two rows below say "any" instead.
+      anySchool: 'Any school, full access',
+      anyDepartment: 'Any department',
+    },
+    allowed: 'Allowed',
+    notAllowed: 'Not allowed',
+    why: 'Roles come from the server. Sabi cannot give you more power.',
   },
   // Chip words for where an announcement goes (COPY.md chips: University, SUG, School, Department).
   scopes: {

@@ -9,7 +9,7 @@ import Footer from '../components/Footer';
 import Hero from '../components/Hero';
 import AdminGate from '../components/admin/AdminGate';
 import AdminIcon from '../components/admin/AdminIcon';
-import { scopeName } from '../lib/adminView';
+import { scopeName, roleLine } from '../lib/adminView';
 import { COPY } from '../lib/adminCopy';
 import type { User } from '../api/types';
 import { readComposerChoices } from '../lib/offline';
@@ -86,6 +86,18 @@ function AdminHome({ user }: { user: User }) {
               )}
             </b>
             <small>{COPY.admin.verifyBody}</small>
+            <span className="go" aria-hidden="true">
+              <AdminIcon name="arrow-right" size={20} />
+            </span>
+          </Link>
+        </li>
+        <li>
+          <Link className="tile" to="/admin/role">
+            <span className="tile__ic">
+              <AdminIcon name="identification-badge" size={28} />
+            </span>
+            <b>{COPY.admin.roleTitle}</b>
+            <small>{roleLine(user.role, scope)}</small>
             <span className="go" aria-hidden="true">
               <AdminIcon name="arrow-right" size={20} />
             </span>
