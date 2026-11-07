@@ -28,7 +28,7 @@ import { useCachedRows } from '../lib/useCachedRows';
 
 /** One school: its picture, its symbol, its name and how many departments it has. */
 function SchoolCard({ faculty, departments }: { faculty: Faculty; departments: Department[] }) {
-  // Only School of Computing has a photo of its own building; the rest carry a drawing.
+  // Six of the ten schools have a photo of their own building; the rest carry a drawing.
   const photo = placePhoto(faculty.name);
   const scene = schoolScene(faculty.name);
   const count = departmentsIn(faculty.id, departments);

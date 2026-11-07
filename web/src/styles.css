@@ -2882,7 +2882,10 @@ button.app-header__back {
 }
 
 .head-card__name {
-  flex: 1 1 8rem;
+  /* Long school names ("School of Infrastructural, Minerals and Manufacturing Engineering") need
+     a real column: with a smaller basis the seal stays beside the title and the name breaks
+     mid-word. At this basis the seal drops to its own right-aligned line on a phone instead. */
+  flex: 1 1 12rem;
   min-width: 0;
 }
 

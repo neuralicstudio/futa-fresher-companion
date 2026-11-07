@@ -115,12 +115,13 @@ describe('Academics', () => {
     expect(html).toContain('1 Department');
   });
 
-  it('shows the one school photo there is, and draws the rest', () => {
+  it('shows a photo where the pack has one, and draws the rest', () => {
     const html = render();
 
     expect(html).toContain('/photos/computing-s.webp');
-    // One photo, but a drawing for every other school.
-    expect(html.match(/class="scene"/g)).toHaveLength(2);
+    expect(html).toContain('/photos/sps-s.webp');
+    // Two photos, but a drawing for the school with no photo of its own.
+    expect(html.match(/class="scene"/g)).toHaveLength(1);
   });
 
   it('gives every card an arrow, marked as decoration', () => {

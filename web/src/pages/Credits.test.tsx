@@ -44,24 +44,36 @@ describe('Credits', () => {
       expect(html).toContain(COPY.credits.used.replace('{where}', photo.used));
       expect(html).toContain(COPY.credits.author.replace('{author}', photo.author));
       expect(html).toContain(COPY.credits.licence.replace('{licence}', photo.licence));
-      expect(html).toContain(photo.page);
+      if (photo.page) expect(html).toContain(photo.page);
     }
     // The numbers run down the side, 1 to the last row.
     expect(html).toContain('>1</span>');
     expect(html).toContain(`>${PHOTOS.length}</span>`);
   });
 
-  it('sends each row to its Commons file page in a new tab, safely', () => {
+  it('sends each Commons photo to its file page in a new tab, safely', () => {
     const html = render();
+    const onCommons = PHOTOS.filter((photo) => photo.page !== null);
 
     expect(html.match(/href="https:\/\/commons\.wikimedia\.org\/wiki\/File:/g)).toHaveLength(
-      PHOTOS.length,
+      onCommons.length,
     );
-    expect(html.match(/target="_blank"/g)).toHaveLength(PHOTOS.length + 1);
-    expect(html.match(/rel="noopener noreferrer"/g)).toHaveLength(PHOTOS.length + 1);
+    expect(html.match(/target="_blank"/g)).toHaveLength(onCommons.length + 1);
+    expect(html.match(/rel="noopener noreferrer"/g)).toHaveLength(onCommons.length + 1);
     // The icon alone means nothing, so the link names the photo it credits.
-    for (const photo of PHOTOS) {
+    for (const photo of onCommons) {
       expect(html).toContain(`aria-label="${COPY.credits.source}: ${text(photo.alt)}"`);
+    }
+  });
+
+  it('opens no file page for a photo the team supplied, since there is none', () => {
+    const html = render();
+
+    for (const id of ['sese', 'simme', 'sems', 'set', 'sps']) {
+      const photo = PHOTOS.find((entry) => entry.id === id);
+      expect(photo?.page, id).toBeNull();
+      expect(html, id).not.toContain(`aria-label="${COPY.credits.source}: ${text(photo!.alt)}"`);
+      expect(html, id).toContain(COPY.credits.licence.replace('{licence}', photo!.licence));
     }
   });
 

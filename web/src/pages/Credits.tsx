@@ -49,15 +49,17 @@ export default function Credits() {
                 <small>{COPY.credits.author.replace('{author}', photo.author)}</small>
                 <small>{COPY.credits.licence.replace('{licence}', photo.licence)}</small>
               </span>
-              <a
-                className="go"
-                href={photo.page}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`${COPY.credits.source}: ${photo.alt}`}
-              >
-                <Icon name="arrowUpRight" size={20} />
-              </a>
+              {photo.page && (
+                <a
+                  className="go"
+                  href={photo.page}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${COPY.credits.source}: ${photo.alt}`}
+                >
+                  <Icon name="arrowUpRight" size={20} />
+                </a>
+              )}
             </li>
           ))}
         </ul>
