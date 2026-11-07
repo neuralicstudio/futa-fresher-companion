@@ -12,6 +12,11 @@ describe('PHOTOS', () => {
       'gate',
       'library',
       'computing',
+      'sese',
+      'simme',
+      'sems',
+      'set',
+      'sps',
       'physics',
       'hall',
       'crc',
@@ -37,15 +42,26 @@ describe('PHOTOS', () => {
       expect(photo.alt.trim(), photo.id).not.toBe('');
       expect(photo.author.trim(), photo.id).not.toBe('');
       expect(photo.used.trim(), photo.id).not.toBe('');
-      expect(['Public domain', 'CC BY-SA 4.0'], photo.id).toContain(photo.licence);
+      if (photo.page === null) {
+        // A supplied photo: the row must admit that the licence is not recorded.
+        expect(photo.licence, photo.id).toMatch(/not recorded/i);
+      } else {
+        expect(['Public domain', 'CC BY-SA 4.0'], photo.id).toContain(photo.licence);
+      }
     }
   });
 
-  it('links every photo to the Commons file page its licence can be checked on', () => {
-    for (const photo of PHOTOS) {
+  it('links a Commons photo to the file page its licence can be checked on', () => {
+    for (const photo of PHOTOS.filter((entry) => entry.page !== null)) {
       expect(photo.page, photo.id).toMatch(
         /^https:\/\/commons\.wikimedia\.org\/wiki\/File:[^ ]+$/,
       );
+    }
+  });
+
+  it('has no file page for the photos the team supplied', () => {
+    for (const id of ['sese', 'simme', 'sems', 'set', 'sps']) {
+      expect(PHOTOS.find((photo) => photo.id === id)?.page, id).toBeNull();
     }
   });
 
@@ -55,6 +71,13 @@ describe('PHOTOS', () => {
     const computing = PHOTOS.find((photo) => photo.id === 'computing');
     expect(library?.alt).toContain('Albert Ilemobade Library');
     expect(computing?.alt).toContain('School of Computing');
+    // The SEMS sign is readable; the other supplied school photos show no sign.
+    expect(PHOTOS.find((photo) => photo.id === 'sems')?.alt).toContain(
+      'School of Earth and Mineral Sciences',
+    );
+    for (const id of ['sese', 'simme', 'set', 'sps']) {
+      expect(PHOTOS.find((photo) => photo.id === id)?.alt, id).not.toMatch(/school of/i);
+    }
     // The tree and the road show no sign, so they say only what is visible.
     expect(PHOTOS.find((photo) => photo.id === 'tree')?.alt).not.toMatch(/school of/i);
     expect(PHOTOS.find((photo) => photo.id === 'road')?.alt).not.toMatch(/school of/i);
