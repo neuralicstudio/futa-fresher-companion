@@ -3,8 +3,9 @@
 //
 // No Dexie or React imports, so Vitest can run this file. Author, licence and file page were read
 // from Wikimedia Commons on 27 Oct 2026; alt text names a building only where its sign is readable.
-// Photos David supplied stay out of the repo, so they have no row here (the night gate is credited
-// to FUTA's official Facebook page with written permission pending, and is not shipped).
+// The five school photos the project team supplied have no recorded photographer or licence, so
+// their rows say so and carry no file page. The night gate stays out of the app (written permission
+// from FUTA's official Facebook page is still pending), so it has no row here.
 
 export interface PhotoRecord {
   /** The file name in `web/public/photos`, without the size and extension. */
@@ -13,13 +14,22 @@ export interface PhotoRecord {
   alt: string;
   author: string;
   licence: string;
-  /** The Commons file page, where the licence and author can be checked. */
-  page: string;
+  /** The Commons file page, where the licence and author can be checked. Null for a supplied photo. */
+  page: string | null;
   /** The screens that show it, in the app. */
   used: string;
 }
 
 const COMMONS = 'https://commons.wikimedia.org/wiki/File:';
+
+// Photos the project team supplied. Nobody recorded who took them or under what licence, so the
+// row says exactly that rather than guessing, and it carries no file-page link.
+const SUPPLIED = {
+  author: 'Not recorded',
+  licence: 'Team-supplied, licence not recorded',
+  page: null,
+} as const;
+
 
 export const PHOTOS: PhotoRecord[] = [
   {
@@ -48,7 +58,37 @@ export const PHOTOS: PhotoRecord[] = [
     page:
       COMMONS +
       'School_of_Computing,_Federal_University_of_Technology,_Akure,_Ondo_State6.jpg',
-    used: 'Home, Map, Place detail',
+    used: 'Home, Map, Place detail, Academics, School page',
+  },
+  {
+    id: 'sese',
+    alt: 'A long cream, two-storey building with a red roof and a domed entrance, across a dirt forecourt',
+    ...SUPPLIED,
+    used: 'Academics, School page',
+  },
+  {
+    id: 'simme',
+    alt: 'A three-storey yellow building with a red roof and a low red annexe, on a grassy slope',
+    ...SUPPLIED,
+    used: 'Academics, School page',
+  },
+  {
+    id: 'sems',
+    alt: 'A two-storey brick building with a red roof and a sign reading "School of Earth and Mineral Sciences"',
+    ...SUPPLIED,
+    used: 'Academics, School page',
+  },
+  {
+    id: 'set',
+    alt: 'A four-storey building with deep red columns and cream walls, under a bright sky',
+    ...SUPPLIED,
+    used: 'Academics, School page',
+  },
+  {
+    id: 'sps',
+    alt: 'A tall building with cream walls, red columns and blue glass, seen from the front',
+    ...SUPPLIED,
+    used: 'Academics, School page',
   },
   {
     id: 'physics',

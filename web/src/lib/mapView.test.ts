@@ -216,11 +216,31 @@ describe('placePhoto', () => {
     expect(placePhoto('School of Computing (SOC)')).toBeUndefined();
   });
 
+  it('shows each school whose building the team photographed', () => {
+    expect(placePhoto('School of Electrical and Systems Engineering')).toBe(
+      '/photos/sese-s.webp',
+    );
+    expect(
+      placePhoto('School of Infrastructural, Minerals and Manufacturing Engineering'),
+    ).toBe('/photos/simme-s.webp');
+    expect(placePhoto('School of Earth and Mineral Sciences')).toBe('/photos/sems-s.webp');
+    expect(placePhoto('School of Environmental Technology')).toBe('/photos/set-s.webp');
+    expect(placePhoto('School of Physical Sciences')).toBe('/photos/sps-s.webp');
+  });
+
+  it('draws the four schools it has no photo of', () => {
+    expect(placePhoto('School of Agriculture and Agricultural Technology')).toBeUndefined();
+    expect(placePhoto('School of Basic Medical Sciences')).toBeUndefined();
+    expect(placePhoto('School of Logistics and Innovation Technology')).toBeUndefined();
+    expect(placePhoto('School of Life Sciences')).toBeUndefined();
+  });
+
   it('gives a place its own screen the wide copy of the same picture', () => {
     expect(placePhoto('Albert Ilemobade Library', 'l')).toBe('/photos/library-l.webp');
     expect(placePhoto('School of Computing', 'l')).toBe('/photos/computing-l.webp');
     expect(placePhoto('CRC', 'l')).toBe('/photos/crc-l.webp');
     expect(placePhoto('FUTA MULTIPURPOSE HALL', 'l')).toBe('/photos/hall-l.webp');
+    expect(placePhoto('School of Physical Sciences', 'l')).toBe('/photos/sps-l.webp');
     expect(placePhoto('SAAT Library', 'l')).toBeUndefined();
   });
 });

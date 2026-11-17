@@ -18,18 +18,20 @@ import type {
 } from './types';
 
 // A sample account for mock mode only. It is a student unless VITE_MOCK_ROLE says otherwise,
-// so the admin screens can be tried without a backend. Scoped roles get the first sample
-// faculty and department.
+// so the admin screens can be tried without a backend. Everyone gets a department and a level,
+// because the timetable and the next-class card need both; the sample department is Biology,
+// which holds the sample courses and timetable rows.
 const MOCK_ROLE = (import.meta.env.VITE_MOCK_ROLE || 'student') as UserRole;
+const sampleDepartment = departments.find((d) => d.name === 'Biology') ?? departments[0];
 const mockUser = {
   id: '00000000-0000-4000-8000-0000000000ff',
-  full_name: 'Sample Student',
+  full_name: MOCK_ROLE === 'student' ? 'Sample Student' : 'Sample Staff',
   email: 'sample.student@example.com',
   role: MOCK_ROLE,
   matric_no: null,
-  department_id: MOCK_ROLE === 'department_admin' ? departments[0].id : null,
-  faculty_id: MOCK_ROLE === 'faculty_admin' ? faculties[0].id : null,
-  level: null,
+  department_id: sampleDepartment.id,
+  faculty_id: sampleDepartment.faculty_id,
+  level: 100,
 };
 
 // Rows per /sync page in mock mode. 0 (the default) returns everything in one page.
@@ -53,7 +55,9 @@ export async function mockRequest(
   query?: Query,
   body?: unknown,
 ): Promise<unknown> {
-  await new Promise((r) => setTimeout(r, 150)); // feel like a real network
+  // Feel like a real network. The tests walk every page of the sample data, so they get none.
+  const delay = import.meta.env.MODE === 'test' ? 0 : 150;
+  await new Promise((r) => setTimeout(r, delay));
   const key = `${method} ${path}`;
 
   switch (key) {

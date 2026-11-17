@@ -125,6 +125,12 @@ const PHOTOS: { match: RegExp; file: string }[] = [
   { match: /gate/i, file: '/photos/gate-s.webp' },
   { match: /library/i, file: '/photos/library-s.webp' },
   { match: /comput/i, file: '/photos/computing-s.webp' },
+  // The schools whose building the project team photographed.
+  { match: /electrical and systems/i, file: '/photos/sese-s.webp' },
+  { match: /infrastructural, minerals/i, file: '/photos/simme-s.webp' },
+  { match: /earth and mineral/i, file: '/photos/sems-s.webp' },
+  { match: /environmental technolog/i, file: '/photos/set-s.webp' },
+  { match: /physical sciences/i, file: '/photos/sps-s.webp' },
   { match: /physics/i, file: '/photos/physics-s.webp' },
   { match: /multipurpose|hall/i, file: '/photos/hall-s.webp' },
   { match: /studio/i, file: '/photos/studios-s.webp' },

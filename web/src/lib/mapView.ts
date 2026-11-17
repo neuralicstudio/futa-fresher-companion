@@ -146,6 +146,16 @@ export function toMapPlace(building: Building): MapPlace {
 const PLACE_PHOTOS: { match: RegExp; photo: string }[] = [
   { match: /^albert ilemobade library$/i, photo: 'library' },
   { match: /^school of computing$/i, photo: 'computing' },
+  // The five schools whose building the project team photographed. The other four schools keep
+  // their drawn scene: no photo of theirs is credited yet.
+  { match: /^school of electrical and systems engineering$/i, photo: 'sese' },
+  {
+    match: /^school of infrastructural, minerals and manufacturing engineering$/i,
+    photo: 'simme',
+  },
+  { match: /^school of earth and mineral sciences$/i, photo: 'sems' },
+  { match: /^school of environmental technology$/i, photo: 'set' },
+  { match: /^school of physical sciences$/i, photo: 'sps' },
   // "CRC OBAKEKERE" is another site, so only the full name or the bare abbreviation counts.
   { match: /^(crc|computer resource cent(re|er).*)$/i, photo: 'crc' },
   {
