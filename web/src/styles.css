@@ -14,6 +14,11 @@
   --bg: var(--color-bg);
   --fg: var(--color-text);
   --muted: var(--color-muted);
+
+  /* The end product is a phone app, so the web build keeps a phone's width on any screen wider
+   * than one. 430px is the widest common phone (iPhone Pro Max), which means a laptop shows the
+   * same layout a student gets in their hand: no desktop reflow, nothing stretched. */
+  --app-width: 430px;
 }
 
 * {
@@ -36,12 +41,40 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* The app column. On a phone this is simply the screen; on anything wider it is the app,
+ * centred, with the page around it stepping back so it reads as one thing. */
+#root {
+  max-width: var(--app-width);
+  min-height: 100dvh;
+  margin-inline: auto;
+  background: var(--color-bg);
+}
+
+@media (min-width: 431px) {
+  body {
+    background: color-mix(in srgb, var(--color-bg) 65%, var(--color-black));
+  }
+
+  #root {
+    box-shadow:
+      0 0 0 1px var(--color-outline),
+      0 18px 48px color-mix(in srgb, var(--color-black) 55%, transparent);
+  }
+
+  /* The profile sheet dims the app, not the desk the app is sitting on. */
+  .scrim {
+    right: auto;
+    left: 50%;
+    width: var(--app-width);
+    translate: -50% 0;
+  }
+}
+
 /* The floating bar sits over the content, so the page reserves room for it. */
 main {
   padding: var(--space-md) var(--gutter)
     calc(var(--tabbar) + var(--space-xl) + env(safe-area-inset-bottom));
-  /* 560px is the design's app width (prototype `#app`), wider than the old 480px container. */
-  max-width: 560px;
+  max-width: var(--app-width);
   margin: 0 auto;
 }
 
@@ -154,7 +187,7 @@ a {
   bottom: max(var(--space-sm), env(safe-area-inset-bottom));
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  width: min(calc(100% - 24px), 536px);
+  width: min(calc(100% - 24px), calc(var(--app-width) - 24px));
   min-height: var(--tabbar);
   padding: var(--space-2xs);
   border-radius: var(--radius-pill);
@@ -235,7 +268,7 @@ a {
   left: 50%;
   translate: -50% 0;
   bottom: 0;
-  width: min(100%, 560px);
+  width: min(100%, var(--app-width));
   padding: var(--space-sm) var(--gutter) var(--space-lg);
   border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
   background: var(--color-card);
@@ -1470,11 +1503,8 @@ button.app-header__back {
 }
 
 /* ---------------------------------------------------------------- wider screens */
-@media (min-width: 640px) {
-  .hero--tall {
-    min-height: 640px;
-  }
-}
+/* The app keeps a phone's width, so nothing here reflows for a desktop window. The one thing
+ * worth spending a wide screen on is a taller hero, and even that is left at its phone size. */
 
 /* At 320px the words need more room than the student can spare. */
 @media (max-width: 359px) {
@@ -2743,11 +2773,7 @@ button.app-header__back {
   color: var(--color-gold);
 }
 
-@media (min-width: 640px) {
-  .schools {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
+/* The schools grid stays two-up: the app is a phone, whatever the window. */
 
 /* The shape of the list while the cache is read, so the screen does not jump (academics-loading-390). */
 .skeleton {
@@ -2984,16 +3010,10 @@ button.app-header__back {
   color: var(--color-text-2);
 }
 
-/* Popular courses and Key lecturers: side by side from 640px, stacked on a phone. */
+/* Popular courses and Key lecturers: stacked, because the app is a phone. */
 .duo--flat {
   display: grid;
   gap: var(--space-lg);
-}
-
-@media (min-width: 640px) {
-  .duo--flat {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 /* ---------------------------------------------------------------- rows */
